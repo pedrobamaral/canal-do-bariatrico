@@ -1,1 +1,0 @@
-# canal-do-bariatrico

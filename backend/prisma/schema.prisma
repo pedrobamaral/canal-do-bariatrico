@@ -46,6 +46,7 @@ model Produto {
   Nome           String      @db.VarChar(100)
   Imagem         String      @db.VarChar(100) // Leitura de URL
   descricao      String      @db.VarChar(100)
+  preco          Float        
   Carrinho       Carrinho?   @relation(fields: [idCarrinho], references: [id])
   idCarrinho     Int?
 }

@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            Int         @default(autoincrement()) @id
+  email         String      @unique @db.VarChar(100)
+  senha         String      @db.VarChar(100)
+  nome          String      @db.VarChar(100)
+  endereco      Endereco?
+  carrinho      Carrinho?   
+  admin         Boolean     @default(false)
+  dataCriacao   DateTime    @default(now())
+}
+
+model Endereco {
+  id           Int         @id @default(autoincrement())
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id])
+  idUsuario    Int?        @unique
+  endereço     String      @db.VarChar(100)
+  complemento  String      @db.VarChar(100)
+  CEP          String
+}
+
+model Carrinho {
+  id           Int         @id @default(autoincrement())
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id])
+  idUsuario    Int?        @unique
+  produtos     Produto[]
+  pagamento    Pagamento?
+}
+
+model Produto {
+  id             Int         @default(autoincrement()) @id
+  Nome           String      @db.VarChar(100)
+  Imagem         String      @db.VarChar(100) // Leitura de URL
+  descricao      String      @db.VarChar(100)
+  Carrinho       Carrinho?   @relation(fields: [idCarrinho], references: [id])
+  idCarrinho     Int?
+}
+
+model Pagamento {
+  id               Int         @default(autoincrement()) @id
+  carrinhoId       Int         @unique
+  carrinho         Carrinho    @relation(fields: [carrinhoId], references: [id])
+  metodo           String      @db.VarChar(100)
+  valor            Float
+  dataCheckout     DateTime    @default(now())
+  dataConfirmado   DateTime?   // Data de pagamento confirmado
+}

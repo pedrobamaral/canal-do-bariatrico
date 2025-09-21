@@ -8,6 +8,7 @@
 ### 2. Estrutura de Pastas (Padrão Nest.js)
 
 A estrutura de pastas deve ser modular, onde cada funcionalidade de negócio (módulo) é autocontida.
+
 MÓDULO === FUNCIONALIDADES(ex: Usuário, Produto, Adm, Estoque, Autenticação etc)
 
 - `/prisma`: Contém o arquivo `schema.prisma` e os arquivos de migração.
@@ -63,5 +64,6 @@ Alterações no Banco de Dados devem ser sinalizadas nos commits.
     - `chore:` Tarefas de build, configuração de bibliotecas, etc.
     - `docs:` Alterações na documentação (ex: no README).
     - `refactor:` Refatoração de código. 
+
 
 

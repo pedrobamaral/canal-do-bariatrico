@@ -3,7 +3,7 @@
 ### 1. Comentário e Código
 
 - Todo o código deve ser escrito em inglês, incluindo comentários, variáveis, funções, componentes etc
-- Comentários devem preferencialmente explicar o "porquê" de lógicas complexas. Evitar comentar o "o que" o código faz(como o Léo já dizia, somos todos programadores)
+- Comentários devem preferencialmente explicar o "porquê" de lógicas complexas. 
 - Prefira código legível e explícito a código compacto.
 - Utilize `// TODO:` para funcionalidades planejadas e `// FIXME:` para bugs conhecidos que precisam de correção.
 
@@ -65,3 +65,4 @@ Alterações no Banco de Dados devem ser sinalizadas nos commits.
     - `chore:` Tarefas de build, configuração de bibliotecas, etc.
     - `docs:` Alterações na documentação (ex: no README).
     - `refactor:` Refatoração de código. 
+

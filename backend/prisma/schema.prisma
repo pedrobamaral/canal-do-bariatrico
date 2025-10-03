@@ -18,6 +18,9 @@ model Usuario {
   email         String      @unique @db.VarChar(100)
   senha         String      @db.VarChar(100)
   nome          String      @db.VarChar(100)
+  //idade         Int         
+  //diabetico     Boolean
+  //calc          Int?         
   endereco      Endereco?
   carrinho      Carrinho?   
   admin         Boolean     @default(false)
@@ -26,29 +29,30 @@ model Usuario {
 
 model Endereco {
   id           Int         @id @default(autoincrement())
-  usuario      Usuario?    @relation(fields: [idUsuario], references: [id])
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario    Int?        @unique
-  endereço     String      @db.VarChar(100)
+  endereco     String      @db.VarChar(100)
   complemento  String      @db.VarChar(100)
-  CEP          String
+  CEP          String      @db.VarChar(100) @unique
 }
 
 model Carrinho {
   id           Int         @id @default(autoincrement())
-  usuario      Usuario?    @relation(fields: [idUsuario], references: [id])
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario    Int?        @unique
   produtos     Produto[]
   pagamento    Pagamento?
 }
 
-model Produto {
-  id             Int         @default(autoincrement()) @id
-  Nome           String      @db.VarChar(100)
-  Imagem         String      @db.VarChar(100) // Leitura de URL
-  descricao      String      @db.VarChar(100)
-  preco          Float        
-  Carrinho       Carrinho?   @relation(fields: [idCarrinho], references: [id])
-  idCarrinho     Int?
+model Produto { // imagem nutricional
+  id                Int         @default(autoincrement()) @id
+  Nome              String      @db.VarChar(100)
+  imgNutricional    String?     // Leitura de URL
+  Imagem            String?     // Leitura de URL
+  descricao         String      @db.VarChar(100)
+  preco             Float        
+  Carrinho          Carrinho?   @relation(fields: [idCarrinho], references: [id])
+  idCarrinho        Int?
 }
 
 model Pagamento {

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EnderecoService } from './endereco.service';
 import { EnderecoController } from './endereco.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Module({
   controllers: [EnderecoController],

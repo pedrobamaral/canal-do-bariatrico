@@ -72,31 +72,16 @@ export class UsuarioService {
     return usuario;
   }
 
-  async update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
-    await this.findOne(id);
-    const { endereco, ...restDto } = updateUsuarioDto;
-    let data: any = { ...restDto };
-
-    if (endereco) {
-      data.endereco = {
-        update: {
-          rua: endereco.rua,
-          numero: endereco.numero,
-          cidade: endereco.cidade,
-          estado: endereco.estado,
-          cep: endereco.cep,
-        },
-      };
+    async update(id: number, data: UpdateUsuarioDto) {
+      const one = await this.prisma.usuario.findUnique({
+        where: {id},
+      })
+      if (!one) {
+        throw new Error(`Usuario com id ${id} nao encontrado`)
+      }
+  
+      return this.prisma.usuario.update({where: {id}, data:data})
     }
-
-    const usuarioAtualizado = await this.prisma.usuario.update({
-      where: { id: parseInt(id, 10) },
-      data,
-    });
-    
-    const { senha, ...result } = usuarioAtualizado;
-    return result;
-  }
 
   async remove(id: string) {
     await this.findOne(id);

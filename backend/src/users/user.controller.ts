@@ -40,7 +40,7 @@ export class UsuarioController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
     try {
-      const result = await this.usuarioService.update(id, updateUsuarioDto);
+      const result = await this.usuarioService.update(+id, updateUsuarioDto);
       return { status: 'sucesso', data: result };
     } catch (error) {
       return { status: 'erro', message: error.message };

@@ -29,7 +29,6 @@ export class CarrinhoController {
     return this.carrinhoService.remove(id);
   }
 
-  // --- Rotas Especiais para Produtos ---
 
   @Post(':id/produtos')
   addProduto(

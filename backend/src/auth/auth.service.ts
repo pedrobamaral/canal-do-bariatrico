@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { UsuarioService } from '@/users/user.service';
+import { UsuarioService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
@@ -28,8 +28,7 @@ export class AuthService {
       admin: registerDto.admin || false, 
     } as Prisma.UsuarioCreateInput); 
 
-    const { senha, ...result } = novoUsuario;
-    return result;
+    return novoUsuario;
   }
 
   async login(loginDto: LoginDto) {

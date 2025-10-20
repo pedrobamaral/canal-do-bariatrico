@@ -15,12 +15,11 @@ CREATE TABLE `Usuario` (
 CREATE TABLE `Endereco` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idUsuario` INTEGER NULL,
-    `endereco` VARCHAR(100) NOT NULL,
+    `endereço` VARCHAR(100) NOT NULL,
     `complemento` VARCHAR(100) NOT NULL,
-    `CEP` VARCHAR(100) NOT NULL,
+    `CEP` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Endereco_idUsuario_key`(`idUsuario`),
-    UNIQUE INDEX `Endereco_CEP_key`(`CEP`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -37,8 +36,7 @@ CREATE TABLE `Carrinho` (
 CREATE TABLE `Produto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `Nome` VARCHAR(100) NOT NULL,
-    `imgNutricional` VARCHAR(191) NULL,
-    `Imagem` VARCHAR(191) NULL,
+    `Imagem` VARCHAR(100) NOT NULL,
     `descricao` VARCHAR(100) NOT NULL,
     `preco` DOUBLE NOT NULL,
     `idCarrinho` INTEGER NULL,
@@ -60,10 +58,10 @@ CREATE TABLE `Pagamento` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Endereco` ADD CONSTRAINT `Endereco_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Endereco` ADD CONSTRAINT `Endereco_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Carrinho` ADD CONSTRAINT `Carrinho_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Carrinho` ADD CONSTRAINT `Carrinho_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Produto` ADD CONSTRAINT `Produto_idCarrinho_fkey` FOREIGN KEY (`idCarrinho`) REFERENCES `Carrinho`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

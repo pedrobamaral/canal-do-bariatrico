@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 
 /* Ícones inline */
@@ -108,6 +110,12 @@ const FormInput: React.FC<FormInputProps> = ({
 
 /* Card do formulário */
 const SignUpForm: React.FC = () => {
+  const router = useRouter();
+  React.useEffect(() => {
+    // Pré-carrega a página de login para transição instantânea
+    router.prefetch("/login");
+  }, [router]);
+
   const [formData, setFormData] = useState<SignUpFormData>({
     name: "",
     email: "",
@@ -140,18 +148,15 @@ const SignUpForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: formData.name,
-            email: formData.email,
-            senha: formData.password,
-          }),
-        }
-      );
+      const response = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: formData.name,
+          email: formData.email,
+          senha: formData.password,
+        }),
+      });
 
       const text = await response.text();
       const data = text ? JSON.parse(text) : {};
@@ -162,7 +167,8 @@ const SignUpForm: React.FC = () => {
       }
 
       setSuccess("Cadastro realizado com sucesso!");
-      setTimeout(() => (window.location.href = "/login"), 1000);
+      // Navegação SPA instantânea (sem reload)
+      router.replace("/login");
     } catch (error) {
       console.error(error);
       setError("Erro ao conectar com o servidor");
@@ -251,8 +257,9 @@ const SignUpForm: React.FC = () => {
         }}
       >
         Já possui uma conta?{" "}
-        <a
+        <Link
           href="/login"
+          prefetch
           style={{
             color: "#6F3CF6",
             textDecoration: "underline",
@@ -260,10 +267,9 @@ const SignUpForm: React.FC = () => {
             letterSpacing: "0.02em",
             fontSize: "1.01rem",
           }}
-          tabIndex={0}
         >
           Login
-        </a>
+        </Link>
       </p>
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 
 /* Ícones inline */
@@ -108,19 +110,71 @@ const FormInput: React.FC<FormInputProps> = ({
 
 /* Card do formulário */
 const SignUpForm: React.FC = () => {
+  const router = useRouter();
+  React.useEffect(() => {
+    // Pré-carrega a página de login para transição instantânea
+    router.prefetch("/login");
+  }, [router]);
+
   const [formData, setFormData] = useState<SignUpFormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Simulação de envio: " + JSON.stringify(formData, null, 2));
+    if (loading) return;
+
+    setError(null);
+    setSuccess(null);
+
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Preencha todos os campos obrigatórios!");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("As senhas não conferem!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: formData.name,
+          email: formData.email,
+          senha: formData.password,
+        }),
+      });
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (!response.ok) {
+        setError(data.message || "Erro ao cadastrar usuário");
+        return;
+      }
+
+      setSuccess("Cadastro realizado com sucesso!");
+      // Navegação SPA instantânea (sem reload)
+      router.replace("/login");
+    } catch (error) {
+      console.error(error);
+      setError("Erro ao conectar com o servidor");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -152,62 +206,46 @@ const SignUpForm: React.FC = () => {
       </h2>
 
       <form onSubmit={handleSubmit} autoComplete="off">
-        <FormInput
-          id="name"
-          label="Nome"
-          type="text"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          id="email"
-          label="Email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          id="password"
-          label="Senha"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          id="confirmPassword"
-          label="Confirmar Senha"
-          type="password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-        />
+        <FormInput id="name" label="Nome" type="text" value={formData.name} onChange={handleChange} required />
+        <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
+        <FormInput id="password" label="Senha" type="password" value={formData.password} onChange={handleChange} required />
+        <FormInput id="confirmPassword" label="Confirmar Senha" type="password" value={formData.confirmPassword} onChange={handleChange} required />
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: "100%",
             height: "54px",
             borderRadius: "32px",
-            background: "#6F3CF6",
+            background: loading ? "#8e6ff7" : "#6F3CF6",
             color: "#fff",
             border: "none",
             fontWeight: 800,
             letterSpacing: "0.04em",
             fontSize: "1rem",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
             boxShadow: "0 2px 8px rgba(111,60,246,0.12)",
             transition: "background .2s",
             outline: "none",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#5c2fe0")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#6F3CF6")}
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#5c2fe0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#6F3CF6")}
         >
-          ENTRAR
+          {loading ? "Enviando..." : "ENTRAR"}
         </button>
       </form>
+
+      {error && (
+        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "1rem" }}>
+          {error}
+        </p>
+      )}
+      {success && (
+        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "1rem" }}>
+          {success}
+        </p>
+      )}
 
       <p
         style={{
@@ -219,8 +257,9 @@ const SignUpForm: React.FC = () => {
         }}
       >
         Já possui uma conta?{" "}
-        <a
+        <Link
           href="/login"
+          prefetch
           style={{
             color: "#6F3CF6",
             textDecoration: "underline",
@@ -228,10 +267,9 @@ const SignUpForm: React.FC = () => {
             letterSpacing: "0.02em",
             fontSize: "1.01rem",
           }}
-          tabIndex={0}
         >
           Login
-        </a>
+        </Link>
       </p>
     </div>
   );
@@ -261,12 +299,10 @@ const SignUpPage: React.FC = () => {
           width: "100%",
         }}
       >
-        {/* Card */}
         <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-end" }}>
           <SignUpForm />
         </div>
 
-        {/* Imagem da Bari */}
         <div
           style={{
             flex: "0 1 700px",

@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            Int         @default(autoincrement()) @id
+  email         String      @unique @db.VarChar(100)
+  senha         String      @db.VarChar(100)
+  nome          String      @db.VarChar(100)
+  //idade         Int         
+  //diabetico     Boolean
+  //calc          Int?         
+  endereco      Endereco[]
+  carrinho      Carrinho?   
+  admin         Boolean     @default(false)
+  dataCriacao   DateTime    @default(now())
+}
+
+model Endereco {
+  id           Int         @id @default(autoincrement())
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario    Int?        
+  endereco     String      @db.VarChar(100)
+  complemento  String      @db.VarChar(100)
+  CEP          String      @db.VarChar(100) @unique
+}
+
+model Carrinho {
+  id           Int         @id @default(autoincrement())
+  usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario    Int?        @unique
+  itemCarrinho             itemCarrinho[]
+  pagamento    Pagamento?
+}
+
+model Produto { // imagem nutricional
+  id                Int         @default(autoincrement()) @id
+  nome              String      @db.VarChar(100)
+  imgNutricional    String?     // Leitura de URL
+  img               String?     // Leitura de URL
+  descricao         String      @db.VarChar(100)
+  preco             Decimal     @db.Decimal(10,2)
+  itemCarrinho                  itemCarrinho[]
+}
+
+model itemCarrinho {
+@@id([idCarrinho, idProduto])
+
+carrinho        Carrinho  @relation(fields: [idCarrinho], references: [id], onDelete: Cascade)
+idCarrinho      Int
+
+produto         Produto   @relation(fields: [idProduto], references: [id], onDelete: Cascade)
+idProduto       Int
+
+quantidade      Int       @default(1)
+}
+
+model Pagamento {
+  id               Int         @default(autoincrement()) @id
+  carrinhoId       Int         @unique
+  carrinho         Carrinho    @relation(fields: [carrinhoId], references: [id])
+  metodo           String      @db.VarChar(100)
+  valor            Float
+  dataCheckout     DateTime    @default(now())
+  dataConfirmado   DateTime?   // Data de pagamento confirmado
+}

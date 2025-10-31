@@ -21,7 +21,7 @@ model Usuario {
   //idade         Int         
   //diabetico     Boolean
   //calc          Int?         
-  endereco      Endereco?
+  endereco      Endereco[]
   carrinho      Carrinho?   
   admin         Boolean     @default(false)
   dataCriacao   DateTime    @default(now())
@@ -30,7 +30,7 @@ model Usuario {
 model Endereco {
   id           Int         @id @default(autoincrement())
   usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario    Int?        @unique
+  idUsuario    Int?        
   endereco     String      @db.VarChar(100)
   complemento  String      @db.VarChar(100)
   CEP          String      @db.VarChar(100) @unique
@@ -40,19 +40,30 @@ model Carrinho {
   id           Int         @id @default(autoincrement())
   usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario    Int?        @unique
-  produtos     Produto[]
+  itemCarrinho             itemCarrinho[]
   pagamento    Pagamento?
 }
 
 model Produto { // imagem nutricional
   id                Int         @default(autoincrement()) @id
-  Nome              String      @db.VarChar(100)
+  nome              String      @db.VarChar(100)
   imgNutricional    String?     // Leitura de URL
-  Imagem            String?     // Leitura de URL
+  img               String?     // Leitura de URL
   descricao         String      @db.VarChar(100)
-  preco             Float        
-  Carrinho          Carrinho?   @relation(fields: [idCarrinho], references: [id])
-  idCarrinho        Int?
+  preco             Decimal     @db.Decimal(10,2)
+  itemCarrinho                  itemCarrinho[]
+}
+
+model itemCarrinho {
+@@id([idCarrinho, idProduto])
+
+carrinho        Carrinho  @relation(fields: [idCarrinho], references: [id], onDelete: Cascade)
+idCarrinho      Int
+
+produto         Produto   @relation(fields: [idProduto], references: [id], onDelete: Cascade)
+idProduto       Int
+
+quantidade      Int       @default(1)
 }
 
 model Pagamento {

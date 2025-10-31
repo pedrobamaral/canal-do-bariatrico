@@ -22,6 +22,11 @@ export class EnderecoController {
     return this.enderecoService.findOne(+id);
   }
 
+   @Get('usuario/:usuarioId')
+   async findByUser(@Param('usuarioId') usuarioId: string) {
+    return this.enderecoService.findByUser(+usuarioId);
+  }
+
   @Get(':CEP')
   async findByCEP(@Param('CEP') CEP: string) {
     return this.enderecoService.findByCEP(CEP);

@@ -19,7 +19,6 @@ CREATE TABLE `Endereco` (
     `complemento` VARCHAR(100) NOT NULL,
     `CEP` VARCHAR(100) NOT NULL,
 
-    UNIQUE INDEX `Endereco_idUsuario_key`(`idUsuario`),
     UNIQUE INDEX `Endereco_CEP_key`(`CEP`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -36,9 +35,9 @@ CREATE TABLE `Carrinho` (
 -- CreateTable
 CREATE TABLE `Produto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `Nome` VARCHAR(100) NOT NULL,
+    `nome` VARCHAR(100) NOT NULL,
     `imgNutricional` VARCHAR(191) NULL,
-    `Imagem` VARCHAR(191) NULL,
+    `img` VARCHAR(191) NULL,
     `descricao` VARCHAR(100) NOT NULL,
     `preco` DOUBLE NOT NULL,
     `idCarrinho` INTEGER NULL,

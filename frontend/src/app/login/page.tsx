@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -108,17 +109,50 @@ const FormInput: React.FC<FormInputProps> = ({
 
 /* Card do formulário */
 const LoginForm: React.FC = () => {
+  const router = useRouter();
+
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Simulação de login: " + JSON.stringify(formData, null, 2));
+    if (loading) return;
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          senha: formData.password, // backend espera 'password'
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Erro ao fazer login");
+        return;
+      }
+
+      // ✅ Login bem-sucedido
+      router.push("/dashboard"); // ou para a rota desejada
+    } catch (error) {
+      console.error(error);
+      setError("Erro ao conectar com o servidor");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -190,27 +224,34 @@ const LoginForm: React.FC = () => {
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: "100%",
             height: "54px",
             borderRadius: "32px",
-            background: "#6F3CF6",
+            background: loading ? "#8e6ff7" : "#6F3CF6",
             color: "#fff",
             border: "none",
             fontWeight: 800,
             letterSpacing: "0.04em",
             fontSize: "1rem",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
             boxShadow: "0 2px 8px rgba(111,60,246,0.12)",
             transition: "background .2s",
             outline: "none",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#5c2fe0")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#6F3CF6")}
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#5c2fe0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#6F3CF6")}
         >
-          ENTRAR
+          {loading ? "Entrando..." : "ENTRAR"}
         </button>
       </form>
+
+      {error && (
+        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "1rem" }}>
+          {error}
+        </p>
+      )}
 
       <p
         style={{
@@ -277,7 +318,7 @@ const LoginPage: React.FC = () => {
             justifyContent: "center",
             position: "relative",
             height: "628px",
-            transform: "translateX(-14px)", // leve recuo para aproximar do card
+            transform: "translateX(-14px)",
           }}
         >
           <Image
@@ -286,8 +327,8 @@ const LoginPage: React.FC = () => {
             fill
             style={{
               objectFit: "contain",
-              objectPosition: "62% center", // puxa um pouco para a direita
-              transform: "scale(1.28)",     // BARI MAIOR (ajuste fino 1.25–1.32)
+              objectPosition: "62% center",
+              transform: "scale(1.28)",
             }}
             priority
           />

@@ -434,8 +434,8 @@ export default function Home() {
                   padding: "32px",
                 }}
               >
-                <SliderInput label="Peso" unit="kg" value={peso} min={40} max={200} step={1} onChange={setPeso} />
-                <SliderInput label="Altura" unit="cm" value={altura} min={100} max={220} step={1} onChange={setAltura} />
+                <SliderInput label="Peso" unit="kg" value={peso} min={25} max={300} step={1} onChange={setPeso} />
+                <SliderInput label="Altura" unit="cm" value={altura} min={100} max={230} step={1} onChange={setAltura} />
                 <SliderInput label="Idade" unit="anos" value={idade} min={18} max={80} step={1} onChange={setIdade} />
 
                 <div style={{ marginTop: "32px" }}>

@@ -396,13 +396,20 @@ export default function Home() {
           style={{
             maxWidth: "1200px",
             width: "100%",
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", // 2 colunas iguais no desktop
             gap: "30px",
-            flexDirection: isMobile ? "column" : "row",
           }}
         >
           {/* Esquerda – Paciente & Intervenção */}
-          <div style={{ flex: "2", minWidth: "350px" }}>
+          <div
+            style={{
+              minWidth: "350px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+          >
             <div>
               <label
                 style={{
@@ -425,7 +432,6 @@ export default function Home() {
                   borderRadius: "24px",
                   border: `1px solid ${CORES.roxoPrincipal}`,
                   padding: "32px",
-                  marginBottom: "24px",
                 }}
               >
                 <SliderInput label="Peso" unit="kg" value={peso} min={40} max={200} step={1} onChange={setPeso} />
@@ -466,6 +472,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Intervenção logo abaixo */}
             <div>
               <label
                 style={{
@@ -520,7 +527,13 @@ export default function Home() {
           </div>
 
           {/* Direita – Gráfico */}
-          <div style={{ flex: "1", minWidth: "350px", alignSelf: "flex-start" }}>
+          <div
+            style={{
+              minWidth: "350px",
+              height: "100%",
+              alignSelf: "stretch",
+            }}
+          >
             <div
               style={{
                 background: "white",
@@ -530,7 +543,7 @@ export default function Home() {
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
-                minHeight: "600px",
+                minHeight: "400px",
               }}
             >
               <div

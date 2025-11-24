@@ -7,12 +7,9 @@ import { FaCalculator } from "react-icons/fa"
 import { AiFillShopping } from "react-icons/ai"
 import "../globals.css"
 
-
 const CORES = {
   roxoPrincipal: "#6F3CF6",
   roxoHover: "#5c2fe0",
-  cremeFundo: "#FFFBEF",
-  cremeCard: "#FFF7E0",
   pretoPrincipal: "#19191A",
   cinzaIcone: "#6b6b6b",
 }
@@ -36,8 +33,51 @@ type SliderProps = {
   onChange: (value: number) => void
 }
 
+/**
+ * Slider com bolinha editável:
+ * - arrasta no range
+ * - digita o número dentro da bolinha
+ */
 const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step, onChange }) => {
   const percentage = ((value - min) / (max - min)) * 100
+  const [inputValue, setInputValue] = useState(String(value))
+
+  // mantém o texto sempre sincronizado com o value vindo de fora
+  useEffect(() => {
+    setInputValue(String(value))
+  }, [value])
+
+  const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const num = Number(e.target.value)
+    onChange(num)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // só deixa números
+    const raw = e.target.value.replace(/\D/g, "")
+    setInputValue(raw)
+
+    if (raw === "") return
+
+    const num = Number(raw)
+    if (Number.isNaN(num)) return
+
+    const clamped = Math.min(max, Math.max(min, num))
+    onChange(clamped)
+  }
+
+  const handleInputBlur = () => {
+    // se apagar tudo e sair do campo, volta para o valor atual
+    if (inputValue === "") {
+      setInputValue(String(value))
+    } else {
+      // garante clamp ao sair
+      const num = Number(inputValue)
+      const clamped = Math.min(max, Math.max(min, num))
+      if (clamped !== value) onChange(clamped)
+      setInputValue(String(clamped))
+    }
+  }
 
   return (
     <div style={{ marginBottom: "32px" }}>
@@ -61,7 +101,7 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
           max={max}
           step={step}
           value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={handleRangeChange}
           style={{
             WebkitAppearance: "none",
             appearance: "none",
@@ -81,6 +121,7 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
         />
       </div>
 
+      {/* AQUI CENTRALIZA NÚMERO + UNIDADE */}
       <div
         style={{
           marginTop: "12px",
@@ -92,21 +133,35 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
       >
         <div
           style={{
-            minWidth: "70px",
-            height: "28px",
-            padding: "0 12px",
+            width: "90px",
+            height: "32px",
             borderRadius: "999px",
             backgroundColor: "#e4e1d6",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontFamily: FONTES.principal,
-            fontWeight: 600,
-            color: CORES.pretoPrincipal,
-            fontSize: "0.9rem",
+            padding: "0 8px",
           }}
         >
-          {value}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              textAlign: "center",
+              fontFamily: FONTES.principal,
+              fontWeight: 600,
+              color: CORES.pretoPrincipal,
+              fontSize: "0.95rem",
+            }}
+          />
         </div>
 
         <span
@@ -115,6 +170,8 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
             fontSize: "0.8rem",
             fontFamily: FONTES.secundaria,
             marginTop: "-4px",
+            textAlign: "center",
+            width: "100%",
           }}
         >
           {unit}
@@ -212,7 +269,7 @@ export default function Home() {
   ]
 
   return (
-    <div style={{ minHeight: "100vh", background: CORES.cremeFundo }}>
+    <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
       <header
         style={{
           position: "fixed",
@@ -236,13 +293,13 @@ export default function Home() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "40px", height: "40px", position: "relative" }}>
-              <Image src="/images/logo_bari.png" alt="Logo da BARI" fill style={{ objectFit: "contain" }} priority />
+              <Image src="/images/barienavbar.png" alt="Logo da BARI" fill style={{ objectFit: "contain" }} priority />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span
                 style={{
-                  color: "white",
+                  color: "#62B4FF",
                   fontSize: "1.2rem",
                   fontWeight: 800,
                   fontFamily: FONTES.principal,
@@ -267,42 +324,62 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <AiFillShopping size={26} color="white" />
-            <FaCalculator size={26} color="white" />
-            <a
-              href="/login"
-              style={{
-                color: "white",
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-                cursor: "pointer",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = CORES.roxoPrincipal)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
-            >
-              LOGIN
-            </a>
-            <button
-              style={{
-                background: CORES.roxoPrincipal,
-                color: "white",
-                border: "none",
-                borderRadius: "24px",
-                padding: "10px 20px",
-                fontWeight: 800,
-                fontSize: "0.9rem",
-                cursor: "pointer",
-                boxShadow: SOMBRAS.botao,
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
-            >
-              CADASTRE-SE
-            </button>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "48px",
+            }}
+          >
+            {/* SLOT 1 */}
+            <div style={{ width: "32px", display: "flex", justifyContent: "center" }}>
+              <AiFillShopping size={32} color="white" />
+            </div>
+
+            {/* SLOT 2 */}
+            <div style={{ width: "32px", display: "flex", justifyContent: "center" }}>
+              <FaCalculator size={26} color="white" />
+            </div>
+
+            {/* SLOT 3 */}
+            <div style={{ width: "80px", display: "flex", justifyContent: "center" }}>
+              <a
+                href="/login"
+                style={{
+                  color: "white",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "0.95rem",
+                  cursor: "pointer",
+                }}
+              >
+                LOGIN
+              </a>
+            </div>
+
+            {/* SLOT 4 */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <a href="/cadastro" style={{ textDecoration: "none" }}>
+                <button
+                  style={{
+                    background: CORES.roxoPrincipal,
+                    color: "white",
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "8px 28px",
+                    fontWeight: 800,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    boxShadow: SOMBRAS.botao,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
+                >
+                  CADASTRE-SE
+                </button>
+              </a>
+            </div>
           </div>
         </div>
       </header>
@@ -331,20 +408,20 @@ export default function Home() {
                 style={{
                   color: CORES.roxoPrincipal,
                   fontWeight: 700,
-                  fontSize: "1rem",          // fonte menor
+                  fontSize: "1rem",
                   fontFamily: FONTES.principal,
                   display: "block",
-                  marginBottom: "8px",       // um pouco menos de espaço
-                  paddingLeft: "32px",       // alinha com o padding interno dos cards
+                  marginBottom: "8px",
+                  paddingLeft: "32px",
                   textAlign: "left",
-                  }}
-                  >
-                  Paciente
+                }}
+              >
+                Paciente
               </label>
 
               <div
                 style={{
-                  background: CORES.cremeCard,
+                  background: "white",
                   borderRadius: "24px",
                   border: `1px solid ${CORES.roxoPrincipal}`,
                   padding: "32px",
@@ -400,14 +477,14 @@ export default function Home() {
                   marginBottom: "8px",
                   paddingLeft: "32px",
                   textAlign: "left",
-                  }}
-                  >
-                  Intervenção
+                }}
+              >
+                Intervenção
               </label>
 
               <div
                 style={{
-                  background: CORES.cremeCard,
+                  background: "white",
                   borderRadius: "24px",
                   border: `1px solid ${CORES.roxoPrincipal}`,
                   padding: "32px",
@@ -549,7 +626,7 @@ export default function Home() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
               >
-                Conseguir Resultados
+                Consegui Resultados
               </button>
             </div>
           </div>
@@ -613,7 +690,6 @@ export default function Home() {
           appearance: none;
         }
 
-        /* só a setinha à direita */
         .pill-select-wrapper::after {
           content: '▾';
           position: absolute;

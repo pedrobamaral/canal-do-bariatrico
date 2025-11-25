@@ -1,6 +1,6 @@
-import { IsString, IsEmail, IsNotEmpty, IsOptional, IsBoolean, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, MinLength, IsOptional, IsBoolean } from 'class-validator';
 
-export class CreateUsuarioDto {
+export class RegisterDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -14,7 +14,7 @@ export class CreateUsuarioDto {
   @IsNotEmpty()
   nome: string;
 
-  @IsOptional()
   @IsBoolean()
-  admin?: boolean;
+  @IsOptional()
+  admin?: boolean; 
 }

@@ -1,21 +1,32 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateEnderecoDto } from './dto/create-endereco.dto';
 import { UpdateEnderecoDto } from './dto/update-endereco.dto';
-import { PrismaService } from 'prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class EnderecoService {
 constructor(private prisma: PrismaService) {}
 
   async create(data: CreateEnderecoDto) {
-    const Endereco = await this.prisma.endereco.findUnique({
-            where: {CEP: data.CEP},
+    const Endereco = await this.prisma.endereco.findFirst({
+            where: { CEP: data.CEP },
         })
         if (Endereco) {
             throw new ConflictException(`Endereco com CEP ${data.CEP} já existe`);
         }
 
-    return await this.prisma.endereco.create({data});
+    // Remove 'id' if present, since Prisma will auto-generate it
+    const { id, idUsuario, endereco, ...rest } = data;
+    const dataToCreate: any = {
+      endereço: endereco, // use correct property name with accent
+      ...rest,
+      CEP: data.CEP,
+      complemento: data.complemento,
+    };
+    if (idUsuario !== undefined) {
+      dataToCreate.usuario = { connect: { id: idUsuario } };
+    }
+    return await this.prisma.endereco.create({ data: dataToCreate });
   }
 
   async findAll() {
@@ -43,8 +54,8 @@ constructor(private prisma: PrismaService) {}
   }
 
   async findByCEP(CEP: string) {
-    const end = await this.prisma.endereco.findUnique({
-      where: {CEP},
+    const end = await this.prisma.endereco.findFirst({
+      where: { CEP },
     })
     if (!end) {
       throw new Error(`Endereco com CEP ${CEP} nao encontrado`)

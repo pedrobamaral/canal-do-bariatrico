@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { EnderecoService } from './endereco.service';
 import { EnderecoController } from './endereco.controller';
-import { PrismaService } from 'prisma/prisma.service';
-import { PrismaModule } from '@/database/prisma.module';
+import { PrismaService } from '../database/prisma.service';
+import { PrismaModule } from '../database/prisma.module';
 
 @Module({
   imports: [PrismaModule],

@@ -1,21 +1,23 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `Usuario` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `email` VARCHAR(100) NOT NULL,
+    `senha` VARCHAR(100) NOT NULL,
+    `nome` VARCHAR(100) NOT NULL,
+    `admin` BOOLEAN NOT NULL DEFAULT false,
+    `dataCriacao` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `ativo` BOOLEAN NULL DEFAULT false,
+    `telefone` VARCHAR(20) NULL,
+    `sexo` ENUM('Masculino', 'Feminino', 'Outro') NULL,
+    `peso` DECIMAL(5, 2) NULL,
+    `altura` DECIMAL(3, 2) NULL,
+    `Nascimento` DATETIME(3) NULL,
+    `massa_magra` DECIMAL(5, 2) NULL,
+    `meta` DECIMAL(5, 2) NULL,
 
-  - You are about to drop the column `idCarrinho` on the `produto` table. All the data in the column will be lost.
-
-*/
--- AlterTable
-ALTER TABLE `produto` DROP COLUMN `idCarrinho`;
-
--- AlterTable
-ALTER TABLE `usuario` ADD COLUMN `Nascimento` DATETIME(3) NULL,
-    ADD COLUMN `altura` DECIMAL(3, 2) NULL,
-    ADD COLUMN `ativo` BOOLEAN NULL DEFAULT false,
-    ADD COLUMN `massa_magra` DECIMAL(5, 2) NULL,
-    ADD COLUMN `meta` DECIMAL(5, 2) NULL,
-    ADD COLUMN `peso` DECIMAL(5, 2) NULL,
-    ADD COLUMN `sexo` ENUM('Masculino', 'Feminino', 'Outro') NULL,
-    ADD COLUMN `telefone` VARCHAR(20) NULL;
+    UNIQUE INDEX `Usuario_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Sistema` (
@@ -122,6 +124,61 @@ CREATE TABLE `Daily` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `Endereco` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `idUsuario` INTEGER NULL,
+    `endereco` VARCHAR(100) NOT NULL,
+    `complemento` VARCHAR(100) NOT NULL,
+    `CEP` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `Endereco_CEP_key`(`CEP`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Carrinho` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `idUsuario` INTEGER NULL,
+
+    UNIQUE INDEX `Carrinho_idUsuario_key`(`idUsuario`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Produto` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nome` VARCHAR(100) NOT NULL,
+    `imgNutricional` VARCHAR(191) NULL,
+    `img` VARCHAR(191) NULL,
+    `descricao` VARCHAR(100) NOT NULL,
+    `preco` DECIMAL(10, 2) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `itemCarrinho` (
+    `idCarrinho` INTEGER NOT NULL,
+    `idProduto` INTEGER NOT NULL,
+    `quantidade` INTEGER NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (`idCarrinho`, `idProduto`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Pagamento` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `carrinhoId` INTEGER NOT NULL,
+    `metodo` VARCHAR(100) NOT NULL,
+    `valor` DOUBLE NOT NULL,
+    `dataCheckout` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `dataConfirmado` DATETIME(3) NULL,
+
+    UNIQUE INDEX `Pagamento_carrinhoId_key`(`carrinhoId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Sistema` ADD CONSTRAINT `Sistema_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -145,3 +202,18 @@ ALTER TABLE `Ciclo` ADD CONSTRAINT `Ciclo_idUsuario_fkey` FOREIGN KEY (`idUsuari
 
 -- AddForeignKey
 ALTER TABLE `Daily` ADD CONSTRAINT `Daily_idCiclo_fkey` FOREIGN KEY (`idCiclo`) REFERENCES `Ciclo`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Endereco` ADD CONSTRAINT `Endereco_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Carrinho` ADD CONSTRAINT `Carrinho_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `itemCarrinho` ADD CONSTRAINT `itemCarrinho_idCarrinho_fkey` FOREIGN KEY (`idCarrinho`) REFERENCES `Carrinho`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `itemCarrinho` ADD CONSTRAINT `itemCarrinho_idProduto_fkey` FOREIGN KEY (`idProduto`) REFERENCES `Produto`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Pagamento` ADD CONSTRAINT `Pagamento_carrinhoId_fkey` FOREIGN KEY (`carrinhoId`) REFERENCES `Carrinho`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

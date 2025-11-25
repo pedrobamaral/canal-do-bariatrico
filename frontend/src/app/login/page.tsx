@@ -145,8 +145,13 @@ const LoginForm: React.FC = () => {
         return;
       }
 
-      // ✅ Login bem-sucedido
-      router.push("/dashboard"); // ou para a rota desejada
+      // Login bem-sucedido
+      // Salva o token 
+      localStorage.setItem("authToken", data.token);
+
+      // Redireciona para a página principal
+      router.push("/");
+      
     } catch (error) {
       console.error(error);
       setError("Erro ao conectar com o servidor");

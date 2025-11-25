@@ -108,7 +108,7 @@ model Ciclo {
   idUsuario      Int?      @unique
   dia0           Dia0?
   daily          Daily?
-  ativo          Boolean?  @default(false)
+  emCiclo        Boolean?  @default(false)
   num            Int?
   med_prescrita  Boolean?  @default(false)
   mounjaro       Boolean?  @default(false)

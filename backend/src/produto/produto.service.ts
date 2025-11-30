@@ -1,23 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { ProdutoDto } from './dto/produto.dto';
+import { createProdutoDto } from './dto/createprodutodto.dto';
+import { UpdateProdutoDto } from './dto/updateproduto.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProdutoService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: ProdutoDto) {
-    const produto = await this.prisma.produto.create({
-      data: {
-        Nome: data.Nome,
-        Imagem: data.Imagem,
-        descricao: data.descricao,
-        preco: data.preco,
-        // se quiser permitir atrelar a um carrinho já existente:
-        ...(data.idCarrinho ? { idCarrinho: data.idCarrinho } : {}),
-      },
-    });
-    return produto;
+  async create(data: createProdutoDto) {
+    const produto = await this.prisma.produto.findFirst({
+      where: {nome: data.nome}
+    })
+    if (produto) {
+      throw new ConflictException(`Produto "${data.nome}" já existe`);
+    }
+
+    return await this.prisma.produto.create({data: {
+      nome: data.nome,
+      descricao: data.descricao,
+      img: data.img ?? null,
+      imgNutricional: data.imgNutricional ?? null,
+      preco: new Prisma.Decimal(data.preco),
+    }});
   }
 
   async findAll() {
@@ -30,21 +35,15 @@ export class ProdutoService {
     return produto;
   }
 
-  async update(id: number, data: ProdutoDto) {
-    const exists = await this.prisma.produto.findUnique({ where: { id } });
-    if (!exists) throw new NotFoundException('Produto não encontrado');
+  async update(id: number, data: UpdateProdutoDto) {
+    const one = await this.prisma.produto.findUnique({
+      where: {id},
+    })
+    if (!one) {
+      throw new Error(`Produto com id ${id} nao encontrado`)
+    }
 
-    return this.prisma.produto.update({
-      where: { id },
-      data: {
-        // atualiza apenas os campos enviados
-        ...(data.Nome !== undefined ? { Nome: data.Nome } : {}),
-        ...(data.Imagem !== undefined ? { Imagem: data.Imagem } : {}),
-        ...(data.descricao !== undefined ? { descricao: data.descricao } : {}),
-        ...(data.preco !== undefined ? { preco: data.preco } : {}),
-        ...(data.idCarrinho !== undefined ? { idCarrinho: data.idCarrinho } : {}),
-      },
-    });
+    return this.prisma.produto.update({where: {id}, data:data})
   }
 
   async delete(id: number) {

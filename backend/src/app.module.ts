@@ -9,9 +9,10 @@ import { CarrinhoModule } from './carrinho/carrinho.module';
 import { EnderecoModule } from './endereco/endereco.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ItemCarrinhoModule } from './item-carrinho/item-carrinho.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, ProdutoModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule],
+  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, ProdutoModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule],
   controllers: [AppController],
   providers: [AppService],
 })

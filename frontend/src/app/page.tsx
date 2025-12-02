@@ -1,11 +1,19 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import type * as ReactTypes from "react"
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from "recharts"
 import Image from "next/image"
 import { FaArrowRight } from "react-icons/fa6"
 import "./globals.css"
-import Navbar from "../components/navbar";
+import Navbar from "../components/navbar"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -38,7 +46,15 @@ type SliderProps = {
  * - arrasta no range
  * - digita o número dentro da bolinha
  */
-const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step, onChange }) => {
+const SliderInput: React.FC<SliderProps> = ({
+  label,
+  unit,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}) => {
   const percentage = ((value - min) / (max - min)) * 100
   const [inputValue, setInputValue] = useState(String(value))
 
@@ -121,7 +137,7 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
         />
       </div>
 
-      {/* AQUI CENTRALIZA NÚMERO + UNIDADE */}
+      {/* Número + unidade centralizados */}
       <div
         style={{
           marginTop: "12px",
@@ -240,6 +256,117 @@ const Toggle: React.FC<ToggleProps> = ({ label, checked, onChange }) => {
 
 type DiabetesOption = "sem_diabetes" | "pre_diabetes" | "diabetes"
 
+type ChartPoint = {
+  month: number
+  weight: number // kg
+  imc: number // kg/m²
+}
+
+/**
+ * --------------- LÓGICA DE CÁLCULO DA TRAJETÓRIA ---------------
+ */
+type TrajectoryParams = {
+  peso: number
+  altura: number
+  idade: number
+  fumante: boolean
+  diabetes: DiabetesOption
+  tipoCirurgia: string
+}
+
+function calcularTrajetoria({
+  peso,
+  altura,
+  idade,
+  fumante,
+  diabetes,
+  tipoCirurgia,
+}: TrajectoryParams): ChartPoint[] {
+  const alturaM = altura / 100
+  const alturaM2 = alturaM * alturaM
+
+  // Peso ideal (IMC 25)
+  const pesoIdeal = 25 * alturaM2
+  const excessoPeso = Math.max(peso - pesoIdeal, 0)
+
+  // --- Curvas de %EWL por técnica (valores de referência) ---
+  let baseEwl: { [mes: number]: number }
+
+  if (tipoCirurgia === "Bypass Gástrico") {
+    baseEwl = {
+      3: 0.40,
+      6: 0.60,
+      12: 0.70,
+      24: 0.75,
+    }
+  } else if (tipoCirurgia === "Sleeve Gastrectomia") {
+    baseEwl = {
+      3: 0.30,
+      6: 0.47,
+      12: 0.57,
+      24: 0.62,
+    }
+  } else {
+    baseEwl = {
+      3: 0.22,
+      6: 0.35,
+      12: 0.45,
+      24: 0.50,
+    }
+  }
+
+  // sem ajuste por enquanto
+  const fatorAjuste = 1
+
+  const anchorsMeses = [0, 3, 6, 12, 24, 60]
+  const ewlPorMesAnchor: { [mes: number]: number } = {}
+
+  ewlPorMesAnchor[0] = 0
+
+  for (const m of [3, 6, 12, 24] as const) {
+    const base = baseEwl[m]
+    ewlPorMesAnchor[m] = Math.min(0.95, Math.max(0, base * fatorAjuste))
+  }
+
+  const ewl24 = ewlPorMesAnchor[24]
+  ewlPorMesAnchor[60] = Math.max(0, ewl24 * 0.9)
+
+  const data: ChartPoint[] = []
+
+  for (let mes = 1; mes <= 60; mes++) {
+    let m0 = 0
+    let m1 = 60
+    for (let i = 0; i < anchorsMeses.length - 1; i++) {
+      const a = anchorsMeses[i]
+      const b = anchorsMeses[i + 1]
+      if (mes >= a && mes <= b) {
+        m0 = a
+        m1 = b
+        break
+      }
+    }
+
+    const e0 = ewlPorMesAnchor[m0]
+    const e1 = ewlPorMesAnchor[m1]
+    const t = (mes - m0) / (m1 - m0)
+
+    const ewlMes = e0 + (e1 - e0) * t
+
+    const pesoPrevisto = pesoIdeal + excessoPeso * (1 - ewlMes)
+    const imcPrevisto = pesoPrevisto / alturaM2
+
+    data.push({
+      month: mes,
+      weight: Number(pesoPrevisto.toFixed(1)),
+      imc: Number(imcPrevisto.toFixed(1)),
+    })
+  }
+
+  return data
+}
+
+/* --------------------- COMPONENTE PRINCIPAL --------------------- */
+
 export default function Home() {
   const [peso, setPeso] = useState(80)
   const [altura, setAltura] = useState(170)
@@ -252,6 +379,8 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
 
+  const [chartData, setChartData] = useState<ChartPoint[]>([])
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024)
@@ -261,12 +390,17 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const chartData = [
-    { month: 3, weight: 108, min: 102, max: 114 },
-    { month: 12, weight: 85, min: 78, max: 92 },
-    { month: 24, weight: 75, min: 68, max: 82 },
-    { month: 60, weight: 72, min: 65, max: 79 },
-  ]
+  useEffect(() => {
+    const data = calcularTrajetoria({
+      peso,
+      altura,
+      idade,
+      fumante,
+      diabetes,
+      tipoCirurgia: intervencaoData.tipo,
+    })
+    setChartData(data)
+  }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipo])
 
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
@@ -327,12 +461,40 @@ export default function Home() {
                     padding: "32px",
                   }}
                 >
-                  <SliderInput label="Peso" unit="kg" value={peso} min={25} max={300} step={1} onChange={setPeso} />
-                  <SliderInput label="Altura" unit="cm" value={altura} min={100} max={230} step={1} onChange={setAltura} />
-                  <SliderInput label="Idade" unit="anos" value={idade} min={18} max={80} step={1} onChange={setIdade} />
+                  <SliderInput
+                    label="Peso"
+                    unit="kg"
+                    value={peso}
+                    min={25}
+                    max={300}
+                    step={1}
+                    onChange={setPeso}
+                  />
+                  <SliderInput
+                    label="Altura"
+                    unit="cm"
+                    value={altura}
+                    min={100}
+                    max={230}
+                    step={1}
+                    onChange={setAltura}
+                  />
+                  <SliderInput
+                    label="Idade"
+                    unit="anos"
+                    value={idade}
+                    min={18}
+                    max={80}
+                    step={1}
+                    onChange={setIdade}
+                  />
 
                   <div style={{ marginTop: "32px" }}>
-                    <Toggle label="Fumante" checked={fumante} onChange={setFumante} />
+                    <Toggle
+                      label="Fumante"
+                      checked={fumante}
+                      onChange={setFumante}
+                    />
 
                     <div style={{ marginTop: "16px" }}>
                       <label
@@ -353,7 +515,9 @@ export default function Home() {
                         <select
                           className="pill-select"
                           value={diabetes}
-                          onChange={(e) => setDiabetes(e.target.value as DiabetesOption)}
+                          onChange={(e) =>
+                            setDiabetes(e.target.value as DiabetesOption)
+                          }
                         >
                           <option value="sem_diabetes">Sem diabetes</option>
                           <option value="pre_diabetes">Pré-diabetes</option>
@@ -407,7 +571,12 @@ export default function Home() {
                       <select
                         className="pill-select"
                         value={intervencaoData.tipo}
-                        onChange={(e) => setIntervencaoData({ ...intervencaoData, tipo: e.target.value })}
+                        onChange={(e) =>
+                          setIntervencaoData({
+                            ...intervencaoData,
+                            tipo: e.target.value,
+                          })
+                        }
                       >
                         <option>Bypass Gástrico</option>
                         <option>Sleeve Gastrectomia</option>
@@ -463,7 +632,9 @@ export default function Home() {
                       <select
                         className="pill-select"
                         value={metric}
-                        onChange={(e) => setMetric(e.target.value as "peso" | "imc")}
+                        onChange={(e) =>
+                          setMetric(e.target.value as "peso" | "imc")
+                        }
                       >
                         <option value="peso">Peso (kg)</option>
                         <option value="imc">IMC</option>
@@ -474,18 +645,40 @@ export default function Home() {
 
                 <div style={{ flex: 1, minHeight: "300px" }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                    <AreaChart
+                      data={chartData}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                    >
                       <defs>
-                        <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6F3CF6" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#6F3CF6" stopOpacity={0} />
+                        <linearGradient
+                          id="colorMain"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={CORES.roxoPrincipal}
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={CORES.roxoPrincipal}
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
                       <XAxis
                         dataKey="month"
-                        label={{ value: "Meses após cirurgia", position: "insideBottomRight", offset: -10 }}
+                        label={{
+                          value: "Meses após cirurgia",
+                          position: "insideBottomRight",
+                          offset: -10,
+                        }}
                         stroke={CORES.cinzaIcone}
+                        tickCount={7}
                       />
                       <YAxis
                         label={{
@@ -494,8 +687,15 @@ export default function Home() {
                           position: "insideLeft",
                         }}
                         stroke={CORES.cinzaIcone}
+                        allowDecimals={false}
                       />
                       <Tooltip
+                        formatter={(value: number) =>
+                          metric === "peso"
+                            ? `${value.toFixed(1)} kg`
+                            : `${value.toFixed(1)} kg/m²`
+                        }
+                        labelFormatter={(label) => `Mês ${label}`}
                         contentStyle={{
                           backgroundColor: "white",
                           border: `1px solid ${CORES.roxoPrincipal}`,
@@ -505,10 +705,12 @@ export default function Home() {
                       />
                       <Area
                         type="monotone"
-                        dataKey="weight"
+                        dataKey={metric === "peso" ? "weight" : "imc"}
                         stroke={CORES.roxoPrincipal}
                         strokeWidth={2}
-                        fill="url(#colorWeight)"
+                        fill="url(#colorMain)"
+                        dot={false}
+                        activeDot={{ r: 4 }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -529,8 +731,12 @@ export default function Home() {
                     transition: "background 0.2s",
                     marginTop: "24px",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = CORES.roxoHover)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = CORES.roxoPrincipal)
+                  }
                 >
                   Consegui Resultados
                 </button>
@@ -604,13 +810,17 @@ export default function Home() {
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = CORES.roxoHover
                     e.currentTarget.style.textDecoration = "underline"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(4px)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = CORES.roxoPrincipal
                     e.currentTarget.style.textDecoration = "none"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(0)"
                   }}
                 >
@@ -701,13 +911,17 @@ export default function Home() {
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = CORES.roxoHover
                     e.currentTarget.style.textDecoration = "underline"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(4px)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = CORES.roxoPrincipal
                     e.currentTarget.style.textDecoration = "none"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(0)"
                   }}
                 >
@@ -798,13 +1012,17 @@ export default function Home() {
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = CORES.roxoHover
                     e.currentTarget.style.textDecoration = "underline"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(4px)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = CORES.roxoPrincipal
                     e.currentTarget.style.textDecoration = "none"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(0)"
                   }}
                 >
@@ -895,13 +1113,17 @@ export default function Home() {
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = CORES.roxoHover
                     e.currentTarget.style.textDecoration = "underline"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(4px)"
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = CORES.roxoPrincipal
                     e.currentTarget.style.textDecoration = "none"
-                    const arrow = e.currentTarget.querySelector("span") as HTMLSpanElement | null
+                    const arrow = e.currentTarget.querySelector(
+                      "span"
+                    ) as HTMLSpanElement | null
                     if (arrow) arrow.style.transform = "translateX(0)"
                   }}
                 >

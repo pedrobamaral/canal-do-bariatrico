@@ -42,9 +42,7 @@ type SliderProps = {
 }
 
 /**
- * Slider com bolinha editável:
- * - arrasta no range
- * - digita o número dentro da bolinha
+ * Slider com bolinha editável
  */
 const SliderInput: React.FC<SliderProps> = ({
   label,
@@ -58,7 +56,6 @@ const SliderInput: React.FC<SliderProps> = ({
   const percentage = ((value - min) / (max - min)) * 100
   const [inputValue, setInputValue] = useState(String(value))
 
-  // mantém o texto sempre sincronizado com o value vindo de fora
   useEffect(() => {
     setInputValue(String(value))
   }, [value])
@@ -69,7 +66,6 @@ const SliderInput: React.FC<SliderProps> = ({
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // só deixa números
     const raw = e.target.value.replace(/\D/g, "")
     setInputValue(raw)
 
@@ -83,11 +79,9 @@ const SliderInput: React.FC<SliderProps> = ({
   }
 
   const handleInputBlur = () => {
-    // se apagar tudo e sair do campo, volta para o valor atual
     if (inputValue === "") {
       setInputValue(String(value))
     } else {
-      // garante clamp ao sair
       const num = Number(inputValue)
       const clamped = Math.min(max, Math.max(min, num))
       if (clamped !== value) onChange(clamped)
@@ -263,7 +257,7 @@ type ChartPoint = {
 }
 
 /**
- * --------------- LÓGICA DE CÁLCULO DA TRAJETÓRIA ---------------
+ * -------- LÓGICA DE CÁLCULO DA TRAJETÓRIA --------
  */
 type TrajectoryParams = {
   peso: number
@@ -289,70 +283,84 @@ function calcularTrajetoria({
   const pesoIdeal = 25 * alturaM2
   const excessoPeso = Math.max(peso - pesoIdeal, 0)
 
-  // --- Curvas de %EWL por técnica (valores de referência) ---
-  let baseEwl: { [mes: number]: number }
+  /**
+   * Curvas base de %EWL por tipo de cirurgia
+   * Modelo:
+   *  - Até 24 meses: EWL(m) = a * (1 - e^(-k * m))  (queda rápida e desacelerando)
+   *  - De 24 a 60 meses: pequeno reganho fisiológico (EWL cai de a_24 para ewl60)
+   */
+  let aPlateau: number
+  let k: number
+  let ewl60Base: number
 
   if (tipoCirurgia === "Bypass Gástrico") {
-    baseEwl = {
-      3: 0.40,
-      6: 0.60,
-      12: 0.70,
-      24: 0.75,
-    }
+    // ~35% em 3m, ~70% em 12m, ~75% em 24m, ~70% em 60m
+    aPlateau = 0.75
+    k = 0.2095362
+    ewl60Base = 0.70
   } else if (tipoCirurgia === "Sleeve Gastrectomia") {
-    baseEwl = {
-      3: 0.30,
-      6: 0.47,
-      12: 0.57,
-      24: 0.62,
-    }
+    // ~30% em 3m, ~58% em 12m, ~62% em 24m, ~55% em 60m
+    aPlateau = 0.62
+    k = 0.2204662
+    ewl60Base = 0.55
   } else {
-    baseEwl = {
-      3: 0.22,
-      6: 0.35,
-      12: 0.45,
-      24: 0.50,
-    }
+    // Banda / outros – mais conservador
+    // ~20% em 3m, ~45% em 12m, ~50% em 24m, ~45% em 60m
+    aPlateau = 0.5
+    k = 0.1702752
+    ewl60Base = 0.45
   }
 
-  // sem ajuste por enquanto
-  const fatorAjuste = 1
+  // %EWL no mês 24 usando a curva exponencial
+  const ewl24Base = aPlateau * (1 - Math.exp(-k * 24))
 
-  const anchorsMeses = [0, 3, 6, 12, 24, 60]
-  const ewlPorMesAnchor: { [mes: number]: number } = {}
+  // ----- Ajuste de risco (idade, fumo, diabetes) aplicado em TODOS os meses -----
+  let fatorRisco = 1
 
-  ewlPorMesAnchor[0] = 0
-
-  for (const m of [3, 6, 12, 24] as const) {
-    const base = baseEwl[m]
-    ewlPorMesAnchor[m] = Math.min(0.95, Math.max(0, base * fatorAjuste))
+  if (idade >= 60) {
+    fatorRisco -= 0.10
+  } else if (idade >= 50) {
+    fatorRisco -= 0.05
   }
 
-  const ewl24 = ewlPorMesAnchor[24]
-  ewlPorMesAnchor[60] = Math.max(0, ewl24 * 0.9)
+  if (fumante) {
+    fatorRisco -= 0.05
+  }
+
+  if (diabetes === "diabetes") {
+    fatorRisco -= 0.08
+  } else if (diabetes === "pre_diabetes") {
+    fatorRisco -= 0.04
+  }
+
+  // Limita o fator de risco para não ficar absurdo
+  fatorRisco = Math.min(1.05, Math.max(0.7, fatorRisco))
 
   const data: ChartPoint[] = []
 
-  for (let mes = 1; mes <= 60; mes++) {
-    let m0 = 0
-    let m1 = 60
-    for (let i = 0; i < anchorsMeses.length - 1; i++) {
-      const a = anchorsMeses[i]
-      const b = anchorsMeses[i + 1]
-      if (mes >= a && mes <= b) {
-        m0 = a
-        m1 = b
-        break
-      }
+  // Gera ponto mês a mês de 0 a 60 usando a fórmula contínua
+  for (let mes = 0; mes <= 60; mes++) {
+    let ewlBruta: number
+
+    if (mes <= 24) {
+      // queda principal – curva exponencial
+      ewlBruta = aPlateau * (1 - Math.exp(-k * mes))
+    } else {
+      // reganho fisiológico gradual entre 24 e 60 meses
+      const t = (mes - 24) / (60 - 24) // 0 em 24m, 1 em 60m
+      const ewl60 = ewl60Base
+      ewlBruta = ewl24Base - (ewl24Base - ewl60) * t
     }
 
-    const e0 = ewlPorMesAnchor[m0]
-    const e1 = ewlPorMesAnchor[m1]
-    const t = (mes - m0) / (m1 - m0)
+    // Aplica o fator de risco em TODOS os meses
+    let ewlAjustada = ewlBruta * fatorRisco
 
-    const ewlMes = e0 + (e1 - e0) * t
+    // Segurança: nunca passar de 95% de EWL nem ficar negativo
+    ewlAjustada = Math.min(0.95, Math.max(0, ewlAjustada))
 
-    const pesoPrevisto = pesoIdeal + excessoPeso * (1 - ewlMes)
+    // Peso previsto: peso inicial – excesso de peso perdido
+    const pesoPerdido = excessoPeso * ewlAjustada
+    const pesoPrevisto = peso - pesoPerdido
     const imcPrevisto = pesoPrevisto / alturaM2
 
     data.push({
@@ -365,7 +373,7 @@ function calcularTrajetoria({
   return data
 }
 
-/* --------------------- COMPONENTE PRINCIPAL --------------------- */
+/* ---------------- COMPONENTE PRINCIPAL ---------------- */
 
 export default function Home() {
   const [peso, setPeso] = useState(80)
@@ -679,6 +687,9 @@ export default function Home() {
                         }}
                         stroke={CORES.cinzaIcone}
                         tickCount={7}
+                        // ✅ Força o eixo a começar em 0 e ir até 60
+                        domain={[0, 60]}
+                        type="number"
                       />
                       <YAxis
                         label={{

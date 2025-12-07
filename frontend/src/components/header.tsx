@@ -4,61 +4,81 @@ import Link from 'next/link';
 export default function HeaderTeste() {
   return (
     <div className="relative w-full h-23 bg-black flex items-center-safe">
-      <div className="absolute w-23 h-20 top-5 left-9 mr-4">
-        <Image
-          src="/imagens/borboleta.png"
-          alt="Logo da Borboleta"
-          width={44}
-          height={44}
-        />
-      </div>
-        <h1 className="text-4xl ml-23 mb-4 font-Montserrat font-bold">CANAL DA BARIE</h1>
-
-
-    <div className="absolute top-1/4 left-16/21">
-        <Image
-          src="/imagens/compra.png"
-          alt="loja"
-          width={33}
-          height={33}
-        />
+      <div className="absolute w-full h-full top-5 left-9 mr-4">
+        <Image src="/imagens/logo.png" alt="Logo" width={500} height={500} />
       </div>
 
-      <div className="absolute top-1/4 left-17/21">
-        <Image
-          src="/imagens/calculadora.png"
-          alt="calculadora"
-          width={33}
-          height={33}
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="medico"
+          className="absolute top-1/4 left-21/28 w-[33px] h-[33px] bg-white hover:bg-sky-300 transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/medico.png')",
+            maskImage: "url('/imagens/medico.png')",
+          }}
         />
-      </div>
+      </Link>
 
-      <div className="absolute top-1/4 left-18/21">
-        <Image
-          src="/imagens/carrinho.png"
-          alt="carrinho"
-          width={33}
-          height={33}
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="dieta"
+          className="absolute top-1/4 left-22/28 w-[33px] h-[33px] bg-white hover:bg-sky-300 transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/dieta.png')",
+            maskImage: "url('/imagens/dieta.png')",
+          }}
         />
-      </div>
-      
-      <div className="absolute top-1/4 left-19/21">
-        <Image
-          src="/imagens/user-blue.png"
-          alt="usuario"
-          width={33}
-          height={33}
+      </Link>
+
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="pessoa"
+          className="absolute top-1/4 left-23/28 w-[33px] h-[33px] bg-white hover:bg-sky-300 transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/pessoa.png')",
+            maskImage: "url('/imagens/pessoa.png')",
+          }}
         />
-      </div>
-      
-      <div className="absolute top-1/4 left-20/21">
-        <Image
-          src="/imagens/sair.png"
-          alt="sair"
-          width={33}
-          height={33}
+      </Link>
+
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="calculadora"
+          className="absolute top-1/4 left-24/28 w-[33px] h-[33px] bg-white hover:bg-sky-300 transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/calculadora.png')",
+            maskImage: "url('/imagens/calculadora.png')",
+          }}
         />
-      </div>
+      </Link>
+
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="usuario"
+          className="absolute top-1/4 left-25/28 w-[33px] h-[33px] bg-sky-300  transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/user-blue.png')",
+            maskImage: "url('/imagens/user-blue.png')",
+          }}
+        />
+      </Link>
+
+      <Link href="#">
+        <div
+          role="button"
+          aria-label="sair"
+          className="absolute top-1/4 left-26/28 w-[33px] h-[33px] bg-white hover:bg-sky-300 transition-colors icon-btn"
+          style={{
+            WebkitMaskImage: "url('/imagens/sair.png')",
+            maskImage: "url('/imagens/sair.png')",
+          }}
+        />
+      </Link>
     </div>
   );
 }

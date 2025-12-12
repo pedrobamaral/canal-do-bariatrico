@@ -24,17 +24,18 @@ model Usuario {
   dataCriacao DateTime   @default(now())
 
   // Projeto Vidale
-  ativo       Boolean?  @default(false)
-  telefone    String?   @db.VarChar(20)
+  ativo       Boolean?     @default(false)
+  telefone    String?      @db.VarChar(20)
   sexo        Sexo?
-  peso        Decimal?  @db.Decimal(5, 2)
-  altura      Decimal?  @db.Decimal(3, 2)
+  peso        Decimal?     @db.Decimal(5, 2)
+  altura      Decimal?     @db.Decimal(3, 2)
   Nascimento  DateTime?
-  massa_magra Decimal?  @db.Decimal(5, 2)
-  meta        Decimal?  @db.Decimal(5, 2)
+  massa_magra Decimal?     @db.Decimal(5, 2)
+  meta        Decimal?     @db.Decimal(5, 2)
   sistema     Sistema?
   dia0        Dia0?
   ciclo       Ciclo[]
+  pontuacoes  pontuacoes[]
 }
 
 enum Sexo {
@@ -87,6 +88,18 @@ model Dieta {
   gord         Decimal  @db.Decimal(4, 2)
   nutri        String   @db.VarChar(100)
   insta_nutri  String   @db.VarChar(100)
+}
+
+model pontuacoes {
+  id          Int      @id @default(autoincrement())
+  numCiclo    Int
+  respSim     Int?
+  respNao     Int?
+  pontos      Decimal? @db.Decimal(4, 2)
+  porcentagem Decimal? @db.Decimal(2, 2)
+  maxPontos   Decimal? @db.Decimal(4, 2)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int
 }
 
 model Dia0 {

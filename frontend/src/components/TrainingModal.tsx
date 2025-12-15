@@ -10,13 +10,11 @@ interface TrainingModalProps {
   onClose: () => void;
 }
 
-// --- Passo 1: Tela Inicial (Adicionar Treino - Upload) ---
 const Step1 = ({ onNext }: { onNext: () => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      // Simula o upload e avança para o próximo passo
       console.log("Arquivo de treino selecionado:", event.target.files[0].name);
       onNext();
     }
@@ -28,7 +26,7 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
-        accept=".pdf" // Aceita apenas PDF como pedido
+        accept=".pdf" 
         onChange={handleFileChange}
       />
       <button
@@ -42,12 +40,10 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// --- Passo 2: Frequência de Treino ---
 const Step2 = ({ onNext }: { onNext: () => void }) => {
   return (
     <form className="space-y-6 animate-fadeIn">
       
-      {/* Musculação */}
       <div>
         <label className="block text-indigo-500 font-medium mb-2 pl-2">Frequência Semanal - Musculação</label>
         <select className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
@@ -62,7 +58,6 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
         </select>
       </div>
 
-      {/* Aeróbico */}
       <div>
         <label className="block text-indigo-500 font-medium mb-2 pl-2">Frequência Semanal - Aeróbico</label>
         <select className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
@@ -90,7 +85,6 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// --- Passo 3: Dados do Personal ---
 const Step3 = ({ onFinish }: { onFinish: () => void }) => (
   <form className="space-y-4 animate-fadeIn">
     <input type="text" placeholder="Nome do Personal" className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -108,8 +102,6 @@ const Step3 = ({ onFinish }: { onFinish: () => void }) => (
   </form>
 );
 
-
-// --- Componente Principal ---
 export const TrainingModal: React.FC<TrainingModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
 
@@ -132,7 +124,6 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({ isOpen, onClose })
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
       <div onClick={(e) => e.stopPropagation()} className="relative bg-white shadow-2xl rounded-3xl w-full max-w-xl p-8 min-h-[300px] flex flex-col">
         
-        {/* Header do Modal */}
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-xl font-normal text-gray-800">Treino</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -142,7 +133,6 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({ isOpen, onClose })
           </button>
         </div>
 
-        {/* Conteúdo Dinâmico */}
         <div className="flex-1">
             {step === 1 && <Step1 onNext={handleNext} />}
             {step === 2 && <Step2 onNext={handleNext} />}

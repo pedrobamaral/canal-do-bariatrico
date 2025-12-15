@@ -10,7 +10,6 @@ interface MedicationModalProps {
   onClose: () => void;
 }
 
-// --- Passo 1: Tela Inicial (Adicionar Medicamento) ---
 const Step1 = ({ onNext }: { onNext: () => void }) => (
   <div className="flex flex-col items-center justify-center py-10">
     <button
@@ -23,32 +22,23 @@ const Step1 = ({ onNext }: { onNext: () => void }) => (
   </div>
 );
 
-// --- Passo 2: Detalhes do Medicamento (COM FREQUÊNCIA EXPANSÍVEL) ---
 const Step2 = ({ onNext }: { onNext: () => void }) => {
-  // Estado interno para controlar a expansão da frequência
   const [isFrequencyExpanded, setIsFrequencyExpanded] = useState(false);
 
   return (
     <form className="space-y-4 animate-fadeIn">
-      {/* Inputs que estão sempre visíveis */}
       <input type="text" placeholder="Nome do Medicamento" className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
       <input type="text" placeholder="Concentração" className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
 
-      {/* 
-        * BLOCO CONDICIONAL DA FREQUÊNCIA
-        * Mostra o input simples ou o bloco detalhado
-      */}
       {!isFrequencyExpanded ? (
-        // Estado 1: Input Simples (gatilho)
         <input 
           type="text" 
           placeholder="Frequência" 
           className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-          onFocus={() => setIsFrequencyExpanded(true)} // Expande ao focar
-          readOnly // Apenas para garantir que o usuário não digite aqui
+          onFocus={() => setIsFrequencyExpanded(true)} 
+          readOnly 
         />
       ) : (
-        // Estado 2: Bloco Detalhado (expanso)
         <div className="border border-indigo-300 rounded-xl p-4 animate-fadeIn">
           <p className="text-indigo-500 font-medium mb-2 px-2">Frequência</p>
           <div className="flex flex-col sm:flex-row gap-4 mb-3 px-2">
@@ -82,7 +72,6 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// --- Passo 3: Médico (Antigo Passo 4) ---
 const Step3 = ({ onFinish }: { onFinish: () => void }) => (
   <form className="space-y-4 animate-fadeIn">
     <input type="text" placeholder="Nome do Médico" className="w-full p-3 bg-white border border-indigo-300 rounded-full text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -100,11 +89,9 @@ const Step3 = ({ onFinish }: { onFinish: () => void }) => (
 );
 
 
-// --- Componente Principal (Gerenciador de Passos) ---
 export const MedicationModal: React.FC<MedicationModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
 
-  // Reseta o modal quando fecha
   useEffect(() => {
     if (!isOpen) {
       const timer = setTimeout(() => setStep(1), 300);
@@ -134,7 +121,6 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({ isOpen, onClos
           </button>
         </div>
 
-        {/* Conteúdo Dinâmico */}
         <div className="flex-1">
             {step === 1 && <Step1 onNext={handleNext} />}
             {step === 2 && <Step2 onNext={handleNext} />}

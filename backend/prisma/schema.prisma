@@ -33,7 +33,7 @@ model Usuario {
   massa_magra Decimal?     @db.Decimal(5, 2)
   meta        Decimal?     @db.Decimal(5, 2)
   sistema     Sistema?
-  dia0        Dia0?
+  dia0        Dia0[]
   ciclo       Ciclo[]
   pontuacoes  pontuacoes[]
 }
@@ -105,9 +105,8 @@ model pontuacoes {
 model Dia0 {
   id                  Int       @id @default(autoincrement())
   usuario             Usuario?  @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario           Int?      @unique
-  ciclo               Ciclo?    @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idCiclo             Int?      @unique
+  idUsuario           Int
+  ciclo               Ciclo?
   quer_msg            Boolean?  @default(true)
   iniciou_medicamento Boolean?  @default(false)
   dia_iniciar_med     DateTime?
@@ -117,9 +116,10 @@ model Dia0 {
 
 model Ciclo {
   id             Int       @id @default(autoincrement())
-  usuario        Usuario?  @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario      Int?      @unique
-  dia0           Dia0?
+  usuario        Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario      Int
+  dia0           Dia0      @relation(fields: [dia0Id], references: [id])
+  dia0Id         Int       @unique
   daily          Daily?
   numCiclo       Int?
   emCiclo        Boolean?  @default(false)

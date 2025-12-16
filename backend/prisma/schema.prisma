@@ -36,6 +36,9 @@ model Usuario {
   dia0        Dia0[]
   ciclo       Ciclo[]
   pontuacoes  pontuacoes[]
+
+  @@index([ativo])
+  @@map("Usuario")
 }
 
 enum Sexo {
@@ -112,6 +115,10 @@ model Dia0 {
   dia_iniciar_med     DateTime?
   dia1                DateTime?
   dia0                DateTime?
+
+  @@index([idUsuario])
+  @@index([idUsuario, iniciou_medicamento, quer_msg, id])
+  @@map("Dia0")
 }
 
 model Ciclo {
@@ -134,6 +141,11 @@ model Ciclo {
   pontos         Int?      @default(0)
   data_atual     DateTime?
   dia_ciclo      Int?
+
+  @@index([idUsuario])
+  @@index([idUsuario, data_atual])
+  @@index([dia0Id])
+  @@map("Ciclo")
 }
 
 model Daily {

@@ -36,6 +36,8 @@ model Usuario {
   dia0        Dia0[]
   ciclo       Ciclo[]
   pontuacoes  pontuacoes[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([ativo])
   @@map("Usuario")
@@ -103,6 +105,11 @@ model pontuacoes {
   maxPontos   Decimal? @db.Decimal(4, 2)
   usuario     Usuario? @relation(fields: [usuarioId], references: [id])
   usuarioId   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([usuarioId])
+  @@index([usuarioId, numCiclo])
 }
 
 model Dia0 {
@@ -115,6 +122,8 @@ model Dia0 {
   dia_iniciar_med     DateTime?
   dia1                DateTime?
   dia0                DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([idUsuario])
   @@index([idUsuario, iniciou_medicamento, quer_msg, id])
@@ -141,6 +150,8 @@ model Ciclo {
   pontos         Int?      @default(0)
   data_atual     DateTime?
   dia_ciclo      Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([idUsuario])
   @@index([idUsuario, data_atual])
@@ -162,6 +173,8 @@ model Daily {
   refeicao_livre_check Boolean?
   descanso_check       Boolean?
   consulta_check       Boolean?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 // E-commerce

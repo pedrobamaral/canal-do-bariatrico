@@ -1,0 +1,63 @@
+-- Migration: apply_local_schema
+-- Generated to add timestamps and index changes to match schema.prisma
+
+-- AlterTable: add timestamp columns if not exists
+-- AlterTable: add timestamp columns if missing (use conditional dynamic SQL for older MySQL)
+
+-- Ciclo.createdAt
+SET @c := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Ciclo' AND COLUMN_NAME='createdAt');
+SET @sql := IF(@c=0, 'ALTER TABLE `Ciclo` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);', 'SELECT 0;');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- Ciclo.updatedAt
+SET @c2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Ciclo' AND COLUMN_NAME='updatedAt');
+SET @sql2 := IF(@c2=0, 'ALTER TABLE `Ciclo` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;', 'SELECT 0;');
+PREPARE s2 FROM @sql2; EXECUTE s2; DEALLOCATE PREPARE s2;
+
+-- Daily timestamps
+SET @d := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Daily' AND COLUMN_NAME='createdAt');
+SET @sqld := IF(@d=0, 'ALTER TABLE `Daily` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);', 'SELECT 0;');
+PREPARE sd FROM @sqld; EXECUTE sd; DEALLOCATE PREPARE sd;
+SET @d2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Daily' AND COLUMN_NAME='updatedAt');
+SET @sqld2 := IF(@d2=0, 'ALTER TABLE `Daily` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;', 'SELECT 0;');
+PREPARE sd2 FROM @sqld2; EXECUTE sd2; DEALLOCATE PREPARE sd2;
+
+-- Dia0 timestamps
+SET @dia := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Dia0' AND COLUMN_NAME='createdAt');
+SET @sqldia := IF(@dia=0, 'ALTER TABLE `Dia0` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);', 'SELECT 0;');
+PREPARE sdia FROM @sqldia; EXECUTE sdia; DEALLOCATE PREPARE sdia;
+SET @dia2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Dia0' AND COLUMN_NAME='updatedAt');
+SET @sqldia2 := IF(@dia2=0, 'ALTER TABLE `Dia0` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;', 'SELECT 0;');
+PREPARE sdia2 FROM @sqldia2; EXECUTE sdia2; DEALLOCATE PREPARE sdia2;
+
+-- Usuario timestamps
+SET @u := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Usuario' AND COLUMN_NAME='createdAt');
+SET @sqlu := IF(@u=0, 'ALTER TABLE `Usuario` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);', 'SELECT 0;');
+PREPARE su FROM @sqlu; EXECUTE su; DEALLOCATE PREPARE su;
+SET @u2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Usuario' AND COLUMN_NAME='updatedAt');
+SET @sqlu2 := IF(@u2=0, 'ALTER TABLE `Usuario` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;', 'SELECT 0;');
+PREPARE su2 FROM @sqlu2; EXECUTE su2; DEALLOCATE PREPARE su2;
+
+-- pontuacoes timestamps
+SET @p := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='pontuacoes' AND COLUMN_NAME='createdAt');
+SET @sqlp := IF(@p=0, 'ALTER TABLE `pontuacoes` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);', 'SELECT 0;');
+PREPARE sp FROM @sqlp; EXECUTE sp; DEALLOCATE PREPARE sp;
+SET @p2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='pontuacoes' AND COLUMN_NAME='updatedAt');
+SET @sqlp2 := IF(@p2=0, 'ALTER TABLE `pontuacoes` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;', 'SELECT 0;');
+PREPARE sp2 FROM @sqlp2; EXECUTE sp2; DEALLOCATE PREPARE sp2;
+
+-- Create index if missing (use dynamic SQL to avoid errors)
+SET @idx_exists := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pontuacoes' AND INDEX_NAME = 'pontuacoes_usuarioId_numCiclo_idx'
+);
+SET @sql := IF(@idx_exists = 0, 'ALTER TABLE `pontuacoes` ADD INDEX `pontuacoes_usuarioId_numCiclo_idx` (`usuarioId`, `numCiclo`);', 'SELECT 0;');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Rename index if old name exists
+SET @old_exists := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pontuacoes' AND INDEX_NAME = 'pontuacoes_usuarioId_fkey'
+);
+SET @sql2 := IF(@old_exists = 1, 'ALTER TABLE `pontuacoes` RENAME INDEX `pontuacoes_usuarioId_fkey` TO `pontuacoes_usuarioId_idx`;', 'SELECT 0;');
+PREPARE stmt2 FROM @sql2; EXECUTE stmt2; DEALLOCATE PREPARE stmt2;

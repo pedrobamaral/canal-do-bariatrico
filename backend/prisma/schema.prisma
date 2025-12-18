@@ -101,7 +101,7 @@ model pontuacoes {
   respSim     Int?
   respNao     Int?
   pontos      Decimal? @db.Decimal(4, 2)
-  porcentagem Decimal? @db.Decimal(2, 2)
+  porcentagem Decimal? @db.Decimal(5, 2)
   maxPontos   Decimal? @db.Decimal(4, 2)
   usuario     Usuario? @relation(fields: [usuarioId], references: [id])
   usuarioId   Int

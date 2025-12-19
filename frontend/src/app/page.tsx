@@ -257,7 +257,7 @@ type ChartPoint = {
 }
 
 /**
- * -------- LÓGICA DE CÁLCULO DA TRAJETÓRIA --------
+ * Lógica do calculo da trajetória de peso
  */
 type TrajectoryParams = {
   peso: number
@@ -314,7 +314,7 @@ function calcularTrajetoria({
   // %EWL no mês 24 usando a curva exponencial
   const ewl24Base = aPlateau * (1 - Math.exp(-k * 24))
 
-  // ----- Ajuste de risco (idade, fumo, diabetes) aplicado em TODOS os meses -----
+  // Ajuste de risco (idade, fumo, diabetes) aplicado em TODOS os meses
   let fatorRisco = 1
 
   if (idade >= 60) {
@@ -373,7 +373,7 @@ function calcularTrajetoria({
   return data
 }
 
-/* ---------------- COMPONENTE PRINCIPAL ---------------- */
+/* COMPONENTE PRINCIPAL */
 
 export default function Home() {
   const [peso, setPeso] = useState(80)
@@ -687,7 +687,7 @@ export default function Home() {
                         }}
                         stroke={CORES.cinzaIcone}
                         tickCount={7}
-                        // ✅ Força o eixo a começar em 0 e ir até 60
+                        // Força o eixo a começar em 0 e ir até 60
                         domain={[0, 60]}
                         type="number"
                       />
@@ -755,7 +755,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* SEÇÃO DE CARDS – ABAIXO DO GRID PRINCIPAL */}
+          {/* SEÇÃO DE CARDS (consulta médica, bioimpedância...) */}
           <div
             style={{
               maxWidth: "1200px",

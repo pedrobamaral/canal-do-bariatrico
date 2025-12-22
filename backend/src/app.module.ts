@@ -10,9 +10,14 @@ import { EnderecoModule } from './endereco/endereco.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ItemCarrinhoModule } from './item-carrinho/item-carrinho.module';
+import { PontuacoesModule } from './pontuacoes/pontuacoes.module';
+import { SistemaModule } from './sistema/sistema.module';
+import { Dia0Module } from './dia0/dia0.module';
+import { CicloModule } from './ciclo/ciclo.module';
+import { DailyModule } from './daily/daily.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, ProdutoModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule],
+  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, ProdutoModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule, PontuacoesModule, SistemaModule, Dia0Module, CicloModule, DailyModule],
   controllers: [AppController],
   providers: [AppService],
 })

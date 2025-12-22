@@ -61,7 +61,7 @@ constructor(private prisma: PrismaService) {}
       throw new Error(`Endereco com CEP ${CEP} nao encontrado`)
     }
 
-    return `Endereco: ${end.endereco} ${end.complemento}`
+    return `Endereco: ${end['endereço']} ${end.complemento}`
   }
 
   async update(id: number, data: UpdateEnderecoDto) {

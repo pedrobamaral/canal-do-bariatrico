@@ -62,19 +62,19 @@ model Medicamentos {
   id           Int      @id @default(autoincrement())
   sistema      Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idSistema    Int?
-  medicamento  String   @db.VarChar(100)
-  suplemento   String   @db.VarChar(100)
-  freq_sem     Boolean  @default(true)
+  nome         String   @db.VarChar(100)
+  freq_sem     Boolean  @default(false)
   freq_dia     Boolean  @default(false)
   qtnd_freq    Int
-  medico       String   @db.VarChar(100)
-  insta_medico String   @db.VarChar(100)
+  medico       String?   @db.VarChar(100)
+  insta_medico String?   @db.VarChar(100)
 }
 
 model Treino {
   id             Int      @id @default(autoincrement())
   sistema        Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idSistema      Int?
+  idSistema      Int? 
+  pdf_url        String?  @db.VarChar(255)
   freq_musc      Int
   freq_aero      Int
   personal       String   @db.VarChar(100)
@@ -86,11 +86,11 @@ model Dieta {
   sistema      Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idSistema    Int?
   freq         Int
-  caloria_dia  Decimal  @db.Decimal(4, 2)
-  hidratação Decimal  @db.Decimal(3, 2)
-  carb         Decimal  @db.Decimal(4, 2)
-  prot         Decimal  @db.Decimal(4, 2)
-  gord         Decimal  @db.Decimal(4, 2)
+  caloria_dia  Decimal  @db.Decimal(10, 2)
+  hidratacao Decimal  @db.Decimal(10, 2)
+  carb         Decimal  @db.Decimal(10, 2)
+  prot         Decimal  @db.Decimal(10, 2)
+  gord         Decimal  @db.Decimal(10, 2)
   nutri        String   @db.VarChar(100)
   insta_nutri  String   @db.VarChar(100)
 }

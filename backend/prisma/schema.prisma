@@ -28,7 +28,7 @@ model Usuario {
   telefone    String?      @db.VarChar(20)
   sexo        Sexo?
   peso        Decimal?     @db.Decimal(5, 2)
-  altura      Decimal?     @db.Decimal(3, 2)
+  altura      Decimal?     @db.Decimal(5, 2)
   Nascimento  DateTime?
   massa_magra Decimal?     @db.Decimal(5, 2)
   meta        Decimal?     @db.Decimal(5, 2)
@@ -66,14 +66,14 @@ model Medicamentos {
   freq_sem     Boolean  @default(false)
   freq_dia     Boolean  @default(false)
   qtnd_freq    Int
-  medico       String?   @db.VarChar(100)
-  insta_medico String?   @db.VarChar(100)
+  medico       String?  @db.VarChar(100)
+  insta_medico String?  @db.VarChar(100)
 }
 
 model Treino {
   id             Int      @id @default(autoincrement())
   sistema        Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idSistema      Int? 
+  idSistema      Int?
   pdf_url        String?  @db.VarChar(255)
   freq_musc      Int
   freq_aero      Int
@@ -82,17 +82,17 @@ model Treino {
 }
 
 model Dieta {
-  id           Int      @id @default(autoincrement())
-  sistema      Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idSistema    Int?
-  freq         Int
-  caloria_dia  Decimal  @db.Decimal(10, 2)
-  hidratacao Decimal  @db.Decimal(10, 2)
-  carb         Decimal  @db.Decimal(10, 2)
-  prot         Decimal  @db.Decimal(10, 2)
-  gord         Decimal  @db.Decimal(10, 2)
-  nutri        String   @db.VarChar(100)
-  insta_nutri  String   @db.VarChar(100)
+  id          Int      @id @default(autoincrement())
+  sistema     Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idSistema   Int?
+  freq        Int
+  caloria_dia Decimal  @db.Decimal(10, 2)
+  hidratacao  Decimal  @db.Decimal(10, 2)
+  carb        Decimal  @db.Decimal(10, 2)
+  prot        Decimal  @db.Decimal(10, 2)
+  gord        Decimal  @db.Decimal(10, 2)
+  nutri       String   @db.VarChar(100)
+  insta_nutri String   @db.VarChar(100)
 }
 
 model pontuacoes {
@@ -100,9 +100,9 @@ model pontuacoes {
   numCiclo    Int
   respSim     Int?
   respNao     Int?
-  pontos      Decimal? @db.Decimal(4, 2)
+  pontos      Decimal? @db.Decimal(5, 2)
   porcentagem Decimal? @db.Decimal(5, 2)
-  maxPontos   Decimal? @db.Decimal(4, 2)
+  maxPontos   Decimal? @db.Decimal(5, 2)
   usuario     Usuario? @relation(fields: [usuarioId], references: [id])
   usuarioId   Int
   createdAt   DateTime @default(now())
@@ -139,6 +139,7 @@ model Ciclo {
   daily          Daily?
   numCiclo       Int?
   emCiclo        Boolean?  @default(false)
+  temMensagem    Boolean?  @default(false)
   med_prescrita  Boolean?  @default(false)
   mounjaro       Boolean?  @default(false)
   treino         Boolean?  @default(false)
@@ -173,6 +174,7 @@ model Daily {
   refeicao_livre_check Boolean?
   descanso_check       Boolean?
   consulta_check       Boolean?
+  med_prescrita_check  Boolean?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }

@@ -1,2 +1,0 @@
--- baseline migration placeholder to match production applied migration
--- No schema changes; created to sync local migrations with DB

@@ -116,7 +116,7 @@ model Dia0 {
   id                  Int       @id @default(autoincrement())
   usuario             Usuario?  @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario           Int
-  ciclo               Ciclo?
+  ciclo               Ciclo[]
   quer_msg            Boolean?  @default(true)
   iniciou_medicamento Boolean?  @default(false)
   dia_iniciar_med     DateTime?
@@ -135,7 +135,7 @@ model Ciclo {
   usuario        Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario      Int
   dia0           Dia0      @relation(fields: [dia0Id], references: [id])
-  dia0Id         Int       @unique
+  dia0Id         Int
   daily          Daily?
   numCiclo       Int?
   emCiclo        Boolean?  @default(false)

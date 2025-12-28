@@ -31,7 +31,7 @@ export class UsuarioService {
         sexo: createUsuarioDto.sexo,
         peso: createUsuarioDto.peso,
         altura: createUsuarioDto.altura,
-        nascimento: createUsuarioDto.nascimento,
+        Nascimento: createUsuarioDto.nascimento,
         massa_magra: createUsuarioDto.massa_magra,
         meta: createUsuarioDto.meta,
       },
@@ -74,11 +74,19 @@ export class UsuarioService {
     return usuario;
   }
 
-  async findByEmailWithPassword(email: string): Promise<Usuario | null> {
-    return this.prisma.usuario.findUnique({
-      where: { email },
-    });
-  }
+  async findByEmailWithPassword(email: string) {
+  console.log('chegeuei aqui');
+  return this.prisma.usuario.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      senha: true,
+      admin: true,
+    },
+  });
+}
+
 
   async update(id: number | string, updateUsuarioDto: UpdateUsuarioDto) {
     await this.findOne(id); 

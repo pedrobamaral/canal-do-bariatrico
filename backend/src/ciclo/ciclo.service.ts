@@ -33,7 +33,7 @@ export class CicloService {
         med_prescrita: dto.med_prescrita,
         mounjaro: dto.mounjaro,
         treino: dto.treino,
-        bioimpedancia: dto.bioimpedancia,
+        bioimpendancia: dto.bioimpedancia,
         consulta: dto.consulta,
         descanso: dto.descanso,
         refeicao_livre: dto.refeicao_livre,

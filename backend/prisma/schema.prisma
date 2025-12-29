@@ -126,7 +126,7 @@ model Ciclo {
   med_prescrita  Boolean?  @default(false)
   mounjaro       Boolean?  @default(false)
   treino         Boolean?  @default(false)
-  bioimpendancia Boolean?  @default(false)
+  bioimpedancia Boolean?  @default(false)
   consulta       Boolean?  @default(false)
   descanso       Boolean?  @default(false)
   refeicao_livre Boolean?  @default(false)
@@ -146,7 +146,7 @@ model Daily {
   dieta_check          Boolean?
   treino_check         Boolean?
   mounjaro_check       Boolean?
-  bioimpendancia_check Boolean?
+  bioimpedancia_check Boolean?
   refeicao_livre_check Boolean?
   descanso_check       Boolean?
   consulta_check       Boolean?

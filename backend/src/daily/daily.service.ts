@@ -33,7 +33,7 @@ export class DailyService {
         dieta_check: dto.dieta_check,
         treino_check: dto.treino_check,
         mounjaro_check: dto.mounjaro_check,
-        bioimpedancia_check: dto.bioimpedancia_check,
+        bioimpendancia_check: dto.bioimpedancia_check,
         refeicao_livre_check: dto.refeicao_livre_check,
         descanso_check: dto.descanso_check,
         consulta_check: dto.consulta_check,

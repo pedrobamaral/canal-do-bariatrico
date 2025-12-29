@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UsuarioModule } from './users/user.module';
-import { ProdutoModule } from './produto/produto.module';
 import { PagamentoModule } from './pagamento/pagamento.module';
 import { CarrinhoModule } from './carrinho/carrinho.module';
 import { EnderecoModule } from './endereco/endereco.module';
@@ -17,7 +16,7 @@ import { CicloModule } from './ciclo/ciclo.module';
 import { DailyModule } from './daily/daily.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, ProdutoModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule, PontuacoesModule, SistemaModule, Dia0Module, CicloModule, DailyModule],
+  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule, PontuacoesModule, SistemaModule, Dia0Module, CicloModule, DailyModule],
   controllers: [AppController],
   providers: [AppService],
 })

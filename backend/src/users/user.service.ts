@@ -9,31 +9,40 @@ import * as bcrypt from 'bcrypt';
 export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUsuarioDto: Prisma.UsuarioCreateInput) {
-    const emailEmUso = await this.prisma.usuario.findUnique({
-      where: { email: createUsuarioDto.email },
+  async create(createUsuarioDto: CreateUsuarioDto) {
+  const emailEmUso = await this.prisma.usuario.findUnique({
+    where: { email: createUsuarioDto.email },
+  });
+
+  if (emailEmUso) {
+    throw new ConflictException('Este endereço de e-mail já está em uso.');
+  }
+
+  try {
+    const novoUsuario = await this.prisma.usuario.create({
+      data: {
+        email: createUsuarioDto.email,
+        nome: createUsuarioDto.nome,
+        senha: await bcrypt.hash(createUsuarioDto.senha, 10),
+        admin: createUsuarioDto.admin ?? false,
+        ativo: createUsuarioDto.ativo ?? false,
+
+        telefone: createUsuarioDto.telefone,
+        sexo: createUsuarioDto.sexo,
+        peso: createUsuarioDto.peso,
+        altura: createUsuarioDto.altura,
+        nascimento: createUsuarioDto.nascimento,
+        massa_magra: createUsuarioDto.massa_magra,
+        meta: createUsuarioDto.meta,
+      },
     });
 
-    if (emailEmUso) {
-      throw new ConflictException('Este endereço de e-mail já está em uso.');
-    }
-
-    try {
-      const novoUsuario = await this.prisma.usuario.create({
-        data: {
-          nome: createUsuarioDto.nome,
-          email: createUsuarioDto.email,
-          senha: createUsuarioDto.senha,
-          admin: createUsuarioDto.admin || false,
-        },
-      });
-
-      const { senha, ...result } = novoUsuario;
-      return result;
-    } catch (error) {
-      throw new InternalServerErrorException('Não foi possível criar o usuário.');
-    }
+    const { senha, ...result } = novoUsuario;
+    return result;
+  } catch (error) {
+    throw new InternalServerErrorException('Não foi possível criar o usuário.');
   }
+}
 
   async findAll() {
     return this.prisma.usuario.findMany({

@@ -1,0 +1,194 @@
+[33mcommit b3a271f731850e250cb72512070edcf2677a787c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/dbVidale[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mdbVidale[m[33m)[m
+Merge: 4a8cf13 0497e15
+Author: Davi Sousa da Vinha <121315140+facagovi@users.noreply.github.com>
+Date:   Mon Nov 24 13:00:54 2025 -0300
+
+    DB projeto Vidale
+    
+    Fix/db endereco
+
+[33mcommit 0497e15d4992b69e18a7b11b2e19c41239627dee[m[33m ([m[1;31morigin/fix/db-endereco[m[33m, [m[1;32mfix/db-endereco[m[33m)[m
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Thu Nov 20 20:05:07 2025 -0300
+
+    feat/fix: db do projeto Vidale
+
+[33mcommit 08294cb57a17135387331ec9575d5400b918beac[m
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Fri Oct 31 17:52:35 2025 -0300
+
+    feat/fix(DB)/refactor: relacao item-carrinho adicionado e refactor no carrinho
+
+[33mcommit 8382dfe0cd6094b83ec6051bba0d5f15e5123316[m[33m ([m[1;32mdev_backend[m[33m)[m
+Merge: 3428b46 19f071c
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Fri Oct 10 17:46:21 2025 -0300
+
+    feat/fix: uma parada deprecated nn vai atrapalhar, melhorei o update q o pedro pediu e meu crud together
+
+[33mcommit 3428b46ab17fc1ae69e89edcb17ea35951b12654[m
+Merge: 0ff5ea0 6faa0cd
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Fri Oct 3 09:31:36 2025 -0300
+
+    feat/fix(DB): tirei cedilha só e coloquei endereco de crud funcional
+
+[33mcommit 19f071c13adf91c47a02ed0e2b7324e80f31c363[m
+Author: Marcio Vieira <marciovds07@gmail.com>
+Date:   Fri Oct 3 00:28:59 2025 -0300
+
+    feat - CRUD carrinho
+
+[33mcommit 0ff5ea072ce6dfc8d3d2431c83abe145d7b30c93[m
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Thu Oct 2 23:51:58 2025 -0300
+
+    feat/fix(DB)
+
+[33mcommit 6faa0cd4ccbc2b3838f9348fcb515ff5f0af189e[m
+Author: Marcio Vieira <marciovds07@gmail.com>
+Date:   Thu Oct 2 21:42:54 2025 -0300
+
+    feat -  CRUD pagamento, gerencia de pagamentos
+
+[33mcommit a1ae82a0ca72c032cf960cfed3c7fc57c0242b8a[m[33m ([m[1;31morigin/CRUD-pay[m[33m)[m
+Merge: be6baf5 a7e2658
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Thu Oct 2 09:58:34 2025 -0300
+
+    Merge pull request #6 from pedrobamaral/revert-4-revert-3-feat/crud-carrinho
+    
+    Revert "Revert 3 feat/crud carrinho"
+
+[33mcommit a7e2658d70effbafccfe2d6e43064e16ef401451[m[33m ([m[1;31morigin/revert-4-revert-3-feat/crud-carrinho[m[33m)[m
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Thu Oct 2 09:58:21 2025 -0300
+
+    Revert "Revert 3 feat/crud carrinho"
+
+[33mcommit be6baf52392398c295d083e6df9ee60bfa072150[m
+Merge: 7da5eb1 0307adf
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Wed Oct 1 19:47:30 2025 -0300
+
+    Merge pull request #4 from pedrobamaral/revert-3-feat/crud-carrinho
+    
+    Revert 3 feat/crud carrinho
+
+[33mcommit 0307adf959562cfacf3fd851e8e3a913ba2c0f21[m[33m ([m[1;31morigin/revert-3-feat/crud-carrinho[m[33m)[m
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Wed Oct 1 19:46:30 2025 -0300
+
+    Revert "Feat/crud carrinho"
+
+[33mcommit fdc233e6e0063417eedd0c66755f1434699cd6d4[m
+Merge: 4a8cf13 5e9aa68
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Wed Oct 1 19:39:03 2025 -0300
+
+    Merge pull request #3 from pedrobamaral/feat/crud-carrinho
+    
+    Feat/crud carrinho
+
+[33mcommit 5e9aa6800e93cb8d3cc9d52cc8d27b9d7a8a5a31[m
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Wed Oct 1 19:31:58 2025 -0300
+
+    feat(carrinho): Implement carrinho CRUD
+
+[33mcommit 83d32399c787dd7b0f746117916067ec46e9efe6[m
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Wed Oct 1 19:01:29 2025 -0300
+
+    feat(carrinho): scaffold carrinho module/service/controller
+
+[33mcommit 7da5eb124df3040877b27ac96a43c5afa77edd1a[m
+Merge: 63595c2 c30dfaa
+Author: Pedro Barreto Cavalcante do Amaral <127952757+pedrobamaral@users.noreply.github.com>
+Date:   Wed Oct 1 18:43:36 2025 -0300
+
+    Merge pull request #2 from pedrobamaral/feature/crud-produto
+    
+    feat(product): add full CRUD implementations for Product module
+
+[33mcommit c30dfaa07f52b70debe9076d65b485c2c3db7832[m[33m ([m[1;31morigin/feature/crud-produto[m[33m)[m
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Wed Oct 1 18:43:07 2025 -0300
+
+    fix(backend): resolve merge conflicts and restore build
+
+[33mcommit 19036b2ab554c44ff1eb88376ce8d93553282f8c[m
+Merge: 509c12e 63595c2
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Wed Oct 1 11:30:45 2025 -0300
+
+    fix(backend): resolve merge conflicts, align deps and restore build
+
+[33mcommit 509c12e2a2159129402e668de453ce4570696cba[m
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Wed Oct 1 10:32:40 2025 -0300
+
+    feat(product): add full CRUD implementations for Product module
+
+[33mcommit 63595c2856c740a3a64bbcdf08be2b7c0228eaf3[m
+Merge: 9099364 80c0a81
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Sun Sep 28 20:18:53 2025 -0300
+
+    Merge pull request #1 from pedrobamaral/CRUD-user
+    
+    feat - CRUD usuario
+
+[33mcommit 80c0a819c349d85831a78c8a8ef215f9b2c4dab5[m
+Author: Marcio Vieira <marciovds07@gmail.com>
+Date:   Sun Sep 28 20:13:55 2025 -0300
+
+    feat - CRUD usuario
+
+[33mcommit 90993644c465b0b67bb0927fa9df0e597f64f1d6[m
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Sun Sep 21 00:08:04 2025 -0300
+
+    Update CODING_STYLEB.md
+
+[33mcommit 804bd0b4b65d216a8b0b0d0449f26b7bfb073124[m
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Sun Sep 21 00:07:47 2025 -0300
+
+    Update CODING_STYLEB.md
+
+[33mcommit 17ebaed7cc1d1c62a5d9e9402f4eaf4afcb82d29[m
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Sun Sep 21 00:07:18 2025 -0300
+
+    Update CODING_STYLEB.md
+
+[33mcommit d73b59dd4788ab41249163af19b95aa5bb3181b0[m
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Sun Sep 21 00:06:45 2025 -0300
+
+    Add files via upload
+
+[33mcommit 8881a6964cedf9a6c217dc091b9a59306681e5ca[m
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Sat Sep 20 12:57:25 2025 -0300
+
+    feat BD inicial(1)
+
+[33mcommit 717d00d9558c10049d59bfe401c8ce8f6326f26b[m
+Author: davichunlee <davichunlee@gmail.com>
+Date:   Sat Sep 20 12:45:22 2025 -0300
+
+    feat BD inicial
+
+[33mcommit 4a8cf136a282c644b91cc083f891c7cb3e6439eb[m[33m ([m[1;32mdev[m[33m)[m
+Author: Pedro <pedrobcamaral@gmail.com>
+Date:   Tue Sep 16 23:44:14 2025 -0300
+
+    feat: initialize project with NestJS backend and Next.js frontend
+
+[33mcommit 948f7bb32f4a256eef5402fc381903e1d7ce1bae[m[33m ([m[1;31morigin/development[m[33m, [m[1;31morigin/dev-front[m[33m, [m[1;31morigin/dev-back[m[33m)[m
+Author: marcinv07 <145283448+marcinv07@users.noreply.github.com>
+Date:   Wed Sep 10 13:31:01 2025 -0300
+
+    Initial commit

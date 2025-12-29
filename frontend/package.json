@@ -3,16 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3001",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.12.2",
     "next": "15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0"
+=======
+    "next": "^15.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+>>>>>>> dev_frontend
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

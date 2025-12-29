@@ -12,4 +12,5 @@ export class CreateDailyDto {
   refeicao_livre_check?: boolean;
   descanso_check?: boolean;
   consulta_check?: boolean;
+  med_prescrita_check?: boolean; 
 }

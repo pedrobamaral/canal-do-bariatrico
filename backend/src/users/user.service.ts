@@ -74,11 +74,19 @@ export class UsuarioService {
     return usuario;
   }
 
-  async findByEmailWithPassword(email: string): Promise<Usuario | null> {
-    return this.prisma.usuario.findUnique({
-      where: { email },
-    });
-  }
+  async findByEmailWithPassword(email: string) {
+  console.log('chegeuei aqui');
+  return this.prisma.usuario.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      senha: true,
+      admin: true,
+    },
+  });
+}
+
 
   async update(id: number | string, updateUsuarioDto: UpdateUsuarioDto) {
     await this.findOne(id); 

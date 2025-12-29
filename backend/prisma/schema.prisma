@@ -16,7 +16,7 @@ datasource db {
 model Usuario {
   id          Int        @id @default(autoincrement())
   email       String     @unique @db.VarChar(100)
-  senha       String     @db.VarChar(100)
+  senha       String
   nome        String     @db.VarChar(100)
   endereco    Endereco[]
   carrinho    Carrinho?

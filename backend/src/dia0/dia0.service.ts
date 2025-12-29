@@ -12,19 +12,19 @@ export class Dia0Service {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateDia0Dto) {
-    // garante 1 Dia0 por ciclo
-    const existente = await this.prisma.dia0.findUnique({
-      where: { idCiclo: dto.idCiclo },
+    const existente = await this.prisma.dia0.findFirst({
+      where: {
+        idUsuario: dto.idUsuario,
+      },
     });
 
     if (existente) {
-      throw new BadRequestException('Dia0 já existe para este ciclo');
+      throw new BadRequestException('Dia0 já existe para este usuário');
     }
 
     return this.prisma.dia0.create({
       data: {
         idUsuario: dto.idUsuario,
-        idCiclo: dto.idCiclo,
         quer_msg: dto.quer_msg,
         iniciou_medicamento: dto.iniciou_medicamento,
         dia_iniciar_med: dto.dia_iniciar_med,
@@ -60,20 +60,25 @@ export class Dia0Service {
   }
 
   async findByCiclo(idCiclo: number) {
-    const dia0 = await this.prisma.dia0.findUnique({
-      where: { idCiclo },
+    const ciclo = await this.prisma.ciclo.findUnique({
+      where: { id: idCiclo },
       include: {
-        usuario: true,
-        ciclo: true,
+        dia0: {
+          include: {
+            usuario: true,
+            ciclo: true,
+          },
+        },
       },
     });
 
-    if (!dia0) {
+    if (!ciclo || !ciclo.dia0) {
       throw new NotFoundException('Dia0 não encontrado para este ciclo');
     }
 
-    return dia0;
+    return ciclo.dia0;
   }
+
 
   async update(id: number, dto: UpdateDia0Dto) {
     await this.findOne(id);

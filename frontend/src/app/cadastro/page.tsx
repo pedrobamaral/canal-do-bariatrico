@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React, { useState, type ChangeEvent, type FormEvent } from "react";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -20,19 +21,43 @@ const EyeSlashIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
+/* --- Função de Máscara de Telefone --- */
+const formatPhoneNumber = (value: string) => {
+  // Remove tudo que não é dígito
+  const numbers = value.replace(/\D/g, "");
+  
+  // Limita a 11 dígitos (DDD + 9 números)
+  const limited = numbers.slice(0, 11);
+
+  // Aplica a formatação (XX) XXXXX-XXXX
+  if (limited.length > 10) {
+    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (limited.length > 6) {
+    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (limited.length > 2) {
+    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+  } else {
+    return limited.replace(/^(\d*)/, "($1");
+  }
+};
+
 /* Tipos */
 type FormInputProps = {
   label: string;
   id: string;
-  type?: "text" | "email" | "password";
+  type?: "text" | "email" | "password" | "tel"; 
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  maxLength?: number; // Adicionado para limitar caracteres
 };
 
-type LoginFormData = {
+type SignUpFormData = {
+  name: string;
   email: string;
+  telefone: string; 
   password: string;
+  confirmPassword: string;
 };
 
 /* Input com toggle de senha */
@@ -43,6 +68,7 @@ const FormInput: React.FC<FormInputProps> = ({
   value,
   onChange,
   required,
+  maxLength
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -50,9 +76,7 @@ const FormInput: React.FC<FormInputProps> = ({
 
   return (
     <div style={{ marginBottom: "20px" }}>
-      <label htmlFor={id} className="sr-only">
-        {label}
-      </label>
+      <label htmlFor={id} className="sr-only">{label}</label>
       <div style={{ position: "relative" }}>
         <input
           id={id}
@@ -61,6 +85,7 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value}
           onChange={onChange}
           required={required}
+          maxLength={maxLength}
           style={{
             width: "100%",
             height: "54px",
@@ -108,60 +133,93 @@ const FormInput: React.FC<FormInputProps> = ({
 };
 
 /* Card do formulário */
-const LoginForm: React.FC = () => {
+const SignUpForm: React.FC = () => {
   const router = useRouter();
 
-  const [formData, setFormData] = useState<LoginFormData>({
+  const [formData, setFormData] = useState<SignUpFormData>({
+    name: "",
     email: "",
+    telefone: "",
     password: "",
+    confirmPassword: "",
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  // Manipulador de mudança com lógica especial para telefone
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    
+    if (id === "telefone") {
+      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
 
     setError(null);
-    setLoading(true);
+    setSuccess(null);
 
+    // Validações básicas
+    if (!formData.name || !formData.email || !formData.password || !formData.telefone) {
+      setError("Preencha todos os campos obrigatórios!");
+      return;
+    }
+
+    // --- VALIDAÇÃO DE TELEFONE ---
+    // Remove símbolos para contar apenas números
+    const rawPhone = formData.telefone.replace(/\D/g, "");
+    if (rawPhone.length < 10) {
+      setError("Por favor, preencha o telefone corretamente: (DD) XXXXX-XXXX");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("As senhas não conferem!");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      // 1. Requisição ao Backend
-      const res = await fetch("http://localhost:3000/auth/login", {
+      const response = await fetch("http://localhost:3000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          nome: formData.name,
           email: formData.email,
-          // CORREÇÃO AQUI: Backend espera 'senha', não 'password'
-          senha: formData.password, 
+          senha: formData.password,
+          // Envia apenas os números (limpos) para o banco
+          telefone: rawPhone 
         }),
       });
 
-      const data = await res.json();
+      const data = await response.json().catch(() => ({})); 
 
-      if (!res.ok) {
-        // Exibe mensagem amigável em caso de erro
-        const errorMessage = typeof data.message === 'string' 
-          ? data.message 
-          : "Credenciais inválidas. Verifique e-mail e senha.";
-        setError(errorMessage);
+      if (!response.ok) {
+        setError(data.message || "Erro ao cadastrar usuário. Verifique os dados.");
         return;
       }
 
-      // 2. Salvar o Token (IMPORTANTE)
-      if (data.access_token) {
-        localStorage.setItem("bari_token", data.access_token);
-      }
-
-      // 3. Redirecionar para a Home
-      router.push("/home"); 
+      setSuccess("Cadastro realizado! Redirecionando para o login...");
+      
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
 
     } catch (error) {
       console.error(error);
-      setError("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+      setError("Erro de conexão. Verifique se o backend está rodando.");
     } finally {
       setLoading(false);
     }
@@ -178,10 +236,10 @@ const LoginForm: React.FC = () => {
         boxShadow: "0 20px 60px rgba(0,0,0,0.38)",
       }}
       role="form"
-      aria-labelledby="login-title"
+      aria-labelledby="signup-title"
     >
       <h2
-        id="login-title"
+        id="signup-title"
         style={{
           color: "#fff",
           fontSize: "2.25rem",
@@ -192,47 +250,26 @@ const LoginForm: React.FC = () => {
           fontFamily: "'Montserrat', 'Arial', sans-serif",
         }}
       >
-        BEM VINDO DE VOLTA!
+        CRIE SUA CONTA
       </h2>
 
       <form onSubmit={handleSubmit} autoComplete="off">
-        <FormInput
-          id="email"
-          label="Email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
+        <FormInput id="name" label="Nome Completo" type="text" value={formData.name} onChange={handleChange} required />
+        <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
+        
+        {/* Input de Telefone com Máscara */}
+        <FormInput 
+          id="telefone" 
+          label="Telefone: (XX) XXXXX-XXXX" 
+          type="tel" 
+          value={formData.telefone} 
+          onChange={handleChange} 
           required
+          maxLength={15} // Limita tamanho visual da máscara
         />
-        <FormInput
-          id="password"
-          label="Senha"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-
-        <div
-          style={{
-            textAlign: "right",
-            marginTop: "-12px",
-            marginBottom: "24px",
-          }}
-        >
-          <a
-            href="#"
-            style={{
-              color: "#CACACA",
-              fontSize: "0.95rem",
-              textDecoration: "none",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
-            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
-          >
-            Esqueceu sua senha?
-          </a>
-        </div>
+        
+        <FormInput id="password" label="Senha" type="password" value={formData.password} onChange={handleChange} required />
+        <FormInput id="confirmPassword" label="Confirmar Senha" type="password" value={formData.confirmPassword} onChange={handleChange} required />
 
         <button
           type="submit"
@@ -255,13 +292,18 @@ const LoginForm: React.FC = () => {
           onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#5c2fe0")}
           onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#6F3CF6")}
         >
-          {loading ? "Entrando..." : "ENTRAR"}
+          {loading ? "Cadastrando..." : "CADASTRAR"}
         </button>
       </form>
 
       {error && (
-        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "1rem" }}>
+        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "0.9rem" }}>
           {error}
+        </p>
+      )}
+      {success && (
+        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "0.9rem" }}>
+          {success}
         </p>
       )}
 
@@ -274,9 +316,9 @@ const LoginForm: React.FC = () => {
           fontFamily: "'Montserrat', 'Arial', sans-serif",
         }}
       >
-        Não possui uma conta?{" "}
-        <a
-          href="/cadastro"
+        Já possui uma conta?{" "}
+        <Link
+          href="/login"
           style={{
             color: "#6F3CF6",
             textDecoration: "underline",
@@ -285,15 +327,15 @@ const LoginForm: React.FC = () => {
             fontSize: "1.01rem",
           }}
         >
-          Cadastre-se
-        </a>
+          Login
+        </Link>
       </p>
     </div>
   );
 };
 
 /* Página */
-const LoginPage: React.FC = () => {
+const SignUpPage: React.FC = () => {
   return (
     <main
       style={{
@@ -308,7 +350,7 @@ const LoginPage: React.FC = () => {
       <div
         style={{
           display: "flex",
-          flexDirection: "row-reverse",
+          flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: "46px",
@@ -316,12 +358,10 @@ const LoginPage: React.FC = () => {
           width: "100%",
         }}
       >
-        {/* Card */}
-        <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-start" }}>
-          <LoginForm />
+        <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-end" }}>
+          <SignUpForm />
         </div>
 
-        {/* Imagem da Bari */}
         <div
           style={{
             flex: "0 1 700px",
@@ -330,17 +370,17 @@ const LoginPage: React.FC = () => {
             justifyContent: "center",
             position: "relative",
             height: "628px",
-            transform: "translateX(-14px)",
+            transform: "translateX(29px)",
           }}
         >
           <Image
-            src="/images/bari_padrao.png"
-            alt="Imagem da Bari sorrindo"
+            src="/images/bari_academia.png"
+            alt="Imagem da Bari na academia"
             fill
             style={{
               objectFit: "contain",
-              objectPosition: "62% center",
-              transform: "scale(1.28)",
+              objectPosition: "58% center",
+              transform: "scale(1.15)",
             }}
             priority
           />
@@ -350,4 +390,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;

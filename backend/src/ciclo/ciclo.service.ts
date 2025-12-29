@@ -16,7 +16,8 @@ export class CicloService {
     const cicloAtivo = await this.prisma.ciclo.findFirst({
       where: {
         idUsuario: dto.idUsuario,
-        emCiclo: true,
+        numCiclo: dto.numCiclo,
+        data_atual: dto.data_atual,
       },
     });
 
@@ -27,8 +28,11 @@ export class CicloService {
     return this.prisma.ciclo.create({
       data: {
         idUsuario: dto.idUsuario,
+        dia0Id: dto.dia0Id,
+
         numCiclo: dto.numCiclo,
-        emCiclo: dto.emCiclo ?? true,
+        emCiclo: dto.emCiclo ?? false,
+        ativoChatbot: dto.ativoChatbot ?? false,
 
         med_prescrita: dto.med_prescrita,
         mounjaro: dto.mounjaro,
@@ -38,13 +42,14 @@ export class CicloService {
         descanso: dto.descanso,
         refeicao_livre: dto.refeicao_livre,
 
-        cumpriu: dto.cumpriu,
+        cumpriu: dto.cumpriu ?? 0,
         pontos: dto.pontos ?? 0,
 
         data_atual: dto.data_atual,
         dia_ciclo: dto.dia_ciclo,
       },
     });
+
   }
 
   async findAll() {

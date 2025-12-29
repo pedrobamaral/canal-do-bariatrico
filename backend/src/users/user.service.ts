@@ -31,7 +31,7 @@ export class UsuarioService {
         sexo: createUsuarioDto.sexo,
         peso: createUsuarioDto.peso,
         altura: createUsuarioDto.altura,
-        nascimento: createUsuarioDto.nascimento,
+        Nascimento: createUsuarioDto.nascimento,
         massa_magra: createUsuarioDto.massa_magra,
         meta: createUsuarioDto.meta,
       },

@@ -26,7 +26,7 @@ export class DailyService {
     return this.prisma.daily.create({
       data: {
         idCiclo: dto.idCiclo,
-        data: dto.data ?? new Date(),
+        data: dto.data,
         hora_ans: dto.hora_ans,
 
         agua_check: dto.agua_check,
@@ -37,6 +37,7 @@ export class DailyService {
         refeicao_livre_check: dto.refeicao_livre_check,
         descanso_check: dto.descanso_check,
         consulta_check: dto.consulta_check,
+        med_prescrita_check: dto.med_prescrita_check,
       },
     });
   }

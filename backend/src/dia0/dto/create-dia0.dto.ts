@@ -1,6 +1,5 @@
 export class CreateDia0Dto {
   idUsuario: number;
-  idCiclo: number;
 
   quer_msg?: boolean;
   iniciou_medicamento?: boolean;

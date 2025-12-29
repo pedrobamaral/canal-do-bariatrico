@@ -22,7 +22,7 @@ export class AuthService {
     const novoUsuario = await this.usuarioService.create({
       email: registerDto.email,
       nome: registerDto.nome,
-      senha: hashedPassword, 
+      senha: registerDto.senha, 
       admin: registerDto.admin || false, 
     }); 
 
@@ -31,8 +31,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const usuario = await this.usuarioService.findByEmailWithPassword(loginDto.email);
-
-    console.log('HASH:', usuario?.senha);
 
     if (!usuario || !(await bcrypt.compare(loginDto.senha, usuario.senha))) {
       throw new UnauthorizedException('Credenciais inválidas.');

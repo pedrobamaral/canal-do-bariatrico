@@ -75,7 +75,6 @@ export class UsuarioService {
   }
 
   async findByEmailWithPassword(email: string) {
-  console.log('chegeuei aqui');
   return this.prisma.usuario.findUnique({
     where: { email },
     select: {

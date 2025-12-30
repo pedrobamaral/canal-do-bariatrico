@@ -21,41 +21,19 @@ const EyeSlashIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-/* --- Função de Máscara de Telefone --- */
-const formatPhoneNumber = (value: string) => {
-  // Remove tudo que não é dígito
-  const numbers = value.replace(/\D/g, "");
-  
-  // Limita a 11 dígitos (DDD + 9 números)
-  const limited = numbers.slice(0, 11);
-
-  // Aplica a formatação (XX) XXXXX-XXXX
-  if (limited.length > 10) {
-    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
-  } else if (limited.length > 6) {
-    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-  } else if (limited.length > 2) {
-    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
-  } else {
-    return limited.replace(/^(\d*)/, "($1");
-  }
-};
-
 /* Tipos */
 type FormInputProps = {
   label: string;
   id: string;
-  type?: "text" | "email" | "password" | "tel"; 
+  type?: "text" | "email" | "password";
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
-  maxLength?: number; // Adicionado para limitar caracteres
 };
 
 type SignUpFormData = {
   name: string;
   email: string;
-  telefone: string; 
   password: string;
   confirmPassword: string;
 };
@@ -68,7 +46,6 @@ const FormInput: React.FC<FormInputProps> = ({
   value,
   onChange,
   required,
-  maxLength
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -85,7 +62,6 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value}
           onChange={onChange}
           required={required}
-          maxLength={maxLength}
           style={{
             width: "100%",
             height: "54px",
@@ -135,29 +111,23 @@ const FormInput: React.FC<FormInputProps> = ({
 /* Card do formulário */
 const SignUpForm: React.FC = () => {
   const router = useRouter();
+  React.useEffect(() => {
+    // Pré-carrega a página de login para transição instantânea
+    router.prefetch("/login");
+  }, [router]);
 
   const [formData, setFormData] = useState<SignUpFormData>({
     name: "",
     email: "",
-    telefone: "",
     password: "",
     confirmPassword: "",
   });
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Manipulador de mudança com lógica especial para telefone
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    
-    if (id === "telefone") {
-      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value) }));
-    } else {
-      setFormData((prev) => ({ ...prev, [id]: value }));
-    }
-  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -166,17 +136,8 @@ const SignUpForm: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    // Validações básicas
-    if (!formData.name || !formData.email || !formData.password || !formData.telefone) {
+    if (!formData.name || !formData.email || !formData.password) {
       setError("Preencha todos os campos obrigatórios!");
-      return;
-    }
-
-    // --- VALIDAÇÃO DE TELEFONE ---
-    // Remove símbolos para contar apenas números
-    const rawPhone = formData.telefone.replace(/\D/g, "");
-    if (rawPhone.length < 10) {
-      setError("Por favor, preencha o telefone corretamente: (DD) XXXXX-XXXX");
       return;
     }
 
@@ -185,41 +146,32 @@ const SignUpForm: React.FC = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("A senha deve ter no mínimo 6 caracteres.");
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/auth/register", {
+      const response = await fetch("/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome: formData.name,
           email: formData.email,
           senha: formData.password,
-          // Envia apenas os números (limpos) para o banco
-          telefone: rawPhone 
         }),
       });
 
-      const data = await response.json().catch(() => ({})); 
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
 
       if (!response.ok) {
-        setError(data.message || "Erro ao cadastrar usuário. Verifique os dados.");
+        setError(data.message || "Erro ao cadastrar usuário");
         return;
       }
 
-      setSuccess("Cadastro realizado! Redirecionando para o login...");
-      
-      setTimeout(() => {
-        router.push("/login");
-      }, 1500);
-
+      setSuccess("Cadastro realizado com sucesso!");
+      // Navegação SPA instantânea (sem reload)
+      router.replace("/login");
     } catch (error) {
       console.error(error);
-      setError("Erro de conexão. Verifique se o backend está rodando.");
+      setError("Erro ao conectar com o servidor");
     } finally {
       setLoading(false);
     }
@@ -254,20 +206,8 @@ const SignUpForm: React.FC = () => {
       </h2>
 
       <form onSubmit={handleSubmit} autoComplete="off">
-        <FormInput id="name" label="Nome Completo" type="text" value={formData.name} onChange={handleChange} required />
+        <FormInput id="name" label="Nome" type="text" value={formData.name} onChange={handleChange} required />
         <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
-        
-        {/* Input de Telefone com Máscara */}
-        <FormInput 
-          id="telefone" 
-          label="Telefone: (XX) XXXXX-XXXX" 
-          type="tel" 
-          value={formData.telefone} 
-          onChange={handleChange} 
-          required
-          maxLength={15} // Limita tamanho visual da máscara
-        />
-        
         <FormInput id="password" label="Senha" type="password" value={formData.password} onChange={handleChange} required />
         <FormInput id="confirmPassword" label="Confirmar Senha" type="password" value={formData.confirmPassword} onChange={handleChange} required />
 
@@ -292,17 +232,17 @@ const SignUpForm: React.FC = () => {
           onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#5c2fe0")}
           onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#6F3CF6")}
         >
-          {loading ? "Cadastrando..." : "CADASTRAR"}
+          {loading ? "Enviando..." : "ENTRAR"}
         </button>
       </form>
 
       {error && (
-        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "0.9rem" }}>
+        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "1rem" }}>
           {error}
         </p>
       )}
       {success && (
-        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "0.9rem" }}>
+        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "1rem" }}>
           {success}
         </p>
       )}
@@ -319,6 +259,7 @@ const SignUpForm: React.FC = () => {
         Já possui uma conta?{" "}
         <Link
           href="/login"
+          prefetch
           style={{
             color: "#6F3CF6",
             textDecoration: "underline",

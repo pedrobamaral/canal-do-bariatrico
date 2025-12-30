@@ -1,4 +1,6 @@
+
 export class EnderecoEntity {
+
     id: number
     idUsuario: number
     endereco: string

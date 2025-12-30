@@ -44,15 +44,6 @@ constructor(private prisma: PrismaService) {}
     return one
   }
 
-  async findByUser(userId: number) {
-    const one = await this.prisma.endereco.findMany({ where: { usuario: { id: userId } }, })
-    if (!one) {
-      throw new Error(`Endereco com id ${userId} nao encontrado`)
-    }
-
-    return one
-  }
-
   async findByCEP(CEP: string) {
     const end = await this.prisma.endereco.findFirst({
       where: { CEP },
@@ -61,7 +52,7 @@ constructor(private prisma: PrismaService) {}
       throw new Error(`Endereco com CEP ${CEP} nao encontrado`)
     }
 
-    return `Endereco: ${end['endereço']} ${end.complemento}`
+    return `Endereco: ${end.endereco} ${end.complemento}`
   }
 
   async update(id: number, data: UpdateEnderecoDto) {

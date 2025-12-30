@@ -1,14 +1,10 @@
 "use client"
-
 import React, { useState, useEffect } from "react"
+import type * as ReactTypes from "react"
+import Image from "next/image"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
-
-// --- Importação dos Componentes ---
-import HeaderTeste from "@/components/header" // <--- IMPORTANTE: Importando o Header separado
-import { HealthSurveyModal } from "@/components/HealthSurveyModal"
-import { MedicationModal } from "@/components/MedicationModal"
-
-// @ts-ignore: Allow side-effect CSS import without type declarations
+import { FaCalculator } from "react-icons/fa"
+import { AiFillShopping } from "react-icons/ai"
 import "../globals.css"
 
 const CORES = {
@@ -27,7 +23,6 @@ const SOMBRAS = {
   botao: "0 2px 8px rgba(111,60,246,0.12)",
 }
 
-// --- Componentes Internos (Slider e Toggle) ---
 type SliderProps = {
   label: string
   unit: string
@@ -38,10 +33,16 @@ type SliderProps = {
   onChange: (value: number) => void
 }
 
+/**
+ * Slider com bolinha editável:
+ * - arrasta no range
+ * - digita o número dentro da bolinha
+ */
 const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step, onChange }) => {
   const percentage = ((value - min) / (max - min)) * 100
   const [inputValue, setInputValue] = useState(String(value))
 
+  // mantém o texto sempre sincronizado com o value vindo de fora
   useEffect(() => {
     setInputValue(String(value))
   }, [value])
@@ -52,6 +53,7 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // só deixa números
     const raw = e.target.value.replace(/\D/g, "")
     setInputValue(raw)
 
@@ -65,9 +67,11 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
   }
 
   const handleInputBlur = () => {
+    // se apagar tudo e sair do campo, volta para o valor atual
     if (inputValue === "") {
       setInputValue(String(value))
     } else {
+      // garante clamp ao sair
       const num = Number(inputValue)
       const clamped = Math.min(max, Math.max(min, num))
       if (clamped !== value) onChange(clamped)
@@ -117,6 +121,7 @@ const SliderInput: React.FC<SliderProps> = ({ label, unit, value, min, max, step
         />
       </div>
 
+      {/* AQUI CENTRALIZA NÚMERO + UNIDADE */}
       <div
         style={{
           marginTop: "12px",
@@ -183,7 +188,7 @@ type ToggleProps = {
 }
 
 const Toggle: React.FC<ToggleProps> = ({ label, checked, onChange }) => {
-  const toggleStyle: React.CSSProperties = {
+  const toggleStyle: ReactTypes.CSSProperties = {
     width: "48px",
     height: "24px",
     borderRadius: "12px",
@@ -194,7 +199,7 @@ const Toggle: React.FC<ToggleProps> = ({ label, checked, onChange }) => {
     flexShrink: 0,
   }
 
-  const circleStyle: React.CSSProperties = {
+  const circleStyle: ReactTypes.CSSProperties = {
     width: "20px",
     height: "20px",
     borderRadius: "50%",
@@ -235,7 +240,6 @@ const Toggle: React.FC<ToggleProps> = ({ label, checked, onChange }) => {
 
 type DiabetesOption = "sem_diabetes" | "pre_diabetes" | "diabetes"
 
-// --- PÁGINA HOME ---
 export default function Home() {
   const [peso, setPeso] = useState(80)
   const [altura, setAltura] = useState(170)
@@ -248,16 +252,6 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
 
-  // --- Estados dos Modais ---
-  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
-  const [isMedicationModalOpen, setIsMedicationModalOpen] = useState(false)
-
-  // Abre o primeiro modal ao carregar a página
-  useEffect(() => {
-    setIsHealthModalOpen(true)
-  }, [])
-
-  // Detecta tamanho da tela
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024)
@@ -266,15 +260,6 @@ export default function Home() {
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
-
-  // Função para fechar o Modal 1 e abrir o Modal 2
-  const handleHealthSurveyFinish = () => {
-    setIsHealthModalOpen(false)
-    // Pequeno delay para transição suave
-    setTimeout(() => {
-      setIsMedicationModalOpen(true)
-    }, 200)
-  }
 
   const chartData = [
     { month: 3, weight: 108, min: 102, max: 114 },
@@ -285,13 +270,120 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
-      
-      {/* AQUI ESTÁ A MUDANÇA:
-          Removemos o <header> gigante e usamos o componente pronto.
-      */}
-      <HeaderTeste />
+      <header
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          background: CORES.pretoPrincipal,
+          zIndex: 1000,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "12px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "40px", height: "40px", position: "relative" }}>
+              <Image src="/images/barienavbar.png" alt="Logo da BARI" fill style={{ objectFit: "contain" }} priority />
+            </div>
 
-      {/* MAIN CONTENT */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span
+                style={{
+                  color: "#62B4FF",
+                  fontSize: "1.2rem",
+                  fontWeight: 800,
+                  fontFamily: FONTES.principal,
+                  lineHeight: 1.2,
+                }}
+              >
+                BARIE
+              </span>
+              <span
+                style={{
+                  color: "white",
+                  fontSize: "0.75rem",
+                  fontFamily: FONTES.secundaria,
+                  opacity: 0.8,
+                  lineHeight: 1.2,
+                }}
+              >
+                Calculadora de Perda de Peso com
+                <br />
+                Bariátrica ou Canetinhas Emagrecedoras
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "48px",
+            }}
+          >
+            {/* SLOT 1 */}
+            <div style={{ width: "32px", display: "flex", justifyContent: "center" }}>
+              <AiFillShopping size={32} color="white" />
+            </div>
+
+            {/* SLOT 2 */}
+            <div style={{ width: "32px", display: "flex", justifyContent: "center" }}>
+              <FaCalculator size={26} color="white" />
+            </div>
+
+            {/* SLOT 3 */}
+            <div style={{ width: "80px", display: "flex", justifyContent: "center" }}>
+              <a
+                href="/login"
+                style={{
+                  color: "white",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "0.95rem",
+                  cursor: "pointer",
+                }}
+              >
+                LOGIN
+              </a>
+            </div>
+
+            {/* SLOT 4 */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <a href="/cadastro" style={{ textDecoration: "none" }}>
+                <button
+                  style={{
+                    background: CORES.roxoPrincipal,
+                    color: "white",
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "8px 28px",
+                    fontWeight: 800,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    boxShadow: SOMBRAS.botao,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
+                >
+                  CADASTRE-SE
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
       <main
         style={{
           minHeight: "100vh",
@@ -305,7 +397,7 @@ export default function Home() {
             maxWidth: "1200px",
             width: "100%",
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", // 2 colunas iguais no desktop
             gap: "30px",
           }}
         >
@@ -380,7 +472,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Intervenção */}
+            {/* Intervenção logo abaixo */}
             <div>
               <label
                 style={{
@@ -547,26 +639,12 @@ export default function Home() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
               >
-                Alcançar Resultados
+                Consegui Resultados
               </button>
             </div>
           </div>
         </div>
       </main>
-      
-      {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
-      
-      {/* Modal 1: Medidas Físicas */}
-      <HealthSurveyModal 
-        isOpen={isHealthModalOpen} 
-        onClose={handleHealthSurveyFinish} // Ao fechar/finalizar, abre o próximo
-      />
-
-      {/* Modal 2: Medicamentos */}
-      <MedicationModal 
-        isOpen={isMedicationModalOpen}
-        onClose={() => setIsMedicationModalOpen(false)}
-      />
 
       <style jsx>{`
         input[type='range']::-webkit-slider-thumb {

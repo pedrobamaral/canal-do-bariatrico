@@ -35,7 +35,7 @@ export class CarrinhoController {
     @Param('id', ParseIntPipe) id: number,
     @Body() addProdutoDto: AddProdutoDto,
   ) {
-    return this.carrinhoService.addProduto(id, addProdutoDto.idProduto, addProdutoDto.quantidade);
+    return this.carrinhoService.addProduto(id, addProdutoDto.idProduto);
   }
 
   @Delete(':id/produtos/:idProduto')

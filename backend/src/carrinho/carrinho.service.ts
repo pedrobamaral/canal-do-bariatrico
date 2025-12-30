@@ -32,8 +32,8 @@ export class CarrinhoService {
   async findAll() {
     return this.prisma.carrinho.findMany({
       include: {
-        usuario: { select: {nome: true } }, 
-        itemCarrinho: {include: {produto : {select : {nome: true, preco: true}}}}
+        usuario: { select: { id: true, nome: true } }, 
+        produtos: true,
       },
     });
   }
@@ -43,7 +43,7 @@ export class CarrinhoService {
       where: { id },
       include: {
         usuario: { select: { id: true, nome: true } },
-        itemCarrinho: {include: {produto : {select : {id: true, nome: true, preco: true}}}}
+        produtos: true,
       },
     });
 
@@ -54,51 +54,35 @@ export class CarrinhoService {
     return carrinho;
   }
 
-  async addProduto(id: number, idProduto: number, quantidade: number) {
-  await this.findOne(id); // Verifica se o carrinho existe
-  const produtoExistente = await this.prisma.itemCarrinho.findFirst({
-    where: {
-      idCarrinho: id,
-      idProduto: idProduto,
-    },
-  });
-
-  //se jah tiver um produto, adiciona mais um
-  if (produtoExistente) {
-    return this.prisma.itemCarrinho.update({
-      where: {
-        idCarrinho_idProduto: { idCarrinho: id, idProduto: idProduto },
-      },
+  async addProduto(id: number, idProduto: number) {
+    await this.findOne(id); 
+    return this.prisma.carrinho.update({
+      where: { id },
       data: {
-        quantidade: {
-          increment: quantidade,
+        produtos: {
+          connect: {
+            id: idProduto,
+          },
         },
       },
-      include: { produto: true },
+      include: { produtos: true }, 
     });
   }
 
-  // ou cria um novo item no carrinho
-  return this.prisma.itemCarrinho.create({
-    data: {
-      idCarrinho: id,
-      idProduto: idProduto,
-      quantidade: quantidade,
-    },
-    include: { produto: true },
-  });
-}
-
-
-async removeProduto(id: number, idProduto: number) {
-  await this.findOne(id); // Verifica se o carrinho existe
-  return this.prisma.itemCarrinho.delete({
-    where: {
-      idCarrinho_idProduto: { idCarrinho: id, idProduto: idProduto },
-    },
-  });
-}
-
+  async removeProduto(id: number, idProduto: number) {
+    await this.findOne(id); 
+    return this.prisma.carrinho.update({
+      where: { id },
+      data: {
+        produtos: {
+          disconnect: {
+            id: idProduto,
+          },
+        },
+      },
+      include: { produtos: true },
+    });
+  }
 
   async remove(id: number) {
     await this.findOne(id);

@@ -129,39 +129,32 @@ const LoginForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Requisição ao Backend
       const res = await fetch("http://localhost:3000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
-          // CORREÇÃO AQUI: Backend espera 'senha', não 'password'
-          senha: formData.password, 
+          senha: formData.password, // backend espera 'password'
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        // Exibe mensagem amigável em caso de erro
-        const errorMessage = typeof data.message === 'string' 
-          ? data.message 
-          : "Credenciais inválidas. Verifique e-mail e senha.";
-        setError(errorMessage);
+        setError(data.message || "Erro ao fazer login");
         return;
       }
 
-      // 2. Salvar o Token (IMPORTANTE)
-      if (data.access_token) {
-        localStorage.setItem("bari_token", data.access_token);
-      }
+      // Login bem-sucedido
+      // Salva o token 
+      localStorage.setItem("authToken", data.token);
 
-      // 3. Redirecionar para a Home
-      router.push("/home"); 
-
+      // Redireciona para a página principal
+      router.push("/");
+      
     } catch (error) {
       console.error(error);
-      setError("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+      setError("Erro ao conectar com o servidor");
     } finally {
       setLoading(false);
     }

@@ -19,13 +19,14 @@ export class AuthService {
       throw new ConflictException('Este e-mail já está registrado.');
     }
 
+    const hashedPassword = await bcrypt.hash(registerDto.senha, 10); 
+
     const novoUsuario = await this.usuarioService.create({
       email: registerDto.email,
       nome: registerDto.nome,
-      senha: registerDto.senha,
-      admin: registerDto.admin ?? false,
-      ativo: false,
-    });
+      senha: hashedPassword, 
+      admin: registerDto.admin || false, 
+    } as Prisma.UsuarioCreateInput); 
 
     return novoUsuario;
   }

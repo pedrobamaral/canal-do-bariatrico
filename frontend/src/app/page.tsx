@@ -562,7 +562,8 @@ export default function Home() {
                     padding: "32px",
                   }}
                 >
-                  <div style={{ marginBottom: 0 }}>
+                  {/* Título central */}
+                  <div style={{ textAlign: "center", marginBottom: "22px" }}>
                     <label
                       style={{
                         color: CORES.roxoPrincipal,
@@ -570,11 +571,15 @@ export default function Home() {
                         fontSize: "0.95rem",
                         fontFamily: FONTES.principal,
                         display: "block",
-                        marginBottom: "8px",
+                        marginBottom: "0px",
                       }}
                     >
-                      Tipo de Cirurgia
+                      Tipo de Intervenção
                     </label>
+                  </div>
+
+                  {/* 1) Bariátrica (mantém funcionando) */}
+                  <div style={{ marginBottom: "18px" }}>
                     <div className="pill-select-wrapper">
                       <select
                         className="pill-select"
@@ -592,9 +597,43 @@ export default function Home() {
                       </select>
                     </div>
                   </div>
+
+                  {/* 2) Medicamentos (só aparece, sem opções por enquanto) */}
+                  <div style={{ marginBottom: "18px" }}>
+                    <div className="pill-select-wrapper">
+                      <select className="pill-select" disabled>
+                        <option>Medicamentos (pedir informarções pro Rômulo)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 3) Dieta e Treino (só aparece, sem opções por enquanto) */}
+                  <div style={{ marginBottom: 0 }}>
+                    <div className="pill-select-wrapper">
+                      <select className="pill-select" disabled>
+                        <option>Dieta e Treino (pedir informarções pro Rômulo)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Obs abaixo do card */}
+                <div
+                  style={{
+                    marginTop: "14px",
+                    color: CORES.roxoPrincipal,
+                    fontFamily: FONTES.secundaria,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter
+                  de prescrição ou recomendação médica. Tanto a bariátrica quanto os
+                  medicamentos precisam de dieta e treino para resultados a longo prazo
                 </div>
               </div>
             </div>
+
 
             {/* Direita – Gráfico */}
             <div
@@ -867,107 +906,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CARD 2 - Bioimpedância */}
-            <div
-              style={{
-                background: "white",
-                borderRadius: "24px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                padding: "28px 32px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: "20px",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <h3
-                  style={{
-                    fontFamily: FONTES.principal,
-                    fontWeight: 700,
-                    fontSize: "1.1rem",
-                    color: CORES.pretoPrincipal,
-                    margin: 0,
-                    marginBottom: "8px",
-                  }}
-                >
-                  Bioimpedância
-                </h3>
-
-                <p
-                  style={{
-                    margin: 0,
-                    marginBottom: "16px",
-                    fontFamily: FONTES.secundaria,
-                    fontSize: "0.95rem",
-                    color: "#555555",
-                  }}
-                >
-                  Descubra a sua composição corporal de forma rápida!
-                </p>
-
-                <a
-                  style={{
-                    fontFamily: FONTES.principal,
-                    fontWeight: 700,
-                    fontSize: "0.9rem",
-                    color: CORES.roxoPrincipal,
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    cursor: "pointer",
-                    transition: "color 0.2s, text-decoration 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = CORES.roxoHover
-                    e.currentTarget.style.textDecoration = "underline"
-                    const arrow = e.currentTarget.querySelector(
-                      "span"
-                    ) as HTMLSpanElement | null
-                    if (arrow) arrow.style.transform = "translateX(4px)"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = CORES.roxoPrincipal
-                    e.currentTarget.style.textDecoration = "none"
-                    const arrow = e.currentTarget.querySelector(
-                      "span"
-                    ) as HTMLSpanElement | null
-                    if (arrow) arrow.style.transform = "translateX(0)"
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      transition: "transform 0.2s",
-                    }}
-                  >
-                    <FaArrowRight />
-                  </span>
-                  <span>QUERO FAZER BIOIMPEDÂNCIA</span>
-                </a>
-              </div>
-
-              <div
-                style={{
-                  width: "78px",
-                  height: "78px",
-                  borderRadius: "16px",
-                  overflow: "hidden",
-                  position: "relative",
-                  flexShrink: 0,
-                }}
-              >
-                <Image
-                  src="/images/bioimpedancia.jpg"
-                  alt="Equipamento de bioimpedância"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            </div>
-
             {/* CARD 3 - Nutricional */}
             <div
               style={{
@@ -1080,6 +1018,15 @@ export default function Home() {
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 gap: "20px",
+
+                ...(isMobile
+                  ? {}
+                  : {
+                    gridColumn: "1 / -1",
+                    justifySelf: "center",
+                    width: "100%",
+                    maxWidth: "584px",
+                  }),
               }}
             >
               <div style={{ flex: 1 }}>
@@ -1170,6 +1117,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+
         </div>
       </main>
 

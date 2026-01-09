@@ -38,8 +38,12 @@ model Usuario {
   pontuacoes  pontuacoes[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  diaCiclos   DiaCiclo[]
+  daily       Daily?
 
   @@index([ativo])
+  @@index([email, senha])
+  @@index([telefone])
   @@map("Usuario")
 }
 
@@ -113,17 +117,19 @@ model pontuacoes {
 }
 
 model Dia0 {
-  id                  Int       @id @default(autoincrement())
-  usuario             Usuario?  @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id                  Int        @id @default(autoincrement())
+  usuario             Usuario    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
   idUsuario           Int
-  ciclo               Ciclo[]
-  quer_msg            Boolean?  @default(true)
-  iniciou_medicamento Boolean?  @default(false)
+  ciclo               Ciclo?
+  idCiclo             Int?
+  quer_msg            Boolean?   @default(true)
+  iniciou_medicamento Boolean?   @default(false)
   dia_iniciar_med     DateTime?
   dia1                DateTime?
   dia0                DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  diaCiclos           DiaCiclo[]
 
   @@index([idUsuario])
   @@index([idUsuario, iniciou_medicamento, quer_msg, id])
@@ -131,39 +137,75 @@ model Dia0 {
 }
 
 model Ciclo {
-  id             Int       @id @default(autoincrement())
-  usuario        Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario      Int
-  dia0           Dia0      @relation(fields: [dia0Id], references: [id])
-  dia0Id         Int
-  daily          Daily?
-  numCiclo       Int?
-  emCiclo        Boolean?  @default(false)
-  ativoChatbot   Boolean?  @default(false)
-  med_prescrita  Boolean?  @default(false)
-  mounjaro       Boolean?  @default(false)
-  treino         Boolean?  @default(false)
-  bioimpedancia  Boolean?  @default(false)
-  consulta       Boolean?  @default(false)
-  descanso       Boolean?  @default(false)
-  refeicao_livre Boolean?  @default(false)
-  cumpriu        Decimal?  @db.Decimal(5, 2)
-  pontos         Int?      @default(0)
-  data_atual     DateTime?
-  dia_ciclo      Int?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                 Int        @id @default(autoincrement())
+  usuario            Usuario    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario          Int
+  dia0               Dia0       @relation(fields: [dia0Id], references: [id])
+  dia0Id             Int        @unique
+  numCiclo           Int?
+  ativoCiclo         Boolean?   @default(false)
+  med_prescrita      Boolean?   @default(false)
+  freq_med_prescrita Int?       @default(0)
+  mounjaro           Boolean?   @default(false)
+  treino             Boolean?   @default(false)
+  bioimpedancia      Boolean?   @default(false)
+  consulta           Boolean?   @default(false)
+  cumpriu_atual      Decimal?   @db.Decimal(5, 2)
+  respSim            Int?       @default(0)
+  respNao            Int?       @default(0)
+  pontos_atual       Decimal?   @db.Decimal(5, 2)
+  maxPontos          Decimal?   @db.Decimal(5, 2)
+  dia_ciclo_atual    Int        @default(0)
+  diaCiclos          DiaCiclo[]
+  daily              Daily?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@index([idUsuario])
-  @@index([idUsuario, data_atual])
   @@index([dia0Id])
   @@map("Ciclo")
 }
 
+model DiaCiclo {
+  id                 Int       @id @default(autoincrement())
+  usuario            Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario          Int
+  ciclo              Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idCiclo            Int
+  dia0               Dia0      @relation(fields: [dia0Id], references: [id])
+  dia0Id             Int
+  daily              Daily?    @relation
+  idDaily            Int?
+  emCiclo            Boolean?  @default(false)
+  ativoChatbot       Boolean?  @default(false)
+  tem_med_prescrita  Boolean?  @default(false)
+  tem_mounjaro       Boolean?  @default(false)
+  tem_treino         Boolean?  @default(false)
+  tem_bioimpedancia  Boolean?  @default(false)
+  tem_consulta       Boolean?  @default(false)
+  tem_descanso       Boolean?  @default(false)
+  tem_refeicao_livre Boolean?  @default(false)
+  cumpriu            Decimal?  @db.Decimal(5, 2)
+  pontos             Decimal?  @db.Decimal(5, 2)
+  data_dia           DateTime?
+  dia_ciclo          Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([idUsuario])
+  @@index([dia0Id])
+  @@index([idCiclo])
+  @@map("DiaCiclo")
+}
+
 model Daily {
   id                   Int       @id @default(autoincrement())
-  ciclo                Ciclo?    @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idCiclo              Int?      @unique
+  usuario              Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario            Int       @unique @default(0)
+  ciclo                Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idCiclo              Int       @unique
+  diaciclo             DiaCiclo  @relation(fields: [idDiaCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idDiaCiclo           Int       @unique @default(0)
   data                 DateTime?
   hora_ans             DateTime?
   agua_check           Boolean?

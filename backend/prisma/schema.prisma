@@ -150,10 +150,10 @@ model Ciclo {
   treino             Boolean?   @default(false)
   bioimpedancia      Boolean?   @default(false)
   consulta           Boolean?   @default(false)
-  cumpriu_atual      Decimal?   @db.Decimal(5, 2)
+  cumpriu_atual      Decimal?   @db.Decimal(5, 2) @default(0)
   respSim            Int?       @default(0)
   respNao            Int?       @default(0)
-  pontos_atual       Decimal?   @db.Decimal(5, 2)
+  pontos_atual       Decimal?   @db.Decimal(5, 2) @default(0)
   maxPontos          Decimal?   @db.Decimal(5, 2)
   dia_ciclo_atual    Int        @default(0)
   diaCiclos          DiaCiclo[]

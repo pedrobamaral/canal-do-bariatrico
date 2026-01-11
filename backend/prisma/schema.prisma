@@ -39,7 +39,7 @@ model Usuario {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   diaCiclos   DiaCiclo[]
-  daily       Daily?
+  dailys      Daily[]
 
   @@index([ativo])
   @@index([email, senha])
@@ -150,14 +150,14 @@ model Ciclo {
   treino             Boolean?   @default(false)
   bioimpedancia      Boolean?   @default(false)
   consulta           Boolean?   @default(false)
-  cumpriu_atual      Decimal?   @db.Decimal(5, 2) @default(0)
+  cumpriu_atual      Decimal?   @default(0) @db.Decimal(5, 2)
   respSim            Int?       @default(0)
   respNao            Int?       @default(0)
-  pontos_atual       Decimal?   @db.Decimal(5, 2) @default(0)
+  pontos_atual       Decimal?   @default(0) @db.Decimal(5, 2)
   maxPontos          Decimal?   @db.Decimal(5, 2)
   dia_ciclo_atual    Int        @default(0)
   diaCiclos          DiaCiclo[]
-  daily              Daily?
+  dailys             Daily[]
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -175,7 +175,7 @@ model DiaCiclo {
   dia0               Dia0      @relation(fields: [dia0Id], references: [id])
   dia0Id             Int
   daily              Daily?    @relation
-  idDaily            Int?
+  idDaily            Int?      @unique
   emCiclo            Boolean?  @default(false)
   ativoChatbot       Boolean?  @default(false)
   tem_med_prescrita  Boolean?  @default(false)
@@ -201,11 +201,11 @@ model DiaCiclo {
 model Daily {
   id                   Int       @id @default(autoincrement())
   usuario              Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario            Int       @unique @default(0)
+  idUsuario            Int
   ciclo                Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idCiclo              Int       @unique
+  idCiclo              Int
   diaciclo             DiaCiclo  @relation(fields: [idDiaCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idDiaCiclo           Int       @unique @default(0)
+  idDiaCiclo           Int       @unique
   data                 DateTime?
   hora_ans             DateTime?
   agua_check           Boolean?

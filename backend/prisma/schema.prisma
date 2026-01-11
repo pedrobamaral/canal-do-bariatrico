@@ -201,11 +201,11 @@ model DiaCiclo {
 model Daily {
   id                   Int       @id @default(autoincrement())
   usuario              Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idUsuario            Int       @unique @default(0)
+  idUsuario            Int       @default(0)
   ciclo                Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idCiclo              Int       @unique
+  idCiclo              Int       @default(0)
   diaciclo             DiaCiclo  @relation(fields: [idDiaCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  idDiaCiclo           Int       @unique @default(0)
+  idDiaCiclo           Int       @default(0)
   data                 DateTime?
   hora_ans             DateTime?
   agua_check           Boolean?

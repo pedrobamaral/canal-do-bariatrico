@@ -148,6 +148,8 @@ model Ciclo {
   freq_med_prescrita Int?       @default(0)
   mounjaro           Boolean?   @default(false)
   treino             Boolean?   @default(false)
+  dieta              Boolean?   @default(false)
+  agua               Boolean?   @default(false)
   bioimpedancia      Boolean?   @default(false)
   consulta           Boolean?   @default(false)
   cumpriu_atual      Decimal?   @default(0) @db.Decimal(5, 2)
@@ -181,6 +183,8 @@ model DiaCiclo {
   tem_med_prescrita  Boolean?  @default(false)
   tem_mounjaro       Boolean?  @default(false)
   tem_treino         Boolean?  @default(false)
+  tem_dieta          Boolean?  @default(false)
+  tem_agua           Boolean?  @default(false)
   tem_bioimpedancia  Boolean?  @default(false)
   tem_consulta       Boolean?  @default(false)
   tem_descanso       Boolean?  @default(false)
@@ -208,9 +212,9 @@ model Daily {
   idDiaCiclo           Int       @unique
   data                 DateTime?
   hora_ans             DateTime?
-  agua_check           Boolean?
-  dieta_check          Boolean?
   treino_check         Boolean?
+  dieta_check          Boolean?
+  agua_check           Boolean?
   mounjaro_check       Boolean?
   bioimpedancia_check  Boolean?
   refeicao_livre_check Boolean?

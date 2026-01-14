@@ -56,6 +56,40 @@ export async function deleteUser(id: string) {
   }
 }
 
+export async function loginUser(credentials: { email: string; senha: string }) {
+  try {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      // Erro do servidor (400, 401, 500, etc)
+      throw new Error(error.response.data?.message || 'Credenciais inválidas');
+    } else if (error.request) {
+      // Sem resposta do servidor
+      throw new Error('Servidor não respondeu. Verifique sua conexão.');
+    } else {
+      throw new Error('Erro ao fazer login');
+    }
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const token = localStorage.getItem('bari_token');
+    if (!token) {
+      throw new Error('Nenhum token encontrado');
+    }
+    
+    const response = await api.get('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao buscar usuário:', error);
+    throw error;
+  }
+}
+
 //analisar connect cm o carrinho depois
 export async function createProduto(Nome: string, imgNutricional: string, Imagem: string, 
     descricao: string, preco: number

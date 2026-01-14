@@ -8,16 +8,16 @@ import {
   Delete,
   ParseIntPipe,
 } from '@nestjs/common';
-import { DailyService } from './daily.service';
-import { CreateDailyDto } from './dto/create-daily.dto';
-import { UpdateDailyDto } from './dto/update-daily.dto';
+import { DiaCicloService } from './diaciclo.service';
+import { CreateDiaCicloDto } from './dto/create-diaciclo.dto';
+import { UpdateDiaCicloDto } from './dto/update-diaciclo.dto';
 
-@Controller('daily')
-export class DailyController {
-  constructor(private readonly service: DailyService) {}
+@Controller('diaciclo')
+export class DiaCicloController {
+  constructor(private readonly service: DiaCicloService) {}
 
   @Post()
-  create(@Body() dto: CreateDailyDto) {
+  create(@Body() dto: CreateDiaCicloDto) {
     return this.service.create(dto);
   }
 
@@ -32,14 +32,14 @@ export class DailyController {
   }
 
   @Get('ciclo/:idCiclo')
-  findByDiaCiclo(@Param('idCiclo', ParseIntPipe) idCiclo: number) {
-    return this.service.findByDiaCiclo(idCiclo);
+  findByCiclo(@Param('idCiclo', ParseIntPipe) idCiclo: number) {
+    return this.service.findByCiclo(idCiclo);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateDailyDto,
+    @Body() dto: UpdateDiaCicloDto,
   ) {
     return this.service.update(id, dto);
   }

@@ -192,7 +192,7 @@ model DiaCiclo {
   cumpriu            Decimal?  @db.Decimal(5, 2)
   pontos             Decimal?  @db.Decimal(5, 2)
   data_dia           DateTime?
-  dia_ciclo          Int
+  dia_ciclo          Int       @default(0)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

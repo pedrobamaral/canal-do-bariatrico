@@ -3,20 +3,25 @@ export class CreateCicloDto {
   dia0Id: number;
 
   numCiclo?: number;
-  emCiclo?: boolean;
-  ativoChatbot?: boolean;
+  ativoCiclo?: boolean;
 
   med_prescrita?: boolean;
+  freq_med_prescrita?: number;
   mounjaro?: boolean;
   treino?: boolean;
+  dieta?: boolean;
+  agua?: boolean;
   bioimpedancia?: boolean;
   consulta?: boolean;
-  descanso?: boolean;
-  refeicao_livre?: boolean;
 
-  cumpriu?: number; 
-  pontos?: number;
+  cumpriu_atual?: number;
+  respSim?: number;
+  respNao?: number;
+  pontos_atual?: number;
+  maxPontos?: number;
 
-  data_atual?: Date;
-  dia_ciclo?: number;
+  dia_ciclo_atual?: number;
+  
+  createdAt?: Date;
+  updatedAt?: Date;
 }

@@ -14,19 +14,218 @@ datasource db {
 }
 
 model Usuario {
-  id            Int         @default(autoincrement()) @id
-  email         String      @unique @db.VarChar(100)
-  senha         String      @db.VarChar(100)
-  nome          String      @db.VarChar(100)
-  //idade         Int         
-  //diabetico     Boolean
-  //calc          Int?         
-  endereco      Endereco?
-  carrinho      Carrinho?   
-  admin         Boolean     @default(false)
-  dataCriacao   DateTime    @default(now())
+  id          Int        @id @default(autoincrement())
+  email       String     @unique @db.VarChar(100)
+  senha       String     @db.VarChar(100)
+  nome        String     @db.VarChar(100)
+  endereco    Endereco[]
+  carrinho    Carrinho?
+  admin       Boolean    @default(false)
+  dataCriacao DateTime   @default(now())
+
+  // Projeto Vidale
+  ativo       Boolean?     @default(false)
+  telefone    String?      @db.VarChar(20)
+  sexo        Sexo?
+  peso        Decimal?     @db.Decimal(5, 2)
+  altura      Decimal?     @db.Decimal(5, 2)
+  Nascimento  DateTime?
+  massa_magra Decimal?     @db.Decimal(5, 2)
+  meta        Decimal?     @db.Decimal(5, 2)
+  sistema     Sistema?
+  dia0        Dia0[]
+  ciclo       Ciclo[]
+  pontuacoes  pontuacoes[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  diaCiclos   DiaCiclo[]
+  dailys      Daily[]
+
+  @@index([ativo])
+  @@index([email, senha])
+  @@index([telefone])
+  @@map("Usuario")
 }
 
+enum Sexo {
+  Masculino
+  Feminino
+  Outro
+}
+
+model Sistema {
+  id           Int            @id @default(autoincrement())
+  usuario      Usuario?       @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario    Int?           @unique
+  medicamentos Medicamentos[]
+  dieta        Dieta[]
+  treino       Treino[]
+}
+
+model Medicamentos {
+  id           Int      @id @default(autoincrement())
+  sistema      Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idSistema    Int?
+  nome         String   @db.VarChar(100)
+  freq_sem     Boolean  @default(false)
+  freq_dia     Boolean  @default(false)
+  qtnd_freq    Int
+  medico       String?  @db.VarChar(100)
+  insta_medico String?  @db.VarChar(100)
+}
+
+model Treino {
+  id             Int      @id @default(autoincrement())
+  sistema        Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idSistema      Int?
+  pdf_url        String?  @db.VarChar(255)
+  freq_musc      Int
+  freq_aero      Int
+  personal       String   @db.VarChar(100)
+  insta_personal String   @db.VarChar(100)
+}
+
+model Dieta {
+  id          Int      @id @default(autoincrement())
+  sistema     Sistema? @relation(fields: [idSistema], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idSistema   Int?
+  freq        Int
+  caloria_dia Decimal  @db.Decimal(10, 2)
+  hidratacao  Decimal  @db.Decimal(10, 2)
+  carb        Decimal  @db.Decimal(10, 2)
+  prot        Decimal  @db.Decimal(10, 2)
+  gord        Decimal  @db.Decimal(10, 2)
+  nutri       String   @db.VarChar(100)
+  insta_nutri String   @db.VarChar(100)
+}
+
+model pontuacoes {
+  id          Int      @id @default(autoincrement())
+  numCiclo    Int
+  respSim     Int?
+  respNao     Int?
+  pontos      Decimal? @db.Decimal(5, 2)
+  porcentagem Decimal? @db.Decimal(5, 2)
+  maxPontos   Decimal? @db.Decimal(5, 2)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([usuarioId])
+  @@index([usuarioId, numCiclo])
+}
+
+model Dia0 {
+  id                  Int        @id @default(autoincrement())
+  usuario             Usuario    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario           Int
+  ciclo               Ciclo?
+  idCiclo             Int?
+  quer_msg            Boolean?   @default(true)
+  iniciou_medicamento Boolean?   @default(false)
+  dia_iniciar_med     DateTime?
+  dia1                DateTime?
+  dia0                DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  diaCiclos           DiaCiclo[]
+
+  @@index([idUsuario])
+  @@index([idUsuario, iniciou_medicamento, quer_msg, id])
+  @@map("Dia0")
+}
+
+model Ciclo {
+  id                 Int        @id @default(autoincrement())
+  usuario            Usuario    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario          Int
+  dia0               Dia0       @relation(fields: [dia0Id], references: [id])
+  dia0Id             Int        @unique
+  numCiclo           Int?
+  ativoCiclo         Boolean?   @default(false)
+  med_prescrita      Boolean?   @default(false)
+  freq_med_prescrita Int?       @default(0)
+  mounjaro           Boolean?   @default(false)
+  treino             Boolean?   @default(false)
+  dieta              Boolean?   @default(false)
+  agua               Boolean?   @default(false)
+  bioimpedancia      Boolean?   @default(false)
+  consulta           Boolean?   @default(false)
+  cumpriu_atual      Decimal?   @default(0) @db.Decimal(5, 2)
+  respSim            Int?       @default(0)
+  respNao            Int?       @default(0)
+  pontos_atual       Decimal?   @default(0) @db.Decimal(5, 2)
+  maxPontos          Decimal?   @db.Decimal(5, 2)
+  dia_ciclo_atual    Int        @default(0)
+  diaCiclos          DiaCiclo[]
+  dailys             Daily[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  @@index([idUsuario])
+  @@index([dia0Id])
+  @@map("Ciclo")
+}
+
+model DiaCiclo {
+  id                 Int       @id @default(autoincrement())
+  usuario            Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario          Int
+  ciclo              Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idCiclo            Int
+  dia0               Dia0      @relation(fields: [dia0Id], references: [id])
+  dia0Id             Int
+  daily              Daily?    @relation
+  idDaily            Int?      @unique
+  emCiclo            Boolean?  @default(false)
+  ativoChatbot       Boolean?  @default(false)
+  tem_med_prescrita  Boolean?  @default(false)
+  tem_mounjaro       Boolean?  @default(false)
+  tem_treino         Boolean?  @default(false)
+  tem_dieta          Boolean?  @default(false)
+  tem_agua           Boolean?  @default(false)
+  tem_bioimpedancia  Boolean?  @default(false)
+  tem_consulta       Boolean?  @default(false)
+  tem_descanso       Boolean?  @default(false)
+  tem_refeicao_livre Boolean?  @default(false)
+  cumpriu            Decimal?  @db.Decimal(5, 2)
+  pontos             Decimal?  @db.Decimal(5, 2)
+  data_dia           DateTime?
+  dia_ciclo          Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([idUsuario])
+  @@index([dia0Id])
+  @@index([idCiclo])
+  @@map("DiaCiclo")
+}
+
+model Daily {
+  id                   Int       @id @default(autoincrement())
+  usuario              Usuario   @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idUsuario            Int
+  ciclo                Ciclo     @relation(fields: [idCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idCiclo              Int
+  diaciclo             DiaCiclo  @relation(fields: [idDiaCiclo], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  idDiaCiclo           Int       @unique
+  data                 DateTime?
+  hora_ans             DateTime?
+  treino_check         Boolean?
+  dieta_check          Boolean?
+  agua_check           Boolean?
+  mounjaro_check       Boolean?
+  bioimpedancia_check  Boolean?
+  refeicao_livre_check Boolean?
+  descanso_check       Boolean?
+  consulta_check       Boolean?
+  med_prescrita_check  Boolean?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// E-commerce
 model Endereco {
   id           Int         @id @default(autoincrement())
   usuario      Usuario?    @relation(fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)

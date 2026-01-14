@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BACK_URL = process.env.BACK_URL || 'http://localhost:3000';
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/",
+    baseURL: BACK_URL,
   headers: {
     'Content-Type': 'application/json',
   },

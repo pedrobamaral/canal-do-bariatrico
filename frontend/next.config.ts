@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: '/register',                     // rota limpa que o front chama
-        destination: 'http://localhost:3000/auth/register', // backend real
+        destination: process.env.BACK_URL, // backend real
       },
     ];
   },

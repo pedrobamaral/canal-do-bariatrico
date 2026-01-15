@@ -740,10 +740,12 @@ export default function Home() {
                         allowDecimals={false}
                       />
                       <Tooltip
-                        formatter={(value: number) =>
-                          metric === "peso"
-                            ? `${value.toFixed(1)} kg`
-                            : `${value.toFixed(1)} kg/m²`
+                        formatter={(value: number | undefined) =>
+                          value !== undefined
+                            ? metric === "peso"
+                              ? `${value.toFixed(1)} kg`
+                              : `${value.toFixed(1)} kg/m²`
+                            : ""
                         }
                         labelFormatter={(label) => `Mês ${label}`}
                         contentStyle={{

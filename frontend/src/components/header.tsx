@@ -4,6 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { IoIosBody } from "react-icons/io";
+import { IoPerson } from "react-icons/io5";
 
 // Ícones (mantive os seus do protótipo)
 import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
@@ -146,17 +148,17 @@ export default function HeaderTeste() {
                 </Link>
 
                 <Link href="#" aria-label="Treino">
-                  <FaUser size={22} className={iconBaseStyle} />
+                  <IoIosBody size={27} className={iconBaseStyle} />
                 </Link>
 
                 <Link href="/" aria-label="Calculadora">
                   <FaCalculator size={22} className={iconBaseStyle} />
                 </Link>
 
-                <Link href="/dashboard" aria-label="Meu Perfil">
-                  <RiUser3Fill
+                <Link href="/pg-usuario" aria-label="Meu Perfil">
+                  <IoPerson
                     size={26}
-                    className="text-[#62B4FF] hover:text-white transition-colors cursor-pointer"
+                    className="text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
                   />
                 </Link>
 

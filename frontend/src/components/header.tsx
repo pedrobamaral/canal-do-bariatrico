@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
 
 // Ícones (mantive os seus do protótipo)
 import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
@@ -19,16 +20,38 @@ const CORES = {
 
 export default function HeaderTeste() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
 
-  useEffect(() => {
+  const checkAuth = () => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("authToken") : null
     setIsLoggedIn(!!token)
-  }, [])
+  }
+
+  useEffect(() => {
+    checkAuth()
+
+    // Atualiza quando login/logout "avisar" (mesma aba)
+    window.addEventListener("auth-changed", checkAuth)
+
+    // Atualiza ao voltar o foco pra aba (extra segurança)
+    window.addEventListener("focus", checkAuth)
+
+    return () => {
+      window.removeEventListener("auth-changed", checkAuth)
+      window.removeEventListener("focus", checkAuth)
+    }
+  }, [pathname])
 
   const handleLogout = () => {
     localStorage.removeItem("authToken")
-    window.location.href = "/"
+    localStorage.removeItem("bari_user")
+
+    window.dispatchEvent(new Event("auth-changed"))
+
+    router.push("/")
+    router.refresh()
   }
 
   const iconBaseStyle =
@@ -54,7 +77,7 @@ export default function HeaderTeste() {
           </div>
         </div>
 
-        {/* ✅ LADO DIREITO: agora ocupa o espaço restante e alinha no fim */}
+        {/* ✅ LADO DIREITO */}
         <div className="flex-1 flex items-center justify-end">
           <div className="flex items-center gap-6 whitespace-nowrap">
             {/* ✅ DESLOGADO */}
@@ -64,7 +87,6 @@ export default function HeaderTeste() {
                   <FaCalculator size={24} className={iconBaseStyle} />
                 </Link>
 
-                {/* LOGIN: hover azul igual protótipo */}
                 <Link
                   href="/login"
                   style={{
@@ -83,7 +105,6 @@ export default function HeaderTeste() {
                   LOGIN
                 </Link>
 
-                {/* CADASTRE-SE: hover fica branco (igual protótipo) */}
                 <Link href="/cadastro" style={{ textDecoration: "none" }}>
                   <button
                     style={{

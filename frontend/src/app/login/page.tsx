@@ -130,32 +130,32 @@ const LoginForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // Usando a função centralizada do api.ts
       const data = await loginUser({
         email: formData.email,
         senha: formData.password,
       });
 
-      // Salvar o token
       if (data.access_token) {
-        localStorage.setItem("bari_token", data.access_token);
-        
-        // Opcional: Salvar informações do usuário
+        // ✅ PADRÃO DO HEADER
+        localStorage.setItem("authToken", data.access_token);
+
+        // Opcional: user
         if (data.user) {
           localStorage.setItem("bari_user", JSON.stringify(data.user));
         }
+
+        // ✅ avisa o header na mesma aba
+        window.dispatchEvent(new Event("auth-changed"));
       }
 
-      // Redirecionar para a Home
       router.push("/");
+      router.refresh();
 
     } catch (error: any) {
-      // Erro já formatado pela função loginUser
       setError(error.message);
-      
-      // Log detalhado para desenvolvimento
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Erro de login:', error);
+
+      if (process.env.NODE_ENV === "development") {
+        console.error("Erro de login:", error);
       }
     } finally {
       setLoading(false);

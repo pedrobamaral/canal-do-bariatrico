@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const BACK_URL = process.env.BACK_URL || 'http://localhost:3000';
+import nextConfig from "../../../next.config";
 
 const api = axios.create({
-    baseURL: BACK_URL,
+    baseURL: nextConfig.destination,
   headers: {
     'Content-Type': 'application/json',
   },

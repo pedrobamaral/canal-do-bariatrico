@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BACK_URL = process.env.BACK_URL || 'http://localhost:3000';
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/",
+    baseURL: BACK_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -53,6 +55,40 @@ export async function deleteUser(id: string) {
     return response.data;
   } catch (error) {
     console.error(error);
+  }
+}
+
+export async function loginUser(credentials: { email: string; senha: string }) {
+  try {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      // Erro do servidor (400, 401, 500, etc)
+      throw new Error(error.response.data?.message || 'Credenciais inválidas');
+    } else if (error.request) {
+      // Sem resposta do servidor
+      throw new Error('Servidor não respondeu. Verifique sua conexão.');
+    } else {
+      throw new Error('Erro ao fazer login');
+    }
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const token = localStorage.getItem('bari_token');
+    if (!token) {
+      throw new Error('Nenhum token encontrado');
+    }
+    
+    const response = await api.get('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao buscar usuário:', error);
+    throw error;
   }
 }
 

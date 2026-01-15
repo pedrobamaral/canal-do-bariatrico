@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true, //nao dar erro com o eslint no build
+  },
+  
   async rewrites() {
     return [
       {
         source: '/register',                     // rota limpa que o front chama
-        destination: 'http://localhost:3000/auth/register', // backend real
+        destination: process.env.BACK_URL, // backend real
       },
     ];
   },

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { loginUser } from "../utils/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -129,39 +130,33 @@ const LoginForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Requisição ao Backend
-      const res = await fetch("http://localhost:3000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          // CORREÇÃO AQUI: Backend espera 'senha', não 'password'
-          senha: formData.password, 
-        }),
+      // Usando a função centralizada do api.ts
+      const data = await loginUser({
+        email: formData.email,
+        senha: formData.password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        // Exibe mensagem amigável em caso de erro
-        const errorMessage = typeof data.message === 'string' 
-          ? data.message 
-          : "Credenciais inválidas. Verifique e-mail e senha.";
-        setError(errorMessage);
-        return;
-      }
-
-      // 2. Salvar o Token (IMPORTANTE)
+      // Salvar o token
       if (data.access_token) {
         localStorage.setItem("bari_token", data.access_token);
+        
+        // Opcional: Salvar informações do usuário
+        if (data.user) {
+          localStorage.setItem("bari_user", JSON.stringify(data.user));
+        }
       }
 
-      // 3. Redirecionar para a Home
-      router.push("/home"); 
+      // Redirecionar para a Home
+      router.push("/");
 
-    } catch (error) {
-      console.error(error);
-      setError("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+    } catch (error: any) {
+      // Erro já formatado pela função loginUser
+      setError(error.message);
+      
+      // Log detalhado para desenvolvimento
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro de login:', error);
+      }
     } finally {
       setLoading(false);
     }

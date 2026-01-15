@@ -16,8 +16,7 @@ export class CicloService {
     const cicloAtivo = await this.prisma.ciclo.findFirst({
       where: {
         idUsuario: dto.idUsuario,
-        numCiclo: dto.numCiclo,
-        data_atual: dto.data_atual,
+        ativoCiclo: true,
       },
     });
 
@@ -29,24 +28,26 @@ export class CicloService {
       data: {
         idUsuario: dto.idUsuario,
         dia0Id: dto.dia0Id,
-
         numCiclo: dto.numCiclo,
-        emCiclo: dto.emCiclo ?? false,
-        ativoChatbot: dto.ativoChatbot ?? false,
 
-        med_prescrita: dto.med_prescrita,
-        mounjaro: dto.mounjaro,
-        treino: dto.treino,
-        bioimpedancia: dto.bioimpedancia,
-        consulta: dto.consulta,
-        descanso: dto.descanso,
-        refeicao_livre: dto.refeicao_livre,
+        ativoCiclo: dto.ativoCiclo ?? false,
 
-        cumpriu: dto.cumpriu ?? 0,
-        pontos: dto.pontos ?? 0,
+        med_prescrita: dto.med_prescrita ?? false,
+        freq_med_prescrita: dto.freq_med_prescrita ?? 0,
+        mounjaro: dto.mounjaro ?? false,
+        treino: dto.treino ?? false,
+        dieta: dto.dieta ?? false,
+        agua: dto.agua ?? false,
+        bioimpedancia: dto.bioimpedancia ?? false,
+        consulta: dto.consulta ?? false,
 
-        data_atual: dto.data_atual,
-        dia_ciclo: dto.dia_ciclo,
+        cumpriu_atual: dto.cumpriu_atual ?? 0,
+        respSim: dto.respSim ?? 0,
+        respNao: dto.respNao ?? 0,
+        pontos_atual: dto.pontos_atual ?? 0,
+        maxPontos: dto.maxPontos ?? 0,
+
+        dia_ciclo_atual: dto.dia_ciclo_atual ?? 0,
       },
     });
 
@@ -57,7 +58,7 @@ export class CicloService {
       include: {
         usuario: true,
         dia0: true,
-        daily: true,
+        dailys: true,
       },
     });
   }
@@ -68,7 +69,7 @@ export class CicloService {
       include: {
         usuario: true,
         dia0: true,
-        daily: true,
+        dailys: true,
       },
     });
 
@@ -84,7 +85,7 @@ export class CicloService {
       where: { idUsuario },
       include: {
         dia0: true,
-        daily: true,
+        dailys: true,
       },
       orderBy: { id: 'desc' },
     });
@@ -99,9 +100,30 @@ export class CicloService {
   async update(id: number, dto: UpdateCicloDto) {
     await this.findOne(id);
 
+    // Garante que apenas campos válidos do modelo sejam atualizados
     return this.prisma.ciclo.update({
       where: { id },
-      data: dto,
+      data: {
+        numCiclo: dto.numCiclo,
+        ativoCiclo: dto.ativoCiclo,
+
+        med_prescrita: dto.med_prescrita,
+        freq_med_prescrita: dto.freq_med_prescrita,
+        mounjaro: dto.mounjaro,
+        treino: dto.treino,
+        dieta: dto.dieta,
+        agua: dto.agua,
+        bioimpedancia: dto.bioimpedancia,
+        consulta: dto.consulta,
+
+        cumpriu_atual: dto.cumpriu_atual,
+        respSim: dto.respSim,
+        respNao: dto.respNao,
+        pontos_atual: dto.pontos_atual,
+        maxPontos: dto.maxPontos,
+
+        dia_ciclo_atual: dto.dia_ciclo_atual,
+      },
     });
   }
 
@@ -111,7 +133,7 @@ export class CicloService {
     return this.prisma.ciclo.update({
       where: { id },
       data: {
-        emCiclo: false,
+        ativoCiclo: false,
       },
     });
   }

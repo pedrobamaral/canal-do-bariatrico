@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import { createUser } from "../utils/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -192,22 +193,10 @@ const SignUpForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: formData.name,
-          email: formData.email,
-          senha: formData.password,
-          // Envia apenas os números (limpos) para o banco
-          telefone: rawPhone 
-        }),
-      });
+      const response = await createUser(formData.name, formData.email, formData.password);
 
-      const data = await response.json().catch(() => ({})); 
-
-      if (!response.ok) {
-        setError(data.message || "Erro ao cadastrar usuário. Verifique os dados.");
+      if (response.status != "sucesso") {
+        setError("Erro ao cadastrar usuário. Verifique os dados.");
         return;
       }
 
@@ -215,11 +204,11 @@ const SignUpForm: React.FC = () => {
       
       setTimeout(() => {
         router.push("/login");
-      }, 1500);
+      }, 1000);
 
     } catch (error) {
       console.error(error);
-      setError("Erro de conexão. Verifique se o backend está rodando.");
+      setError(error instanceof Error ? error.message : "Erro desconhecido ao cadastrar usuário.");
     } finally {
       setLoading(false);
     }

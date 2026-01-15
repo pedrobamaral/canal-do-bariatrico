@@ -147,7 +147,7 @@ const LoginForm: React.FC = () => {
       }
 
       // Redirecionar para a Home
-      router.push("/home");
+      router.push("/");
 
     } catch (error: any) {
       // Erro já formatado pela função loginUser

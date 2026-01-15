@@ -1,78 +1,117 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import React, { useEffect, useMemo, useState } from "react";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
 import { BsInstagram } from "react-icons/bs";
+import { FiPlus } from "react-icons/fi";
 
 interface DietModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// ====== Estilo (igual vibe do protótipo) ======
-const inputPill =
-  "w-full h-[46px] px-5 rounded-full border border-[#6F3CF6] bg-white text-[#19191A] placeholder-[#6F3CF6]/70 focus:outline-none focus:ring-1 focus:ring-[#6F3CF6] transition-all";
+const inputStyle =
+  "w-full h-[50px] px-6 rounded-full border border-black bg-transparent text-gray-900 placeholder-gray-600 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
 
-const headerRow = "flex justify-between items-center w-full";
-const titleStyle = "text-[18px] font-medium text-[#19191A] font-['Montserrat']";
+const HeaderRow = ({ title }: { title: string }) => (
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-3xl font-bold text-black font-['Montserrat']">{title}</h2>
+  </div>
+);
 
-// ====== Step 1: Botão Adicionar ======
-const StepAddDiet = ({ onNext }: { onNext: () => void }) => {
-  return (
-    <div className="flex flex-col h-full">
-      <div className={headerRow}>
-        <h2 className={titleStyle}>Dieta</h2>
-        <IoChevronDown className="text-[#19191A]/60" />
-      </div>
+const FieldHint = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-[10px] text-gray-500 px-2 leading-tight">{children}</p>
+);
 
-      <div className="flex-1 mt-6 rounded-2xl border border-[#6F3CF6]/40 bg-white flex items-center justify-center p-6">
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex items-center gap-2 bg-[#6F3CF6] text-white py-2.5 px-6 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-colors shadow-md"
-        >
-          <FiPlus size={16} />
-          Adicionar Dieta
-        </button>
-      </div>
+// STEP 1
+const StepAddDiet = ({ onNext }: { onNext: () => void }) => (
+  <div className="flex flex-col h-full">
+    <HeaderRow title="Dieta" />
+
+    <div className="flex-1 flex items-center justify-center">
+      <button
+        type="button"
+        onClick={onNext}
+        className="flex items-center gap-2 bg-[#6F3CF6] text-white py-3 px-10 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
+      >
+        <FiPlus size={16} />
+        Adicionar Dieta
+      </button>
     </div>
-  );
+  </div>
+);
+
+// STEP 2
+type Step2Form = {
+  frequencia: string;
+  calorias: string;
+  macrosOpen: boolean;
+  carbo: string;
+  proteina: string;
+  gordura: string;
+  hidratacao: string;
 };
 
-// ====== Step 2: Form Dieta (com Macros expandível) ======
 const StepDietForm = ({ onNext }: { onNext: () => void }) => {
-  const [macrosExpanded, setMacrosExpanded] = useState(false);
+  const [v, setV] = useState<Step2Form>({
+    frequencia: "",
+    calorias: "",
+    macrosOpen: false,
+    carbo: "",
+    proteina: "",
+    gordura: "",
+    hidratacao: "",
+  });
+
+  const isValid = useMemo(() => {
+    if (!v.frequencia.trim()) return false;
+    if (!v.calorias.trim()) return false;
+    if (!v.hidratacao.trim()) return false;
+    if (v.macrosOpen) {
+      if (!v.carbo.trim()) return false;
+      if (!v.proteina.trim()) return false;
+      if (!v.gordura.trim()) return false;
+    }
+    return true;
+  }, [v]);
 
   return (
     <div className="flex flex-col h-full">
-      <div className={headerRow}>
-        <h2 className={titleStyle}>Dieta</h2>
-        <IoChevronDown className="text-[#19191A]/60" />
-      </div>
+      <HeaderRow title="Dieta" />
 
-      <form className="mt-6 space-y-3 flex-1">
-        <input type="text" placeholder="Frequência Diária" className={inputPill} />
-        <input type="text" placeholder="Calorias Diárias Consumidas" className={inputPill} />
+      <form className="space-y-4 flex-1 overflow-y-auto pr-1">
+        <input
+          placeholder="Frequência Diária"
+          className={inputStyle}
+          value={v.frequencia}
+          onChange={(e) => setV((p) => ({ ...p, frequencia: e.target.value }))}
+        />
 
-        {!macrosExpanded ? (
+        <input
+          placeholder="Calorias Diárias Consumidas"
+          className={inputStyle}
+          value={v.calorias}
+          onChange={(e) => setV((p) => ({ ...p, calorias: e.target.value }))}
+        />
+
+        {!v.macrosOpen ? (
           <button
             type="button"
-            onClick={() => setMacrosExpanded(true)}
-            className={`${inputPill} flex items-center justify-between text-left`}
+            onClick={() => setV((p) => ({ ...p, macrosOpen: true }))}
+            className={`${inputStyle} flex items-center justify-between text-left bg-white`}
           >
-            <span className="text-[#6F3CF6]/70">Gramas de Macros</span>
-            <IoChevronDown className="text-[#19191A]/60" />
+            <span className="text-gray-600">Gramas de Macros</span>
+            <IoChevronDown className="text-gray-500" />
           </button>
         ) : (
-          <div className="w-full rounded-[22px] border border-[#6F3CF6] bg-white p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-[#6F3CF6]">Gramas de Macros</span>
+          <div className="border border-black rounded-[24px] p-6 bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-600 font-medium text-sm">Gramas de Macros</p>
               <button
                 type="button"
-                onClick={() => setMacrosExpanded(false)}
-                className="text-[#19191A]/60 hover:text-[#19191A] transition-colors"
+                onClick={() => setV((p) => ({ ...p, macrosOpen: false }))}
+                className="text-gray-500 hover:text-gray-900 transition-colors"
                 aria-label="Fechar macros"
               >
                 <IoChevronDown className="rotate-180" />
@@ -80,25 +119,57 @@ const StepDietForm = ({ onNext }: { onNext: () => void }) => {
             </div>
 
             <div className="space-y-3">
-              <input type="text" placeholder="Carboidrato" className={inputPill} />
-              <input type="text" placeholder="Proteína" className={inputPill} />
-              <input type="text" placeholder="Gordura" className={inputPill} />
+              <input
+                placeholder="Carboidrato"
+                className={inputStyle}
+                value={v.carbo}
+                onChange={(e) => setV((p) => ({ ...p, carbo: e.target.value }))}
+              />
+              <input
+                placeholder="Proteína"
+                className={inputStyle}
+                value={v.proteina}
+                onChange={(e) =>
+                  setV((p) => ({ ...p, proteina: e.target.value }))
+                }
+              />
+              <input
+                placeholder="Gordura"
+                className={inputStyle}
+                value={v.gordura}
+                onChange={(e) =>
+                  setV((p) => ({ ...p, gordura: e.target.value }))
+                }
+              />
             </div>
           </div>
         )}
 
-        <input type="text" placeholder="Hidratação" className={inputPill} />
+        <input
+          placeholder="Hidratação"
+          className={inputStyle}
+          value={v.hidratacao}
+          onChange={(e) =>
+            setV((p) => ({ ...p, hidratacao: e.target.value }))
+          }
+        />
 
-        <p className="text-[10px] text-[#6F3CF6]/70 px-2 leading-tight">
-          Obs para dica: Peso x 30 ml = qtd. de água diária do paciente (calcular e já entregar o valor que o paciente
-          precisa consumir)
-        </p>
+        <FieldHint>
+          Obs para dica: Peso x 30 ml = qtd. de água diária do paciente (calcular
+          e já entregar o valor que o paciente precisa consumir)
+        </FieldHint>
 
-        <div className="pt-2 flex justify-center">
+        <div className="pt-6 flex justify-center">
           <button
             type="button"
             onClick={onNext}
-            className="flex items-center gap-2 bg-[#6F3CF6] text-white py-3 px-10 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-[1.02] shadow-md"
+            disabled={!isValid}
+            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
+              ${
+                isValid
+                  ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
+                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
           >
             Próximo <HiOutlineArrowRight size={16} />
           </button>
@@ -108,45 +179,38 @@ const StepDietForm = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// ====== Step 3: Nutricionista ======
-const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => {
-  return (
-    <div className="flex flex-col h-full">
-      <div className={headerRow}>
-        <h2 className={titleStyle}>Dieta</h2>
-        <IoChevronDown className="text-[#19191A]/60" />
+// STEP 3
+const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => (
+  <div className="flex flex-col h-full">
+    <HeaderRow title="Dieta" />
+
+    <form className="space-y-4 flex-1">
+      <input type="text" placeholder="Nome do Nutricionista" className={inputStyle} />
+
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Instagram do Nutricionista"
+          className={`${inputStyle} pl-12`}
+        />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/50">
+          <BsInstagram size={16} />
+        </div>
       </div>
 
-      <form className="mt-6 space-y-4 flex-1">
-        <input type="text" placeholder="Nome do Nutricionista" className={inputPill} />
+      <div className="pt-10 flex justify-center">
+        <button
+          type="button"
+          onClick={onFinish}
+          className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
+        >
+          Adicionar
+        </button>
+      </div>
+    </form>
+  </div>
+);
 
-        {/* Instagram padronizado (igual seu exemplo) */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Instagram do Nutricionista"
-            className={`${inputPill} pl-12`}
-          />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/50">
-            <BsInstagram size={16} />
-          </div>
-        </div>
-
-        <div className="pt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={onFinish}
-            className="bg-[#6F3CF6] text-white py-3 px-12 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-colors shadow-md"
-          >
-            Adicionar
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-// ====== Componente Principal ======
 export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -159,16 +223,11 @@ export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleNext = () => setStep((prev) => (prev === 1 ? 2 : prev === 2 ? 3 : 3));
-  const handleFinish = () => onClose();
-
-  const containerHeightClass = step === 1 ? "min-h-[340px]" : "min-h-[520px]";
-
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-transparent backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative bg-white rounded-[40px] shadow-2xl w-full max-w-[520px] ${containerHeightClass} p-8 md:p-10 border border-gray-100 flex flex-col transition-all duration-300`}
+        className="relative bg-white rounded-[56px] shadow-2xl w-full max-w-[720px] min-h-[560px] p-10 border border-gray-100 flex flex-col"
       >
         <button
           onClick={onClose}
@@ -178,9 +237,9 @@ export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
           <IoClose size={24} />
         </button>
 
-        {step === 1 && <StepAddDiet onNext={handleNext} />}
-        {step === 2 && <StepDietForm onNext={handleNext} />}
-        {step === 3 && <StepNutritionist onFinish={handleFinish} />}
+        {step === 1 && <StepAddDiet onNext={() => setStep(2)} />}
+        {step === 2 && <StepDietForm onNext={() => setStep(3)} />}
+        {step === 3 && <StepNutritionist onFinish={onClose} />}
       </div>
     </div>
   );

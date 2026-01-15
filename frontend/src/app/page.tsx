@@ -16,11 +16,8 @@ import { FaArrowRight } from "react-icons/fa6"
 // ✅ Navbar antiga
 import HeaderTeste from "@/components/header"
 
-// ✅ Modais
+// ✅ Só o HealthSurveyModal fica na Home
 import { HealthSurveyModal } from "@/components/HealthSurveyModal"
-import { MedicationModal } from "@/components/MedicationModal"
-import { DietModal } from "@/components/DietModal"
-import { TrainingModal } from "@/components/TrainingModal"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -348,35 +345,16 @@ export default function Home() {
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  // ✅ MODAIS
+  // ✅ Só HealthSurveyModal existe aqui
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
-  const [isMedicationModalOpen, setIsMedicationModalOpen] = useState(false)
-  const [isDietModalOpen, setIsDietModalOpen] = useState(false)
-  const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false)
 
-  // ✅ clique do botão abre o modal 1
   const handleConseguiResultados = () => {
     setIsHealthModalOpen(true)
   }
 
-  // ✅ sequência: Health -> Medication -> Diet -> Training
-  const handleHealthSurveyFinish = () => {
+  // ✅ Agora "fechar" é fechar mesmo (sem abrir nada depois)
+  const handleHealthSurveyClose = () => {
     setIsHealthModalOpen(false)
-    setTimeout(() => setIsMedicationModalOpen(true), 200)
-  }
-
-  const handleMedicationFinish = () => {
-    setIsMedicationModalOpen(false)
-    setTimeout(() => setIsDietModalOpen(true), 200)
-  }
-
-  const handleDietFinish = () => {
-    setIsDietModalOpen(false)
-    setTimeout(() => setIsTrainingModalOpen(true), 200)
-  }
-
-  const handleTrainingFinish = () => {
-    setIsTrainingModalOpen(false)
   }
 
   useEffect(() => {
@@ -483,11 +461,7 @@ export default function Home() {
                   />
 
                   <div style={{ marginTop: "32px" }}>
-                    <Toggle
-                      label="Fumante"
-                      checked={fumante}
-                      onChange={setFumante}
-                    />
+                    <Toggle label="Fumante" checked={fumante} onChange={setFumante} />
 
                     <div style={{ marginTop: "16px" }}>
                       <label
@@ -508,9 +482,7 @@ export default function Home() {
                         <select
                           className="pill-select"
                           value={diabetes}
-                          onChange={(e) =>
-                            setDiabetes(e.target.value as DiabetesOption)
-                          }
+                          onChange={(e) => setDiabetes(e.target.value as DiabetesOption)}
                         >
                           <option value="sem_diabetes">Sem diabetes</option>
                           <option value="pre_diabetes">Pré-diabetes</option>
@@ -584,9 +556,7 @@ export default function Home() {
                   <div style={{ marginBottom: "18px" }}>
                     <div className="pill-select-wrapper">
                       <select className="pill-select" disabled>
-                        <option>
-                          Medicamentos (pedir informarções pro Rômulo)
-                        </option>
+                        <option>Medicamentos (pedir informarções pro Rômulo)</option>
                       </select>
                     </div>
                   </div>
@@ -594,9 +564,7 @@ export default function Home() {
                   <div style={{ marginBottom: 0 }}>
                     <div className="pill-select-wrapper">
                       <select className="pill-select" disabled>
-                        <option>
-                          Dieta e Treino (pedir informarções pro Rômulo)
-                        </option>
+                        <option>Dieta e Treino (pedir informarções pro Rômulo)</option>
                       </select>
                     </div>
                   </div>
@@ -611,10 +579,7 @@ export default function Home() {
                     lineHeight: 1.3,
                   }}
                 >
-                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem
-                  caráter de prescrição ou recomendação médica. Tanto a
-                  bariátrica quanto os medicamentos precisam de dieta e treino
-                  para resultados a longo prazo
+                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter de prescrição ou recomendação médica. Tanto a bariátrica quanto os medicamentos precisam de dieta e treino para resultados a longo prazo
                 </div>
               </div>
             </div>
@@ -658,9 +623,7 @@ export default function Home() {
                       <select
                         className="pill-select"
                         value={metric}
-                        onChange={(e) =>
-                          setMetric(e.target.value as "peso" | "imc")
-                        }
+                        onChange={(e) => setMetric(e.target.value as "peso" | "imc")}
                       >
                         <option value="peso">Peso (kg)</option>
                         <option value="imc">IMC</option>
@@ -671,10 +634,7 @@ export default function Home() {
 
                 <div style={{ flex: 1, minHeight: "300px" }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={chartData}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
-                    >
+                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                       <defs>
                         <linearGradient id="colorMain" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={CORES.roxoPrincipal} stopOpacity={0.3} />
@@ -683,26 +643,16 @@ export default function Home() {
                       </defs>
 
                       <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
-
                       <XAxis
                         dataKey="month"
-                        label={{
-                          value: "Meses após cirurgia",
-                          position: "insideBottomRight",
-                          offset: -10,
-                        }}
+                        label={{ value: "Meses após cirurgia", position: "insideBottomRight", offset: -10 }}
                         stroke={CORES.cinzaIcone}
                         tickCount={7}
                         domain={[0, 60]}
                         type="number"
                       />
-
                       <YAxis
-                        label={{
-                          value: metric === "peso" ? "Peso (kg)" : "IMC",
-                          angle: -90,
-                          position: "insideLeft",
-                        }}
+                        label={{ value: metric === "peso" ? "Peso (kg)" : "IMC", angle: -90, position: "insideLeft" }}
                         stroke={CORES.cinzaIcone}
                         allowDecimals={false}
                       />
@@ -752,12 +702,8 @@ export default function Home() {
                     transition: "background 0.2s",
                     marginTop: "24px",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = CORES.roxoHover)
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = CORES.roxoPrincipal)
-                  }
+                  onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
                   onClick={handleConseguiResultados}
                 >
                   Consegui Resultados
@@ -847,12 +793,7 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-                <Image
-                  src="/images/endocrinologista.jpg"
-                  alt="Endocrinologista"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
+                <Image src="/images/endocrinologista.jpg" alt="Endocrinologista" fill style={{ objectFit: "cover" }} />
               </div>
             </div>
 
@@ -926,12 +867,7 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-                <Image
-                  src="/images/nutricionista.webp"
-                  alt="Nutricionista"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
+                <Image src="/images/nutricionista.webp" alt="Nutricionista" fill style={{ objectFit: "cover" }} />
               </div>
             </div>
 
@@ -1013,38 +949,15 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-                <Image
-                  src="/images/cirurgiao.jpeg"
-                  alt="Cirurgião bariátrico"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
+                <Image src="/images/cirurgiao.jpeg" alt="Cirurgião bariátrico" fill style={{ objectFit: "cover" }} />
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* ✅ MODAIS na sequência */}
-      <HealthSurveyModal
-        isOpen={isHealthModalOpen}
-        onClose={handleHealthSurveyFinish}
-      />
-
-      <MedicationModal
-        isOpen={isMedicationModalOpen}
-        onClose={handleMedicationFinish}
-      />
-
-      <DietModal
-        isOpen={isDietModalOpen}
-        onClose={handleDietFinish}
-      />
-
-      <TrainingModal
-        isOpen={isTrainingModalOpen}
-        onClose={handleTrainingFinish}
-      />
+      {/* ✅ Só HealthSurveyModal */}
+      <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} />
 
       <style jsx>{`
         input[type='range']::-webkit-slider-thumb {

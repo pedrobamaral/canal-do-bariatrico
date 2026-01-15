@@ -1,99 +1,98 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiCalendar } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
+
+// ✅ Modais
+import { MedicationModal } from "@/components/MedicationModal";
+import { DietModal } from "@/components/DietModal";
+import { TrainingModal } from "@/components/TrainingModal";
 
 interface HealthSurveyModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface ModalStepProps {
-  onAction: () => void;
-}
-
-// --- Estilos Comuns ---
+// --- Estilos Comuns (padrão HealthSurvey) ---
 const inputStyle =
   "w-full h-[50px] px-6 rounded-full border border-black bg-transparent text-gray-900 placeholder-gray-600 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
 const labelStyle = "sr-only";
 
-// --- Limites (ajuste aqui se quiser) ---
-const LIMITS = {
-  pesoKg: { min: 20, max: 350 },
-  alturaCm: { min: 120, max: 230 },
-  idadeAnos: { min: 10, max: 120 },
-  pesoMetaKg: { min: 20, max: 350 },
+const HeaderRow = ({
+  title,
+  rightSlot,
+}: {
+  title: string;
+  rightSlot?: React.ReactNode;
+}) => (
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-3xl font-bold text-black font-['Montserrat']">
+      {title}
+    </h2>
+    {rightSlot}
+  </div>
+);
+
+const FieldError = ({ msg }: { msg?: string }) => {
+  if (!msg) return null;
+  return <p className="mt-1 ml-4 text-xs font-medium text-red-600">{msg}</p>;
 };
 
+// -------------------- STEP 1: Medidas Básicas --------------------
 type Step1Form = {
   peso: string;
   altura: string;
   idade: string;
   sexo: "" | "masculino" | "feminino";
-  pesoMeta: string;
 };
 
 type Step1Errors = Partial<Record<keyof Step1Form, string>>;
 
+const LIMITS = {
+  pesoKg: { min: 20, max: 350 },
+  alturaCm: { min: 120, max: 230 },
+  idadeAnos: { min: 10, max: 120 },
+};
+
 function isEmpty(v: string) {
   return v.trim() === "";
 }
-
 function toNumberOrNaN(v: string) {
   if (isEmpty(v)) return NaN;
   const n = Number(v);
   return Number.isFinite(n) ? n : NaN;
 }
-
 function validateStep1(values: Step1Form): Step1Errors {
   const errors: Step1Errors = {};
 
   const peso = toNumberOrNaN(values.peso);
   const altura = toNumberOrNaN(values.altura);
   const idade = toNumberOrNaN(values.idade);
-  const pesoMeta = toNumberOrNaN(values.pesoMeta);
 
-  // Peso atual
   if (isEmpty(values.peso)) errors.peso = "Informe seu peso.";
   else if (Number.isNaN(peso)) errors.peso = "Peso inválido.";
   else if (peso < LIMITS.pesoKg.min || peso > LIMITS.pesoKg.max)
     errors.peso = `Peso deve estar entre ${LIMITS.pesoKg.min} e ${LIMITS.pesoKg.max} kg.`;
 
-  // Altura
   if (isEmpty(values.altura)) errors.altura = "Informe sua altura.";
   else if (Number.isNaN(altura)) errors.altura = "Altura inválida.";
   else if (altura < LIMITS.alturaCm.min || altura > LIMITS.alturaCm.max)
     errors.altura = `Altura deve estar entre ${LIMITS.alturaCm.min} e ${LIMITS.alturaCm.max} cm.`;
 
-  // Idade
   if (isEmpty(values.idade)) errors.idade = "Informe sua idade.";
   else if (Number.isNaN(idade)) errors.idade = "Idade inválida.";
   else if (idade < LIMITS.idadeAnos.min || idade > LIMITS.idadeAnos.max)
     errors.idade = `Idade deve estar entre ${LIMITS.idadeAnos.min} e ${LIMITS.idadeAnos.max} anos.`;
 
-  // Sexo
   if (!values.sexo) errors.sexo = "Selecione o sexo biológico.";
-
-  // Peso meta
-  if (isEmpty(values.pesoMeta)) errors.pesoMeta = "Informe seu peso desejado.";
-  else if (Number.isNaN(pesoMeta)) errors.pesoMeta = "Peso desejado inválido.";
-  else if (pesoMeta < LIMITS.pesoMetaKg.min || pesoMeta > LIMITS.pesoMetaKg.max)
-    errors.pesoMeta = `Peso desejado deve estar entre ${LIMITS.pesoMetaKg.min} e ${LIMITS.pesoMetaKg.max} kg.`;
 
   return errors;
 }
 
-// Pequeno helper visual de erro
-const FieldError = ({ msg }: { msg?: string }) => {
-  if (!msg) return null;
-  return <p className="mt-1 ml-4 text-xs font-medium text-red-600">{msg}</p>;
-};
-
-// --- PASSO 1 ---
-const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
+const Step1 = ({ onNext }: { onNext: () => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [values, setValues] = useState<Step1Form>({
@@ -101,73 +100,74 @@ const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
     altura: "",
     idade: "",
     sexo: "",
-    pesoMeta: "",
   });
 
-  const [touched, setTouched] = useState<Partial<Record<keyof Step1Form, boolean>>>({});
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof Step1Form, boolean>>
+  >({});
+
   const errors = useMemo(() => validateStep1(values), [values]);
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
 
-  const handleFileButtonClick = () => fileInputRef.current?.click();
+  const canShowError = (field: keyof Step1Form) =>
+    Boolean(touched[field] && errors[field]);
+
+  const markTouched = (field: keyof Step1Form) => () =>
+    setTouched((p) => ({ ...p, [field]: true }));
 
   const setField =
     (field: keyof Step1Form) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const next = e.target.value;
-
-      // bloqueia "-" e "e" / "E" em number (evita negativos e notação científica no input)
-      // (ainda validamos no final, mas isso evita muita dor)
-      setValues((prev) => ({ ...prev, [field]: next }));
-    };
-
-  const markTouched = (field: keyof Step1Form) => () =>
-    setTouched((prev) => ({ ...prev, [field]: true }));
-
-  const canShowError = (field: keyof Step1Form) => Boolean(touched[field] && errors[field]);
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setValues((p) => ({ ...p, [field]: e.target.value }));
 
   const handleNext = () => {
-    // força mostrar tudo antes de avançar
-    setTouched({ peso: true, altura: true, idade: true, sexo: true, pesoMeta: true });
-
+    setTouched({ peso: true, altura: true, idade: true, sexo: true });
     const currentErrors = validateStep1(values);
     if (Object.keys(currentErrors).length > 0) return;
-
-    onAction();
+    onNext();
   };
+
+  const uploadButton = (
+    <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf,.png,.jpg,.jpeg"
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="flex items-center gap-2 bg-[#6F3CF6] text-white py-2 px-5 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-colors"
+      >
+        <FiPlus size={16} />
+        Adicionar Bioimpedância
+      </button>
+    </>
+  );
 
   return (
     <div className="flex flex-col h-full">
-      {/* Cabeçalho */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-black font-['Montserrat']">Medidas Físicas</h2>
+      <HeaderRow title="Medidas Físicas" rightSlot={uploadButton} />
 
-        <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.png,.jpg,.jpeg" />
-        <button
-          type="button"
-          onClick={handleFileButtonClick}
-          className="flex items-center gap-1 bg-[#6F3CF6] text-white py-1.5 px-4 rounded-full text-xs font-bold hover:bg-[#5c2fe0] transition-colors"
-        >
-          <FiPlus size={14} />
-          Adicionar Bioimpedância
-        </button>
-      </div>
-
-      {/* Formulário */}
       <form className="space-y-4 flex-1">
         <div>
           <label className={labelStyle}>Peso (kg)</label>
           <input
             type="number"
             inputMode="decimal"
-            min={LIMITS.pesoKg.min}
-            max={LIMITS.pesoKg.max}
             placeholder="Peso (kg)"
-            className={`${inputStyle} ${canShowError("peso") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+            className={`${inputStyle} ${
+              canShowError("peso")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
             value={values.peso}
             onChange={setField("peso")}
             onBlur={markTouched("peso")}
             onKeyDown={(e) => {
-              if (e.key === "-" || e.key === "e" || e.key === "E") e.preventDefault();
+              if (e.key === "-" || e.key === "e" || e.key === "E")
+                e.preventDefault();
             }}
           />
           <FieldError msg={canShowError("peso") ? errors.peso : undefined} />
@@ -178,15 +178,18 @@ const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
           <input
             type="number"
             inputMode="numeric"
-            min={LIMITS.alturaCm.min}
-            max={LIMITS.alturaCm.max}
             placeholder="Altura (cm)"
-            className={`${inputStyle} ${canShowError("altura") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+            className={`${inputStyle} ${
+              canShowError("altura")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
             value={values.altura}
             onChange={setField("altura")}
             onBlur={markTouched("altura")}
             onKeyDown={(e) => {
-              if (e.key === "-" || e.key === "e" || e.key === "E") e.preventDefault();
+              if (e.key === "-" || e.key === "e" || e.key === "E")
+                e.preventDefault();
             }}
           />
           <FieldError msg={canShowError("altura") ? errors.altura : undefined} />
@@ -197,25 +200,29 @@ const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
           <input
             type="number"
             inputMode="numeric"
-            min={LIMITS.idadeAnos.min}
-            max={LIMITS.idadeAnos.max}
             placeholder="Idade (anos)"
-            className={`${inputStyle} ${canShowError("idade") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+            className={`${inputStyle} ${
+              canShowError("idade")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
             value={values.idade}
             onChange={setField("idade")}
             onBlur={markTouched("idade")}
             onKeyDown={(e) => {
-              if (e.key === "-" || e.key === "e" || e.key === "E") e.preventDefault();
+              if (e.key === "-" || e.key === "e" || e.key === "E")
+                e.preventDefault();
             }}
           />
           <FieldError msg={canShowError("idade") ? errors.idade : undefined} />
         </div>
 
-        {/* Select Sexo */}
         <div className="relative">
           <select
             className={`${inputStyle} appearance-none cursor-pointer bg-white ${
-              canShowError("sexo") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+              canShowError("sexo")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
             }`}
             value={values.sexo}
             onChange={setField("sexo")}
@@ -231,40 +238,19 @@ const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
           <FieldError msg={canShowError("sexo") ? errors.sexo : undefined} />
         </div>
 
-        <div>
-          <label className={labelStyle}>Quantos quilos quero ter (kg)</label>
-          <input
-            type="number"
-            inputMode="decimal"
-            min={LIMITS.pesoMetaKg.min}
-            max={LIMITS.pesoMetaKg.max}
-            placeholder="Quantos quilos quero ter (kg)"
-            className={`${inputStyle} ${canShowError("pesoMeta") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
-            value={values.pesoMeta}
-            onChange={setField("pesoMeta")}
-            onBlur={markTouched("pesoMeta")}
-            onKeyDown={(e) => {
-              if (e.key === "-" || e.key === "e" || e.key === "E") e.preventDefault();
-            }}
-          />
-          <FieldError msg={canShowError("pesoMeta") ? errors.pesoMeta : undefined} />
-        </div>
-
-        {/* Botão Próximo Centralizado */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-10 flex justify-center">
           <button
             type="button"
             onClick={handleNext}
             disabled={!isValid}
-            className={`flex items-center gap-2 py-3 px-10 rounded-full text-sm font-bold transition-transform shadow-md
+            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
               ${
                 isValid
                   ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
                   : "bg-gray-300 text-gray-600 cursor-not-allowed"
               }`}
           >
-            Próximo
-            <HiOutlineArrowRight size={16} />
+            Próximo <HiOutlineArrowRight size={16} />
           </button>
         </div>
       </form>
@@ -272,52 +258,349 @@ const ModalStep1: React.FC<ModalStepProps> = ({ onAction }) => {
   );
 };
 
-// --- PASSO 2 ---
-const ModalStep2: React.FC<ModalStepProps> = ({ onAction }) => (
-  <div className="flex flex-col h-full text-center">
-    <h2 className="text-2xl font-bold text-black font-['Montserrat'] mb-8 text-left">Medidas Físicas</h2>
+// -------------------- STEP 2: Bioimpedância/Extras --------------------
+type Step2Form = {
+  massaMuscular: string;
+  gorduraPercent: string;
+  pesoMeta: string;
+  dataMedidas: string;
+  objetivo: "" | "emagrecer" | "manter" | "ganhar_massa";
+};
 
-    <form className="space-y-6 flex-1 flex flex-col items-center">
-      <div className="relative w-full">
-        <select className={`${inputStyle} appearance-none cursor-pointer bg-white text-left`}>
-          <option value="" disabled selected>
-            Tipo de Intervenção
-          </option>
-          <option value="bypass">Bypass Gástrico</option>
-          <option value="sleeve">Sleeve Gastrectomia</option>
-          <option value="caneta">Caneta Emagrecedora</option>
-        </select>
-        <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-      </div>
+type Step2Errors = Partial<Record<keyof Step2Form, string>>;
 
-      <button type="button" className="text-[#6F3CF6] font-bold text-sm hover:underline self-start ml-2">
-        Preencher Informações Adicionais
-      </button>
+function validateStep2(values: Step2Form): Step2Errors {
+  const errors: Step2Errors = {};
 
+  if (isEmpty(values.massaMuscular))
+    errors.massaMuscular = "Informe a massa muscular.";
+  if (isEmpty(values.gorduraPercent))
+    errors.gorduraPercent = "Informe a % de gordura.";
+  if (isEmpty(values.pesoMeta)) errors.pesoMeta = "Informe o peso desejado.";
+  if (isEmpty(values.dataMedidas))
+    errors.dataMedidas = "Selecione a data das medidas.";
+  if (!values.objetivo) errors.objetivo = "Selecione o objetivo.";
+
+  return errors;
+}
+
+const Step2 = ({ onNext }: { onNext: () => void }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [values, setValues] = useState<Step2Form>({
+    massaMuscular: "",
+    gorduraPercent: "",
+    pesoMeta: "",
+    dataMedidas: "",
+    objetivo: "",
+  });
+
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof Step2Form, boolean>>
+  >({});
+
+  const errors = useMemo(() => validateStep2(values), [values]);
+  const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
+
+  const canShowError = (field: keyof Step2Form) =>
+    Boolean(touched[field] && errors[field]);
+
+  const markTouched = (field: keyof Step2Form) => () =>
+    setTouched((p) => ({ ...p, [field]: true }));
+
+  const setField =
+    (field: keyof Step2Form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setValues((p) => ({ ...p, [field]: e.target.value }));
+
+  const handleNext = () => {
+    setTouched({
+      massaMuscular: true,
+      gorduraPercent: true,
+      pesoMeta: true,
+      dataMedidas: true,
+      objetivo: true,
+    });
+
+    const currentErrors = validateStep2(values);
+    if (Object.keys(currentErrors).length > 0) return;
+    onNext();
+  };
+
+  const uploadButton = (
+    <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf,.png,.jpg,.jpeg"
+      />
       <button
         type="button"
-        onClick={onAction}
-        className="bg-[#6F3CF6] text-white py-3 px-12 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md mt-4"
+        onClick={() => fileInputRef.current?.click()}
+        className="flex items-center gap-2 bg-[#6F3CF6] text-white py-2 px-5 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-colors"
       >
-        Finalizar
+        <FiPlus size={16} />
+        Adicionar Bioimpedância
       </button>
+    </>
+  );
 
-      <div className="mt-auto pt-6 flex flex-col items-center">
-        <p className="text-gray-500 text-xs max-w-[80%] mb-4">
-          O preenchimento de informações adicionais fará com que a BARI te entregue resultados mais precisos
-        </p>
+  return (
+    <div className="flex flex-col h-full">
+      <HeaderRow title="Medidas Físicas" rightSlot={uploadButton} />
 
-        <div className="relative w-24 h-24">
-          <Image src="/images/bari_padrao.png" alt="Mascote Bari" fill className="object-contain object-top" />
+      <form className="space-y-4 flex-1">
+        <div>
+          <input
+            placeholder="Massa Muscular (kg)"
+            className={`${inputStyle} ${
+              canShowError("massaMuscular")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
+            value={values.massaMuscular}
+            onChange={setField("massaMuscular")}
+            onBlur={markTouched("massaMuscular")}
+          />
+          <FieldError
+            msg={
+              canShowError("massaMuscular") ? errors.massaMuscular : undefined
+            }
+          />
+        </div>
+
+        <div>
+          <input
+            placeholder="% de Gordura"
+            className={`${inputStyle} ${
+              canShowError("gorduraPercent")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
+            value={values.gorduraPercent}
+            onChange={setField("gorduraPercent")}
+            onBlur={markTouched("gorduraPercent")}
+          />
+          <FieldError
+            msg={
+              canShowError("gorduraPercent") ? errors.gorduraPercent : undefined
+            }
+          />
+        </div>
+
+        <div>
+          <input
+            placeholder="Quantos quilos quero ter (kg)"
+            className={`${inputStyle} ${
+              canShowError("pesoMeta")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
+            value={values.pesoMeta}
+            onChange={setField("pesoMeta")}
+            onBlur={markTouched("pesoMeta")}
+          />
+          <FieldError
+            msg={canShowError("pesoMeta") ? errors.pesoMeta : undefined}
+          />
+        </div>
+
+        {/* Label do campo de data das medidas */}
+        <div>
+          <label
+            style={{
+              color: "#6F3CF6",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              fontFamily: "Montserrat, Arial, sans-serif",
+              display: "block",
+              marginBottom: "8px",
+              textAlign: "left",
+              paddingLeft: "16px",
+            }}
+          >
+            Datas das medidas
+          </label>
+
+          <div className="relative">
+            <input
+              type="date"
+              className={`${inputStyle} pr-14 bg-white ${
+                canShowError("dataMedidas")
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : ""
+              }`}
+              value={values.dataMedidas}
+              onChange={setField("dataMedidas")}
+              onBlur={markTouched("dataMedidas")}
+            />
+            <FiCalendar className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" />
+          </div>
+
+          <FieldError
+            msg={canShowError("dataMedidas") ? errors.dataMedidas : undefined}
+          />
+        </div>
+
+        <div className="relative">
+          <select
+            className={`${inputStyle} appearance-none cursor-pointer bg-white ${
+              canShowError("objetivo")
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : ""
+            }`}
+            value={values.objetivo}
+            onChange={setField("objetivo")}
+            onBlur={markTouched("objetivo")}
+          >
+            <option value="" disabled>
+              Objetivo
+            </option>
+            <option value="emagrecer">Emagrecer</option>
+            <option value="manter">Manter</option>
+            <option value="ganhar_massa">Ganhar massa</option>
+          </select>
+          <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+          <FieldError
+            msg={canShowError("objetivo") ? errors.objetivo : undefined}
+          />
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={!isValid}
+            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
+              ${
+                isValid
+                  ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
+                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
+          >
+            Próximo <HiOutlineArrowRight size={16} />
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// -------------------- STEP 3: Sistema de Pontuação --------------------
+type Step3Form = { dataInicio: string };
+
+const Step3 = ({
+  onFinish,
+  onOpenMedication,
+  onOpenDiet,
+  onOpenTraining,
+}: {
+  onFinish: (values: Step3Form) => void;
+  onOpenMedication: () => void;
+  onOpenDiet: () => void;
+  onOpenTraining: () => void;
+}) => {
+  const [values, setValues] = useState<Step3Form>({ dataInicio: "" });
+  const [touched, setTouched] = useState<{ dataInicio?: boolean }>({});
+
+  const dataErr = useMemo(() => {
+    if (!touched.dataInicio) return "";
+    if (!values.dataInicio.trim()) return "Selecione a data de início.";
+    return "";
+  }, [touched.dataInicio, values.dataInicio]);
+
+  const pillButton =
+    "w-full h-[50px] px-6 rounded-full border border-black bg-white text-left text-gray-900 flex items-center justify-between hover:border-[#6F3CF6] hover:ring-1 hover:ring-[#6F3CF6] transition-all";
+
+  return (
+    <div className="flex flex-col h-full">
+      <HeaderRow title="Sistema de Pontuação" />
+
+      <div className="space-y-4 flex-1">
+        <button type="button" onClick={onOpenMedication} className={pillButton}>
+          <span>Medicamentos</span>
+          <IoChevronDown className="text-gray-500" />
+        </button>
+
+        <button type="button" onClick={onOpenDiet} className={pillButton}>
+          <span>Dieta</span>
+          <IoChevronDown className="text-gray-500" />
+        </button>
+
+        <button type="button" onClick={onOpenTraining} className={pillButton}>
+          <span>Treino</span>
+          <IoChevronDown className="text-gray-500" />
+        </button>
+
+        {/* ✅ ALTERADO: label igual ao Step2, mas preto */}
+        <div>
+          <label
+            style={{
+              color: "#000000",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              fontFamily: "Montserrat, Arial, sans-serif",
+              display: "block",
+              marginBottom: "8px",
+              textAlign: "left",
+              paddingLeft: "16px",
+            }}
+          >
+            Data de início
+          </label>
+
+          <div className="relative">
+            <input
+              type="date"
+              className={`${inputStyle} pr-14 bg-white ${
+                dataErr
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : ""
+              }`}
+              value={values.dataInicio}
+              onChange={(e) => setValues({ dataInicio: e.target.value })}
+              onBlur={() => setTouched({ dataInicio: true })}
+            />
+            <FiCalendar className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" />
+          </div>
+
+          {dataErr ? (
+            <p className="mt-1 ml-4 text-xs font-medium text-red-600">
+              {dataErr}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={() => {
+              setTouched({ dataInicio: true });
+              if (!values.dataInicio.trim()) return;
+              onFinish(values);
+            }}
+            className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
+          >
+            Finalizar
+          </button>
         </div>
       </div>
-    </form>
-  </div>
-);
+    </div>
+  );
+};
 
-// --- Componente Principal ---
-export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({ isOpen, onClose }) => {
-  const [step, setStep] = useState(1);
+// -------------------- COMPONENTE PRINCIPAL --------------------
+export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // ✅ estados para abrir os modais a partir do Step 3
+  const [isMedicationOpen, setIsMedicationOpen] = useState(false);
+  const [isDietOpen, setIsDietOpen] = useState(false);
+  const [isTrainingOpen, setIsTrainingOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -328,28 +611,49 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({ isOpen, on
 
   if (!isOpen) return null;
 
-  const handleNext = () => setStep(2);
-
   const handleFinish = () => {
     console.log("Fluxo finalizado!");
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-[500px] min-h-[550px] p-8 md:p-10 border border-gray-100 flex flex-col"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative bg-white rounded-[56px] shadow-2xl w-full max-w-[720px] min-h-[560px] p-10 border border-gray-100 flex flex-col"
         >
-          <IoClose size={24} />
-        </button>
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
+            aria-label="Fechar modal"
+          >
+            <IoClose size={24} />
+          </button>
 
-        {step === 1 ? <ModalStep1 onAction={handleNext} /> : <ModalStep2 onAction={handleFinish} />}
+          {step === 1 && <Step1 onNext={() => setStep(2)} />}
+          {step === 2 && <Step2 onNext={() => setStep(3)} />}
+          {step === 3 && (
+            <Step3
+              onOpenMedication={() => setIsMedicationOpen(true)}
+              onOpenDiet={() => setIsDietOpen(true)}
+              onOpenTraining={() => setIsTrainingOpen(true)}
+              onFinish={() => handleFinish()}
+            />
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* ✅ Modais que abrem ao clicar no Step 3 */}
+      <MedicationModal
+        isOpen={isMedicationOpen}
+        onClose={() => setIsMedicationOpen(false)}
+      />
+      <DietModal isOpen={isDietOpen} onClose={() => setIsDietOpen(false)} />
+      <TrainingModal
+        isOpen={isTrainingOpen}
+        onClose={() => setIsTrainingOpen(false)}
+      />
+    </>
   );
 };

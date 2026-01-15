@@ -1,21 +1,22 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import { FiPlus } from "react-icons/fi"
-import { HiOutlineArrowRight } from "react-icons/hi"
-import { IoClose, IoChevronDown } from "react-icons/io5"
+import React, { useEffect, useState } from "react";
+import { FiPlus } from "react-icons/fi";
+import { HiOutlineArrowRight } from "react-icons/hi";
+import { IoClose, IoChevronDown } from "react-icons/io5";
+import { BsInstagram } from "react-icons/bs";
 
 interface DietModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 // ====== Estilo (igual vibe do protótipo) ======
 const inputPill =
-  "w-full h-[46px] px-5 rounded-full border border-[#6F3CF6] bg-white text-[#19191A] placeholder-[#6F3CF6]/70 focus:outline-none focus:ring-1 focus:ring-[#6F3CF6] transition-all"
+  "w-full h-[46px] px-5 rounded-full border border-[#6F3CF6] bg-white text-[#19191A] placeholder-[#6F3CF6]/70 focus:outline-none focus:ring-1 focus:ring-[#6F3CF6] transition-all";
 
-const headerRow = "flex justify-between items-center w-full"
-const titleStyle = "text-[18px] font-medium text-[#19191A] font-['Montserrat']"
+const headerRow = "flex justify-between items-center w-full";
+const titleStyle = "text-[18px] font-medium text-[#19191A] font-['Montserrat']";
 
 // ====== Step 1: Botão Adicionar ======
 const StepAddDiet = ({ onNext }: { onNext: () => void }) => {
@@ -37,12 +38,12 @@ const StepAddDiet = ({ onNext }: { onNext: () => void }) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ====== Step 2: Form Dieta (com Macros expandível) ======
 const StepDietForm = ({ onNext }: { onNext: () => void }) => {
-  const [macrosExpanded, setMacrosExpanded] = useState(false)
+  const [macrosExpanded, setMacrosExpanded] = useState(false);
 
   return (
     <div className="flex flex-col h-full">
@@ -55,7 +56,6 @@ const StepDietForm = ({ onNext }: { onNext: () => void }) => {
         <input type="text" placeholder="Frequência Diária" className={inputPill} />
         <input type="text" placeholder="Calorias Diárias Consumidas" className={inputPill} />
 
-        {/* Gramas de Macros (colapsa/expande como no protótipo) */}
         {!macrosExpanded ? (
           <button
             type="button"
@@ -105,8 +105,8 @@ const StepDietForm = ({ onNext }: { onNext: () => void }) => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
 // ====== Step 3: Nutricionista ======
 const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => {
@@ -119,7 +119,18 @@ const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => {
 
       <form className="mt-6 space-y-4 flex-1">
         <input type="text" placeholder="Nome do Nutricionista" className={inputPill} />
-        <input type="text" placeholder="Instagram do Nutricionista" className={inputPill} />
+
+        {/* Instagram padronizado (igual seu exemplo) */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Instagram do Nutricionista"
+            className={`${inputPill} pl-12`}
+          />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/50">
+            <BsInstagram size={16} />
+          </div>
+        </div>
 
         <div className="pt-6 flex justify-center">
           <button
@@ -132,30 +143,26 @@ const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
 // ====== Componente Principal ======
 export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // reset ao fechar (igual seus outros modais)
   useEffect(() => {
     if (!isOpen) {
-      const t = setTimeout(() => setStep(1), 250)
-      return () => clearTimeout(t)
+      const t = setTimeout(() => setStep(1), 250);
+      return () => clearTimeout(t);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const handleNext = () => setStep((prev) => (prev === 1 ? 2 : prev === 2 ? 3 : 3))
-  const handleFinish = () => {
-    // aqui você pode salvar o payload depois
-    onClose()
-  }
+  const handleNext = () => setStep((prev) => (prev === 1 ? 2 : prev === 2 ? 3 : 3));
+  const handleFinish = () => onClose();
 
-  const containerHeightClass = step === 1 ? "min-h-[340px]" : "min-h-[520px]"
+  const containerHeightClass = step === 1 ? "min-h-[340px]" : "min-h-[520px]";
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-transparent backdrop-blur-sm p-4">
@@ -176,5 +183,5 @@ export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
         {step === 3 && <StepNutritionist onFinish={handleFinish} />}
       </div>
     </div>
-  )
-}
+  );
+};

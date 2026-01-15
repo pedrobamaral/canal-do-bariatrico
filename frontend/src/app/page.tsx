@@ -830,7 +830,7 @@ export default function Home() {
                     transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span style={{ display: "inline-flex", alignItems: "center" }}>
+                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -909,7 +909,7 @@ export default function Home() {
                     transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span style={{ display: "inline-flex", alignItems: "center" }}>
+                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -996,7 +996,7 @@ export default function Home() {
                     transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span style={{ display: "inline-flex", alignItems: "center" }}>
+                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -1112,6 +1112,10 @@ export default function Home() {
           font-size: 0.9rem;
           color: ${CORES.pretoPrincipal};
           pointer-events: none;
+        }
+
+        a:hover .arrow {
+          transform: translateX(4px);
         }
       `}</style>
     </div>

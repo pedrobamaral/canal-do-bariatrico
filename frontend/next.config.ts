@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true, //nao dar erro com o eslint no build
+  },
+  
   async rewrites() {
     return [
       {

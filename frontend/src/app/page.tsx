@@ -14,7 +14,7 @@ import Image from "next/image"
 import { FaArrowRight } from "react-icons/fa6"
 
 // ✅ Navbar antiga
-import HeaderTeste from "@/components/header"
+import HeaderTeste from "@/components/Navbar"
 
 // ✅ Modais
 import { HealthSurveyModal } from "@/components/HealthSurveyModal"

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
-import { createUser } from "../utils/api";
+import { createUser } from "@/api/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -195,20 +195,19 @@ const SignUpForm: React.FC = () => {
     try {
       const response = await createUser(formData.name, formData.email, formData.password);
 
-      if (response.status != "sucesso") {
-        setError("Erro ao cadastrar usuário. Verifique os dados.");
-        return;
+      if (response && response.status === "sucesso") {
+        setSuccess("Cadastro realizado! Redirecionando para o login...");
+        
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
+      } else {
+        setError(response?.message || "Erro ao cadastrar usuário. Verifique os dados.");
       }
 
-      setSuccess("Cadastro realizado! Redirecionando para o login...");
-      
-      setTimeout(() => {
-        router.push("/login");
-      }, 1000);
-
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setError(error instanceof Error ? error.message : "Erro desconhecido ao cadastrar usuário.");
+      setError(error?.message || "Erro desconhecido ao cadastrar usuário.");
     } finally {
       setLoading(false);
     }

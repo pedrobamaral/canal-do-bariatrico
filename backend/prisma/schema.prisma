@@ -26,6 +26,7 @@ model Usuario {
   // Projeto Vidale
   ativo       Boolean?     @default(false)
   telefone    String?      @db.VarChar(20)
+  foto        String?      @db.LongText
   sexo        Sexo?
   peso        Decimal?     @db.Decimal(5, 2)
   altura      Decimal?     @db.Decimal(5, 2)

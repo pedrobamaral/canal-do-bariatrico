@@ -60,9 +60,19 @@ export class UsuarioService {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id: userId },
       select: {
-        id: true,  
+        id: true,
         nome: true,
         email: true,
+        telefone: true,
+        foto: true,
+        sexo: true,
+        peso: true,
+        altura: true,
+        Nascimento: true,
+        massa_magra: true,
+        meta: true,
+        admin: true,
+        ativo: true,
         dataCriacao: true,
       },
     });

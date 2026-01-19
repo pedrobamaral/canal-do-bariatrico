@@ -8,6 +8,7 @@ CREATE TABLE `Usuario` (
     `dataCriacao` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `ativo` BOOLEAN NULL DEFAULT false,
     `telefone` VARCHAR(20) NULL,
+    `foto` LONGTEXT NULL,
     `sexo` ENUM('Masculino', 'Feminino', 'Outro') NULL,
     `peso` DECIMAL(5, 2) NULL,
     `altura` DECIMAL(5, 2) NULL,
@@ -19,6 +20,8 @@ CREATE TABLE `Usuario` (
 
     UNIQUE INDEX `Usuario_email_key`(`email`),
     INDEX `Usuario_ativo_idx`(`ativo`),
+    INDEX `Usuario_email_senha_idx`(`email`, `senha`),
+    INDEX `Usuario_telefone_idx`(`telefone`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -96,6 +99,7 @@ CREATE TABLE `pontuacoes` (
 CREATE TABLE `Dia0` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idUsuario` INTEGER NOT NULL,
+    `idCiclo` INTEGER NULL,
     `quer_msg` BOOLEAN NULL DEFAULT true,
     `iniciou_medicamento` BOOLEAN NULL DEFAULT false,
     `dia_iniciar_med` DATETIME(3) NULL,
@@ -115,40 +119,75 @@ CREATE TABLE `Ciclo` (
     `idUsuario` INTEGER NOT NULL,
     `dia0Id` INTEGER NOT NULL,
     `numCiclo` INTEGER NULL,
-    `emCiclo` BOOLEAN NULL DEFAULT false,
-    `temMensagem` BOOLEAN NULL DEFAULT false,
+    `ativoCiclo` BOOLEAN NULL DEFAULT false,
     `med_prescrita` BOOLEAN NULL DEFAULT false,
+    `freq_med_prescrita` INTEGER NULL DEFAULT 0,
     `mounjaro` BOOLEAN NULL DEFAULT false,
     `treino` BOOLEAN NULL DEFAULT false,
-    `bioimpendancia` BOOLEAN NULL DEFAULT false,
+    `dieta` BOOLEAN NULL DEFAULT false,
+    `agua` BOOLEAN NULL DEFAULT false,
+    `bioimpedancia` BOOLEAN NULL DEFAULT false,
     `consulta` BOOLEAN NULL DEFAULT false,
-    `descanso` BOOLEAN NULL DEFAULT false,
-    `refeicao_livre` BOOLEAN NULL DEFAULT false,
-    `cumpriu` DECIMAL(5, 2) NULL,
-    `pontos` INTEGER NULL DEFAULT 0,
-    `data_atual` DATETIME(3) NULL,
-    `dia_ciclo` INTEGER NULL,
+    `cumpriu_atual` DECIMAL(5, 2) NULL DEFAULT 0,
+    `respSim` INTEGER NULL DEFAULT 0,
+    `respNao` INTEGER NULL DEFAULT 0,
+    `pontos_atual` DECIMAL(5, 2) NULL DEFAULT 0,
+    `maxPontos` DECIMAL(5, 2) NULL,
+    `dia_ciclo_atual` INTEGER NOT NULL DEFAULT 0,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Ciclo_dia0Id_key`(`dia0Id`),
     INDEX `Ciclo_idUsuario_idx`(`idUsuario`),
-    INDEX `Ciclo_idUsuario_data_atual_idx`(`idUsuario`, `data_atual`),
     INDEX `Ciclo_dia0Id_idx`(`dia0Id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DiaCiclo` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `idUsuario` INTEGER NOT NULL,
+    `idCiclo` INTEGER NOT NULL,
+    `dia0Id` INTEGER NOT NULL,
+    `idDaily` INTEGER NULL,
+    `emCiclo` BOOLEAN NULL DEFAULT false,
+    `ativoChatbot` BOOLEAN NULL DEFAULT false,
+    `tem_med_prescrita` BOOLEAN NULL DEFAULT false,
+    `tem_mounjaro` BOOLEAN NULL DEFAULT false,
+    `tem_treino` BOOLEAN NULL DEFAULT false,
+    `tem_dieta` BOOLEAN NULL DEFAULT false,
+    `tem_agua` BOOLEAN NULL DEFAULT false,
+    `tem_bioimpedancia` BOOLEAN NULL DEFAULT false,
+    `tem_consulta` BOOLEAN NULL DEFAULT false,
+    `tem_descanso` BOOLEAN NULL DEFAULT false,
+    `tem_refeicao_livre` BOOLEAN NULL DEFAULT false,
+    `cumpriu` DECIMAL(5, 2) NULL,
+    `pontos` DECIMAL(5, 2) NULL,
+    `data_dia` DATETIME(3) NULL,
+    `dia_ciclo` INTEGER NOT NULL DEFAULT 0,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `DiaCiclo_idDaily_key`(`idDaily`),
+    INDEX `DiaCiclo_idUsuario_idx`(`idUsuario`),
+    INDEX `DiaCiclo_dia0Id_idx`(`dia0Id`),
+    INDEX `DiaCiclo_idCiclo_idx`(`idCiclo`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Daily` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `idCiclo` INTEGER NULL,
+    `idUsuario` INTEGER NOT NULL,
+    `idCiclo` INTEGER NOT NULL,
+    `idDiaCiclo` INTEGER NOT NULL,
     `data` DATETIME(3) NULL,
     `hora_ans` DATETIME(3) NULL,
-    `agua_check` BOOLEAN NULL,
-    `dieta_check` BOOLEAN NULL,
     `treino_check` BOOLEAN NULL,
+    `dieta_check` BOOLEAN NULL,
+    `agua_check` BOOLEAN NULL,
     `mounjaro_check` BOOLEAN NULL,
-    `bioimpendancia_check` BOOLEAN NULL,
+    `bioimpedancia_check` BOOLEAN NULL,
     `refeicao_livre_check` BOOLEAN NULL,
     `descanso_check` BOOLEAN NULL,
     `consulta_check` BOOLEAN NULL,
@@ -156,7 +195,7 @@ CREATE TABLE `Daily` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Daily_idCiclo_key`(`idCiclo`),
+    UNIQUE INDEX `Daily_idDiaCiclo_key`(`idDiaCiclo`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -240,7 +279,22 @@ ALTER TABLE `Ciclo` ADD CONSTRAINT `Ciclo_idUsuario_fkey` FOREIGN KEY (`idUsuari
 ALTER TABLE `Ciclo` ADD CONSTRAINT `Ciclo_dia0Id_fkey` FOREIGN KEY (`dia0Id`) REFERENCES `Dia0`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `DiaCiclo` ADD CONSTRAINT `DiaCiclo_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DiaCiclo` ADD CONSTRAINT `DiaCiclo_idCiclo_fkey` FOREIGN KEY (`idCiclo`) REFERENCES `Ciclo`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DiaCiclo` ADD CONSTRAINT `DiaCiclo_dia0Id_fkey` FOREIGN KEY (`dia0Id`) REFERENCES `Dia0`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Daily` ADD CONSTRAINT `Daily_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Daily` ADD CONSTRAINT `Daily_idCiclo_fkey` FOREIGN KEY (`idCiclo`) REFERENCES `Ciclo`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Daily` ADD CONSTRAINT `Daily_idDiaCiclo_fkey` FOREIGN KEY (`idDiaCiclo`) REFERENCES `DiaCiclo`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Endereco` ADD CONSTRAINT `Endereco_idUsuario_fkey` FOREIGN KEY (`idUsuario`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

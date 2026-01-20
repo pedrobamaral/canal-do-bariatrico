@@ -1,3 +1,4 @@
+// app/login/page.tsx (ou o arquivo do seu LoginPage)
 "use client";
 
 import Image from "next/image";
@@ -136,21 +137,25 @@ const LoginForm: React.FC = () => {
       });
 
       if (data.access_token) {
-        // ✅ PADRÃO DO HEADER
+        // PADRÃO DO HEADER
         localStorage.setItem("authToken", data.access_token);
 
-        // Opcional: user
+        // user (opcional)
         if (data.user) {
           localStorage.setItem("bari_user", JSON.stringify(data.user));
         }
 
-        // ✅ avisa o header na mesma aba
+        // abre o modal pós-login apenas se ainda não foi concluído neste navegador
+        if (localStorage.getItem("postLoginModalDone") !== "1") {
+          localStorage.setItem("postLoginModal", "1");
+        }
+
+        // avisa o header na mesma aba
         window.dispatchEvent(new Event("auth-changed"));
       }
 
       router.push("/");
       router.refresh();
-
     } catch (error: any) {
       setError(error.message);
 
@@ -311,12 +316,10 @@ const LoginPage: React.FC = () => {
           width: "100%",
         }}
       >
-        {/* Card */}
         <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-start" }}>
           <LoginForm />
         </div>
 
-        {/* Imagem da Bari */}
         <div
           style={{
             flex: "0 1 700px",

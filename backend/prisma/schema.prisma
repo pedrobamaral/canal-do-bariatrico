@@ -18,15 +18,17 @@ model Usuario {
   email       String     @unique @db.VarChar(100)
   senha       String     @db.VarChar(100)
   nome        String     @db.VarChar(100)
-  endereco    Endereco[]
-  carrinho    Carrinho?
+  telefone    String?    @db.VarChar(20)
+  foto        String?    @db.LongText
   admin       Boolean    @default(false)
   dataCriacao DateTime   @default(now())
 
+  //Ecommerce
+  endereco    Endereco[]
+  carrinho    Carrinho?
+
   // Projeto Vidale
   ativo       Boolean?     @default(false)
-  telefone    String?      @db.VarChar(20)
-  foto        String?      @db.LongText
   sexo        Sexo?
   peso        Decimal?     @db.Decimal(5, 2)
   altura      Decimal?     @db.Decimal(5, 2)

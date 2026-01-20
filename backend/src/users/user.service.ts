@@ -81,6 +81,10 @@ export class UsuarioService {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
 
+    console.log('=== FINDONE - Usuário retornado ===');
+    console.log('usuario:', usuario);
+    console.log('usuario.telefone:', usuario.telefone);
+
     return usuario;
   }
 
@@ -101,10 +105,25 @@ export class UsuarioService {
       const usuarioAtualizado = await this.prisma.usuario.update({
         where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
         data: updateUsuarioDto,
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          telefone: true,
+          foto: true,
+          sexo: true,
+          peso: true,
+          altura: true,
+          Nascimento: true,
+          massa_magra: true,
+          meta: true,
+          admin: true,
+          ativo: true,
+          dataCriacao: true,
+        },
       });
 
-      const { senha, ...result } = usuarioAtualizado; 
-      return result;
+      return usuarioAtualizado; 
     } catch (error) {
       throw new InternalServerErrorException('Não foi possível atualizar o usuário.');
     }

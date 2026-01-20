@@ -7,6 +7,20 @@ import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { toast, ToastContainer } from "react-toastify";
 
+// Migração de token antigo para novo no root layout
+// Este efeito seria normalmente no layout.tsx, mas colocamos aqui por segurança
+const migrateTokenIfNeeded = () => {
+  if (typeof window !== 'undefined') {
+    const authToken = localStorage.getItem('authToken');
+    const bariToken = localStorage.getItem('bari_token');
+    
+    if (authToken && !bariToken) {
+      localStorage.setItem('bari_token', authToken);
+      localStorage.removeItem('authToken');
+    }
+  }
+};
+
 type Usuario = {
   id: number;
   nome: string;
@@ -48,6 +62,9 @@ export default function UserPage() {
 
     try {
       const userData = await getUserById(Number(id));
+      console.log("=== DADOS DO USUÁRIO ===");
+      console.log("userData:", userData);
+      console.log("userData.telefone:", userData.telefone);
       setUsuario(userData);
       setError(false);
 
@@ -83,6 +100,8 @@ export default function UserPage() {
   };
 
   useEffect(() => {
+    migrateTokenIfNeeded();
+    
     if (!id) return;
     
     const fetchInitialData = async () => {
@@ -159,7 +178,7 @@ export default function UserPage() {
       <div className="relative w-full max-w-5xl mx-auto">
         <div className="absolute -top-[104px] left-24 flex flex-col items-start">
           <img
-            src={usuario.foto || "/images/bari_padrao.png"}
+            src={usuario.foto || "/images/defaultAvatar.jpg"}
             alt="Foto de Perfil"
             className="w-40 h-40 rounded-full object-cover border-4 border-back"
             onError={(e) => { e.currentTarget.src = "/images/bari_padrao.png"; }}
@@ -195,7 +214,7 @@ export default function UserPage() {
         nome={usuario.nome}
         email={usuario.email}
         telefone={usuario.telefone}
-        onSuccess={fetchAllPageData}
+        onSuccess={() => fetchAllPageData()}
       />      
       
       <ToastContainer/>

@@ -23,19 +23,24 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [telefone, setTelefone] = useState('');
-
-    // Preencher campos quando o modal abre com dados do usuário
-    React.useEffect(() => {
-        if (mostrar) {
-            setName(nome || '');
-            setEmail(emailProp || '');
-            setTelefone(telefoneProp || '');
-        }
-    }, [mostrar, nome, emailProp, telefoneProp]);
-
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [mostrarModalPass, setMostrarPass] = useState(false)
+
+    // Atualizar preview da imagem quando a foto do usuário mudar ou quando um arquivo for selecionado
+    React.useEffect(() => {
+        if (selectedFile) {
+            const objectUrl = URL.createObjectURL(selectedFile);
+            setImagePreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else if (foto) {
+            setImagePreview(foto);
+        } else {
+            setImagePreview("/images/defaultAvatar.jpg");
+        }
+    }, [foto, selectedFile]);
+
 
     const UploadFile = async (file: File) => {
         try {
@@ -127,10 +132,6 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
 
     if (!mostrar) return null;
 
-    const imagePreview = selectedFile 
-        ? URL.createObjectURL(selectedFile) 
-        : (foto || "/defaultAvatar.jpg");
-
     return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 <div className="bg-[#EDEDED] rounded-lg p-8 max-w-md w-full text-center shadow-lg relative">
@@ -143,8 +144,8 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
                         <img
                             src={imagePreview}
                             alt="Foto"
-                            className="w-24 h-24 rounded-full object-cover "
-                            onError={(e) => { e.currentTarget.src = "/defaultAvatar.jpg"; }}
+                            className="w-24 h-24 rounded-full object-cover"
+                            onError={(e) => { e.currentTarget.src = "/images/bari_padrao.png"; }}
                         />
                         
                         <label 

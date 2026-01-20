@@ -49,6 +49,11 @@ export async function getUserById(id: number): Promise<Usuario> {
   try {
     const response = await api.get(`/usuarios/${id}`);
     
+    console.log('=== API - getUserById ===');
+    console.log('response.data:', response.data);
+    console.log('response.data.data:', response.data.data);
+    console.log('response.data.data.telefone:', response.data.data?.telefone);
+    
     if (response.data.status === 'sucesso') {
       return response.data.data;
     }

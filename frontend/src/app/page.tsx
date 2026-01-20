@@ -1,3 +1,4 @@
+// app/page.tsx (ou o arquivo da sua Home)
 "use client"
 
 import React, { useEffect, useState } from "react"
@@ -13,11 +14,14 @@ import {
 import Image from "next/image"
 import { FaArrowRight } from "react-icons/fa6"
 
-// ✅ Navbar antiga
+// Navbar antiga
 import HeaderTeste from "@/components/header"
 
-// ✅ Só o HealthSurveyModal fica na Home
+// Só o HealthSurveyModal fica na Home
 import { HealthSurveyModal } from "@/components/HealthSurveyModal"
+
+// Novo modal pós-login
+import { PostLoginModal, type PostLoginData } from "@/components/PostLoginModal"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -345,14 +349,16 @@ export default function Home() {
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  // ✅ Só HealthSurveyModal existe aqui
+  // Só HealthSurveyModal existe aqui
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
+
+  // Modal pós-login (Imagem 2)
+  const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false)
 
   const handleConseguiResultados = () => {
     setIsHealthModalOpen(true)
   }
 
-  // ✅ Agora "fechar" é fechar mesmo (sem abrir nada depois)
   const handleHealthSurveyClose = () => {
     setIsHealthModalOpen(false)
   }
@@ -377,6 +383,26 @@ export default function Home() {
     )
   }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipo])
 
+  // Abre o modal pós-login automaticamente
+  useEffect(() => {
+    const token = localStorage.getItem("authToken")
+    if (!token) return
+
+    const done = localStorage.getItem("postLoginModalDone") === "1"
+    const shouldOpen = localStorage.getItem("postLoginModal") === "1"
+
+    if (!done && shouldOpen) {
+      setIsPostLoginModalOpen(true)
+      localStorage.removeItem("postLoginModal")
+    }
+  }, [])
+
+  const handlePostLoginFinish = (data: PostLoginData) => {
+    console.log("Dados pós-login:", data)
+    localStorage.setItem("postLoginModalDone", "1")
+    setIsPostLoginModalOpen(false)
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
       <HeaderTeste />
@@ -390,7 +416,6 @@ export default function Home() {
         }}
       >
         <div style={{ maxWidth: "1200px", width: "100%" }}>
-          {/* GRID PRINCIPAL (paciente + gráfico) */}
           <div
             style={{
               display: "grid",
@@ -398,7 +423,6 @@ export default function Home() {
               gap: "30px",
             }}
           >
-            {/* Esquerda */}
             <div
               style={{
                 minWidth: "350px",
@@ -407,7 +431,6 @@ export default function Home() {
                 gap: "24px",
               }}
             >
-              {/* Paciente */}
               <div>
                 <label
                   style={{
@@ -494,7 +517,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Intervenção */}
               <div>
                 <label
                   style={{
@@ -584,7 +606,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Direita – Gráfico */}
             <div style={{ minWidth: "350px", height: "100%", alignSelf: "stretch" }}>
               <div
                 style={{
@@ -712,7 +733,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* CARDS */}
           <div
             style={{
               maxWidth: "1200px",
@@ -723,7 +743,6 @@ export default function Home() {
               gap: "32px",
             }}
           >
-            {/* Endocrino */}
             <div
               style={{
                 background: "white",
@@ -797,7 +816,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Nutri */}
             <div
               style={{
                 background: "white",
@@ -871,7 +889,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Bariátrica */}
             <div
               style={{
                 background: "white",
@@ -956,8 +973,16 @@ export default function Home() {
         </div>
       </main>
 
-      {/* ✅ Só HealthSurveyModal */}
       <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} />
+
+      <PostLoginModal
+        isOpen={isPostLoginModalOpen}
+        onClose={() => setIsPostLoginModalOpen(false)}
+        onFinish={handlePostLoginFinish}
+        onFillAdditionalInfo={() => {
+          console.log("Preencher Informações Adicionais")
+        }}
+      />
 
       <style jsx>{`
         input[type='range']::-webkit-slider-thumb {

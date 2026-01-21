@@ -336,23 +336,45 @@ function calcularTrajetoria({
   return data
 }
 
+// ✅ 1 SELECT com optgroup
+type IntervencaoSelectValue =
+  | ""
+  | "dieta_treino"
+  | "med_mounjaro"
+  | "med_topiramato"
+  | "med_naltrexona_bupropiona"
+  | "med_outro"
+  | "cir_sleeve"
+  | "cir_bypass"
+
+function mapSelectToTipoCirurgia(v: IntervencaoSelectValue): string {
+  if (v === "cir_sleeve") return "Sleeve Gastrectomia"
+  if (v === "cir_bypass") return "Bypass Gástrico"
+  return "Outra Intervenção"
+}
+
 export default function Home() {
   const [peso, setPeso] = useState(80)
   const [altura, setAltura] = useState(170)
   const [idade, setIdade] = useState(35)
   const [fumante, setFumante] = useState(false)
   const [diabetes, setDiabetes] = useState<DiabetesOption>("sem_diabetes")
-  const [intervencaoData, setIntervencaoData] = useState({
-    tipo: "Bypass Gástrico",
+
+  const [intervencaoData, setIntervencaoData] = useState<{
+    value: IntervencaoSelectValue
+    medicamentoOutro: string
+    tipoCirurgia: string
+  }>({
+    value: "",
+    medicamentoOutro: "",
+    tipoCirurgia: "Outra Intervenção",
   })
+
   const [isMobile, setIsMobile] = useState(false)
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  // Só HealthSurveyModal existe aqui
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
-
-  // Modal pós-login (Imagem 2)
   const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false)
 
   const handleConseguiResultados = () => {
@@ -378,12 +400,11 @@ export default function Home() {
         idade,
         fumante,
         diabetes,
-        tipoCirurgia: intervencaoData.tipo,
+        tipoCirurgia: intervencaoData.tipoCirurgia,
       })
     )
-  }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipo])
+  }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipoCirurgia])
 
-  // Abre o modal pós-login automaticamente
   useEffect(() => {
     const token = localStorage.getItem("authToken")
     if (!token) return
@@ -455,33 +476,9 @@ export default function Home() {
                     padding: "32px",
                   }}
                 >
-                  <SliderInput
-                    label="Peso"
-                    unit="kg"
-                    value={peso}
-                    min={25}
-                    max={300}
-                    step={1}
-                    onChange={setPeso}
-                  />
-                  <SliderInput
-                    label="Altura"
-                    unit="cm"
-                    value={altura}
-                    min={100}
-                    max={230}
-                    step={1}
-                    onChange={setAltura}
-                  />
-                  <SliderInput
-                    label="Idade"
-                    unit="anos"
-                    value={idade}
-                    min={18}
-                    max={80}
-                    step={1}
-                    onChange={setIdade}
-                  />
+                  <SliderInput label="Peso" unit="kg" value={peso} min={25} max={300} step={1} onChange={setPeso} />
+                  <SliderInput label="Altura" unit="cm" value={altura} min={100} max={230} step={1} onChange={setAltura} />
+                  <SliderInput label="Idade" unit="anos" value={idade} min={18} max={80} step={1} onChange={setIdade} />
 
                   <div style={{ marginTop: "32px" }}>
                     <Toggle label="Fumante" checked={fumante} onChange={setFumante} />
@@ -517,6 +514,7 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* ✅ INTERVENÇÃO: 1 SELECT */}
               <div>
                 <label
                   style={{
@@ -556,40 +554,57 @@ export default function Home() {
                     </label>
                   </div>
 
-                  <div style={{ marginBottom: "18px" }}>
+                  <div style={{ marginBottom: intervencaoData.value === "med_outro" ? "14px" : 0 }}>
                     <div className="pill-select-wrapper">
                       <select
                         className="pill-select"
-                        value={intervencaoData.tipo}
-                        onChange={(e) =>
-                          setIntervencaoData({
-                            ...intervencaoData,
-                            tipo: e.target.value,
-                          })
-                        }
+                        value={intervencaoData.value}
+                        onChange={(e) => {
+                          const v = e.target.value as IntervencaoSelectValue
+                          setIntervencaoData((prev) => ({
+                            ...prev,
+                            value: v,
+                            medicamentoOutro: v === "med_outro" ? prev.medicamentoOutro : "",
+                            tipoCirurgia: mapSelectToTipoCirurgia(v),
+                          }))
+                        }}
                       >
-                        <option>Bypass Gástrico</option>
-                        <option>Sleeve Gastrectomia</option>
-                        <option>Banda Gástrica</option>
+                        <option value="" disabled>
+                          Selecione...
+                        </option>
+
+                        <option value="dieta_treino">Dieta e Treino</option>
+
+                        <optgroup label="Canetinhas Emagrecedoras">
+                          <option value="med_mounjaro">Mounjaro</option>
+                          <option value="med_topiramato">Topiramato</option>
+                          <option value="med_naltrexona_bupropiona">Naltrexona + bupropiona</option>
+                          <option value="med_outro">Outro</option>
+                        </optgroup>
+
+                        <optgroup label="Cirurgia Bariátrica">
+                          <option value="cir_sleeve">Sleeve</option>
+                          <option value="cir_bypass">Bypass</option>
+                        </optgroup>
                       </select>
                     </div>
                   </div>
 
-                  <div style={{ marginBottom: "18px" }}>
+                  {intervencaoData.value === "med_outro" && (
                     <div className="pill-select-wrapper">
-                      <select className="pill-select" disabled>
-                        <option>Medicamentos (pedir informarções pro Rômulo)</option>
-                      </select>
+                      <input
+                        className="pill-input"
+                        value={intervencaoData.medicamentoOutro}
+                        onChange={(e) =>
+                          setIntervencaoData((prev) => ({
+                            ...prev,
+                            medicamentoOutro: e.target.value,
+                          }))
+                        }
+                        placeholder="Escreva o nome da medicação"
+                      />
                     </div>
-                  </div>
-
-                  <div style={{ marginBottom: 0 }}>
-                    <div className="pill-select-wrapper">
-                      <select className="pill-select" disabled>
-                        <option>Dieta e Treino (pedir informarções pro Rômulo)</option>
-                      </select>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 <div
@@ -601,7 +616,8 @@ export default function Home() {
                     lineHeight: 1.3,
                   }}
                 >
-                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter de prescrição ou recomendação médica. Tanto a bariátrica quanto os medicamentos precisam de dieta e treino para resultados a longo prazo
+                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter de prescrição ou recomendação médica.
+                  Tanto a bariátrica quanto os medicamentos precisam de dieta e treino para resultados a longo prazo
                 </div>
               </div>
             </div>
@@ -733,6 +749,7 @@ export default function Home() {
             </div>
           </div>
 
+          {/* cards finais mantidos iguais */}
           <div
             style={{
               maxWidth: "1200px",
@@ -1050,6 +1067,24 @@ export default function Home() {
           font-size: 0.9rem;
           color: ${CORES.pretoPrincipal};
           pointer-events: none;
+        }
+
+        .pill-input {
+          width: 100%;
+          border-radius: 999px;
+          border: 2px solid ${CORES.roxoPrincipal};
+          padding: 8px 16px;
+          font-family: ${FONTES.secundaria};
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: ${CORES.pretoPrincipal};
+          background-color: white;
+          outline: none;
+        }
+
+        .pill-input::placeholder {
+          color: ${CORES.cinzaIcone};
+          font-weight: 500;
         }
 
         a:hover .arrow {

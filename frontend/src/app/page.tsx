@@ -341,6 +341,7 @@ type IntervencaoSelectValue =
   | ""
   | "dieta_treino"
   | "med_mounjaro"
+  | "med_ozempic" // ✅ ADICIONADO
   | "med_topiramato"
   | "med_naltrexona_bupropiona"
   | "med_outro"
@@ -577,6 +578,7 @@ export default function Home() {
 
                         <optgroup label="Canetinhas Emagrecedoras">
                           <option value="med_mounjaro">Mounjaro</option>
+                          <option value="med_ozempic">Ozempic</option> {/* ✅ ADICIONADO */}
                           <option value="med_topiramato">Topiramato</option>
                           <option value="med_naltrexona_bupropiona">Naltrexona + bupropiona</option>
                           <option value="med_outro">Outro</option>
@@ -741,7 +743,7 @@ export default function Home() {
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
-                  onClick={handleConseguiResultados}
+                  onClick={() => setIsHealthModalOpen(true)}
                 >
                   Consegui Resultados
                 </button>

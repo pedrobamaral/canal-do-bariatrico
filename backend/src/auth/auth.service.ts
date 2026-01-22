@@ -39,8 +39,12 @@ export class AuthService {
 
     const payload = { email: usuario.email, sub: usuario.id, admin: usuario.admin };
 
+    // Buscar os dados completos do usuário para retornar
+    const usuarioCompleto = await this.usuarioService.findOne(usuario.id);
+
     return {
       access_token: this.jwtService.sign(payload),
+      user: usuarioCompleto,
     };
   }
 }

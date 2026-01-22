@@ -5,10 +5,10 @@ import { FiPlus, FiCalendar } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
 
-// Modais
-import { MedicationModal } from "@/components/MedicationModal";
-import { DietModal } from "@/components/DietModal";
-import { TrainingModal } from "@/components/TrainingModal";
+// ✅ Modais
+import { MedicationModal } from "@/components/modals/MedicationModal";
+import { DietModal } from "@/components/modals/DietModal";
+import { TrainingModal } from "@/components/modals/TrainingModal";
 
 // IMPORT CERTO (seu api.ts está em src/app/utils/api.ts)
 import {
@@ -17,7 +17,7 @@ import {
   createSistema,
   createDia0,
   createCiclo,
-} from "../app/utils/api";
+} from "@/app/utils/api";
 
 interface HealthSurveyModalProps {
   isOpen: boolean;

@@ -4,7 +4,7 @@
 import Image from "next/image";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser } from "../utils/api";
+import { loginUser } from "@/api/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -137,8 +137,8 @@ const LoginForm: React.FC = () => {
       });
 
       if (data.access_token) {
-        // PADRÃO DO HEADER
-        localStorage.setItem("authToken", data.access_token);
+        // ✅ PADRÃO DO HEADER
+        localStorage.setItem("bari_token", data.access_token);
 
         // user (opcional)
         if (data.user) {

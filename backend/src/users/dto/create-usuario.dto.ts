@@ -31,6 +31,10 @@ export class CreateUsuarioDto {
   telefone?: string;
 
   @IsOptional()
+  @IsString()
+  foto?: string;
+
+  @IsOptional()
   @IsEnum(Sexo)
   sexo?: Sexo;
 

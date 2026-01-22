@@ -54,7 +54,7 @@ type Step1Form = {
   peso: string;
   altura: string;
   idade: string;
-  sexo: "" | "masculino" | "feminino";
+  sexo: "" | "Masculino" | "Feminino" | "Outro";
 };
 
 type Step1Errors = Partial<Record<keyof Step1Form, string>>;
@@ -246,8 +246,8 @@ const Step1 = ({
             <option value="" disabled>
               Sexo Biológico
             </option>
-            <option value="masculino">Masculino</option>
-            <option value="feminino">Feminino</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Feminino">Feminino</option>
           </select>
           <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           <FieldError msg={canShowError("sexo") ? errors.sexo : undefined} />

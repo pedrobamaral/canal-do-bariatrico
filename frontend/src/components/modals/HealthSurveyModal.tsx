@@ -7,9 +7,9 @@ import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
 
 // ✅ Modais
-import { MedicationModal } from "@/components/MedicationModal";
-import { DietModal } from "@/components/DietModal";
-import { TrainingModal } from "@/components/TrainingModal";
+import { MedicationModal } from "@/components/modals/MedicationModal";
+import { DietModal } from "@/components/modals/DietModal";
+import { TrainingModal } from "@/components/modals/TrainingModal";
 
 interface HealthSurveyModalProps {
   isOpen: boolean;

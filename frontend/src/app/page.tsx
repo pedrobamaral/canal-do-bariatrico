@@ -22,6 +22,7 @@ import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
 import { MedicationModal } from "@/components/modals/MedicationModal"
 import { DietModal } from "@/components/modals/DietModal"
 import { TrainingModal } from "@/components/modals/TrainingModal"
+import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -405,7 +406,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
-      <HeaderTeste />
+      <Navbar />
 
       <main
         style={{
@@ -811,16 +812,12 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-<<<<<<< HEAD
-                <Image src="/images/endocrinologista.jpg" alt="Endocrinologista" fill style={{ objectFit: "cover" }} />
-=======
                 <Image
                   src="/images/endocrinologista.png"
                   alt="Endocrinologista"
                   fill
                   style={{ objectFit: "cover" }}
                 />
->>>>>>> fix/userPage
               </div>
             </div>
 
@@ -892,16 +889,12 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-<<<<<<< HEAD
-                <Image src="/images/nutricionista.webp" alt="Nutricionista" fill style={{ objectFit: "cover" }} />
-=======
                 <Image
                   src="/images/nutricionista.png"
                   alt="Nutricionista"
                   fill
                   style={{ objectFit: "cover" }}
                 />
->>>>>>> fix/userPage
               </div>
             </div>
 
@@ -973,16 +966,12 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-<<<<<<< HEAD
-                <Image src="/images/cirurgiao.jpeg" alt="Cirurgião bariátrico" fill style={{ objectFit: "cover" }} />
-=======
                 <Image
                   src="/images/cirurgiao.png"
                   alt="Cirurgião bariátrico"
                   fill
                   style={{ objectFit: "cover" }}
                 />
->>>>>>> fix/userPage
               </div>
             </div>
 

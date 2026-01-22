@@ -5,12 +5,12 @@ import { FiPlus, FiCalendar } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
 
-// ✅ Modais
+// Modais
 import { MedicationModal } from "@/components/MedicationModal";
 import { DietModal } from "@/components/DietModal";
 import { TrainingModal } from "@/components/TrainingModal";
 
-// ✅ IMPORT CERTO (seu api.ts está em src/app/utils/api.ts)
+// IMPORT CERTO (seu api.ts está em src/app/utils/api.ts)
 import {
   getUserIdFromToken,
   patchUser,
@@ -689,8 +689,11 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({
 
       const dia0 = await createDia0({
         idUsuario,
-        dia0: step2.dataMedidas,
-        dia1: step3.dataInicio,
+        //dia0: step2.dataMedidas,
+        //dia1: step3.dataInicio,
+        iniciou_medicamento: false,
+        quer_msg: true,
+
       });
 
       // ⚠️ ajuste dependendo do retorno real do seu endpoint /dia0

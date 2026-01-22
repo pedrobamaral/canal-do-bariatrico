@@ -36,7 +36,7 @@ export class AuthController {
     return { message: "Você acessou uma rota protegida com sucesso!" };
   }
 
-  // ✅ NOVO: usuário atual (pro front)
+  // usuário atual (pro front)
   @UseGuards(JwtAuthGuard)
   @Get("me")
   async me(@Req() req: express.Request) {

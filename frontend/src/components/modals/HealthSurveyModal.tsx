@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { FiPlus, FiCalendar } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { IoClose, IoChevronDown } from "react-icons/io5";
@@ -10,6 +9,15 @@ import { IoClose, IoChevronDown } from "react-icons/io5";
 import { MedicationModal } from "@/components/modals/MedicationModal";
 import { DietModal } from "@/components/modals/DietModal";
 import { TrainingModal } from "@/components/modals/TrainingModal";
+
+// IMPORT CERTO (seu api.ts está em src/app/utils/api.ts)
+import {
+  getUserIdFromToken,
+  patchUser,
+  createSistema,
+  createDia0,
+  createCiclo,
+} from "@/app/utils/api";
 
 interface HealthSurveyModalProps {
   isOpen: boolean;
@@ -41,12 +49,12 @@ const FieldError = ({ msg }: { msg?: string }) => {
   return <p className="mt-1 ml-4 text-xs font-medium text-red-600">{msg}</p>;
 };
 
-// -------------------- STEP 1: Medidas Básicas --------------------
+// -------------------- STEP 1 --------------------
 type Step1Form = {
   peso: string;
   altura: string;
   idade: string;
-  sexo: "" | "masculino" | "feminino";
+  sexo: "" | "Masculino" | "Feminino" | "Outro";
 };
 
 type Step1Errors = Partial<Record<keyof Step1Form, string>>;
@@ -92,19 +100,26 @@ function validateStep1(values: Step1Form): Step1Errors {
   return errors;
 }
 
-const Step1 = ({ onNext }: { onNext: () => void }) => {
+const Step1 = ({
+  onNext,
+  onChange,
+  initialValues,
+}: {
+  onNext: () => void;
+  onChange: (values: Step1Form) => void;
+  initialValues: Step1Form;
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [values, setValues] = useState<Step1Form>({
-    peso: "",
-    altura: "",
-    idade: "",
-    sexo: "",
-  });
+  const [values, setValues] = useState<Step1Form>(initialValues);
 
   const [touched, setTouched] = useState<
     Partial<Record<keyof Step1Form, boolean>>
   >({});
+
+  useEffect(() => {
+    onChange(values);
+  }, [values, onChange]);
 
   const errors = useMemo(() => validateStep1(values), [values]);
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
@@ -231,8 +246,8 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
             <option value="" disabled>
               Sexo Biológico
             </option>
-            <option value="masculino">Masculino</option>
-            <option value="feminino">Feminino</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Feminino">Feminino</option>
           </select>
           <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           <FieldError msg={canShowError("sexo") ? errors.sexo : undefined} />
@@ -258,7 +273,7 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// -------------------- STEP 2: Bioimpedância/Extras --------------------
+// -------------------- STEP 2 --------------------
 type Step2Form = {
   massaMuscular: string;
   gorduraPercent: string;
@@ -284,20 +299,26 @@ function validateStep2(values: Step2Form): Step2Errors {
   return errors;
 }
 
-const Step2 = ({ onNext }: { onNext: () => void }) => {
+const Step2 = ({
+  onNext,
+  onChange,
+  initialValues,
+}: {
+  onNext: () => void;
+  onChange: (values: Step2Form) => void;
+  initialValues: Step2Form;
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [values, setValues] = useState<Step2Form>({
-    massaMuscular: "",
-    gorduraPercent: "",
-    pesoMeta: "",
-    dataMedidas: "",
-    objetivo: "",
-  });
+  const [values, setValues] = useState<Step2Form>(initialValues);
 
   const [touched, setTouched] = useState<
     Partial<Record<keyof Step2Form, boolean>>
   >({});
+
+  useEffect(() => {
+    onChange(values);
+  }, [values, onChange]);
 
   const errors = useMemo(() => validateStep2(values), [values]);
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
@@ -406,7 +427,6 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
           />
         </div>
 
-        {/* Label do campo de data das medidas */}
         <div>
           <label
             style={{
@@ -487,7 +507,7 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-// -------------------- STEP 3: Sistema de Pontuação --------------------
+// -------------------- STEP 3 --------------------
 type Step3Form = { dataInicio: string };
 
 const Step3 = ({
@@ -495,20 +515,23 @@ const Step3 = ({
   onOpenMedication,
   onOpenDiet,
   onOpenTraining,
+  initialValues,
+  setInitialValues,
 }: {
-  onFinish: (values: Step3Form) => void;
+  onFinish: () => void;
   onOpenMedication: () => void;
   onOpenDiet: () => void;
   onOpenTraining: () => void;
+  initialValues: Step3Form;
+  setInitialValues: (v: Step3Form) => void;
 }) => {
-  const [values, setValues] = useState<Step3Form>({ dataInicio: "" });
   const [touched, setTouched] = useState<{ dataInicio?: boolean }>({});
 
   const dataErr = useMemo(() => {
     if (!touched.dataInicio) return "";
-    if (!values.dataInicio.trim()) return "Selecione a data de início.";
+    if (!initialValues.dataInicio.trim()) return "Selecione a data de início.";
     return "";
-  }, [touched.dataInicio, values.dataInicio]);
+  }, [touched.dataInicio, initialValues.dataInicio]);
 
   const pillButton =
     "w-full h-[50px] px-6 rounded-full border border-black bg-white text-left text-gray-900 flex items-center justify-between hover:border-[#6F3CF6] hover:ring-1 hover:ring-[#6F3CF6] transition-all";
@@ -533,7 +556,6 @@ const Step3 = ({
           <IoChevronDown className="text-gray-500" />
         </button>
 
-        {/* ✅ ALTERADO: label igual ao Step2, mas preto */}
         <div>
           <label
             style={{
@@ -558,8 +580,8 @@ const Step3 = ({
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                   : ""
               }`}
-              value={values.dataInicio}
-              onChange={(e) => setValues({ dataInicio: e.target.value })}
+              value={initialValues.dataInicio}
+              onChange={(e) => setInitialValues({ dataInicio: e.target.value })}
               onBlur={() => setTouched({ dataInicio: true })}
             />
             <FiCalendar className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" />
@@ -577,8 +599,8 @@ const Step3 = ({
             type="button"
             onClick={() => {
               setTouched({ dataInicio: true });
-              if (!values.dataInicio.trim()) return;
-              onFinish(values);
+              if (!initialValues.dataInicio.trim()) return;
+              onFinish();
             }}
             className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
           >
@@ -602,6 +624,29 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({
   const [isDietOpen, setIsDietOpen] = useState(false);
   const [isTrainingOpen, setIsTrainingOpen] = useState(false);
 
+  // ✅ guardar valores pra salvar no banco no final
+  const [step1, setStep1] = useState<Step1Form>({
+    peso: "",
+    altura: "",
+    idade: "",
+    sexo: "",
+  });
+
+  const [step2, setStep2] = useState<Step2Form>({
+    massaMuscular: "",
+    gorduraPercent: "",
+    pesoMeta: "",
+    dataMedidas: "",
+    objetivo: "",
+  });
+
+  const [step3, setStep3] = useState<Step3Form>({
+    dataInicio: "",
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string>("");
+
   useEffect(() => {
     if (!isOpen) {
       const timer = setTimeout(() => setStep(1), 300);
@@ -609,11 +654,65 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSaveError("");
+      setIsSaving(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const handleFinish = () => {
-    console.log("Fluxo finalizado!");
-    onClose();
+  const handleFinish = async () => {
+    setSaveError("");
+    setIsSaving(true);
+
+    try {
+      // ✅ pega id do usuário do token (sub)
+      const idUsuario = getUserIdFromToken();
+
+      // ✅ salva no Usuario (campos que EXISTEM no seu model)
+      await patchUser(String(idUsuario), {
+        sexo: step1.sexo,
+        peso: Number(step1.peso),
+        altura: Number(step1.altura),
+
+        // seu model usa massa_magra (vou salvar massaMuscular nele)
+        massa_magra: Number(step2.massaMuscular),
+
+        // seu model usa meta (vou salvar pesoMeta nele)
+        meta: Number(step2.pesoMeta),
+      });
+
+      // ✅ cria tabelas do sistema (se seus endpoints existirem)
+      await createSistema({ idUsuario });
+
+      const dia0 = await createDia0({
+        idUsuario,
+        //dia0: step2.dataMedidas,
+        //dia1: step3.dataInicio,
+        iniciou_medicamento: false,
+        quer_msg: true,
+
+      });
+
+      // ⚠️ ajuste dependendo do retorno real do seu endpoint /dia0
+      const dia0Id = dia0?.id ?? dia0?.dia0Id ?? 0;
+      if (!dia0Id) throw new Error("Dia0 criado mas não retornou id.");
+
+      await createCiclo({
+        idUsuario,
+        dia0Id,
+        numCiclo: 1,
+        ativoCiclo: true,
+      });
+
+      onClose();
+    } catch (e: any) {
+      setSaveError(e?.message || "Erro ao salvar no banco.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -631,20 +730,49 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({
             <IoClose size={24} />
           </button>
 
-          {step === 1 && <Step1 onNext={() => setStep(2)} />}
-          {step === 2 && <Step2 onNext={() => setStep(3)} />}
-          {step === 3 && (
-            <Step3
-              onOpenMedication={() => setIsMedicationOpen(true)}
-              onOpenDiet={() => setIsDietOpen(true)}
-              onOpenTraining={() => setIsTrainingOpen(true)}
-              onFinish={() => handleFinish()}
+          {saveError ? (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {saveError}
+            </div>
+          ) : null}
+
+          {step === 1 && (
+            <Step1
+              initialValues={step1}
+              onChange={setStep1}
+              onNext={() => setStep(2)}
             />
+          )}
+
+          {step === 2 && (
+            <Step2
+              initialValues={step2}
+              onChange={setStep2}
+              onNext={() => setStep(3)}
+            />
+          )}
+
+          {step === 3 && (
+            <div className="flex-1 flex flex-col">
+              <Step3
+                initialValues={step3}
+                setInitialValues={setStep3}
+                onOpenMedication={() => setIsMedicationOpen(true)}
+                onOpenDiet={() => setIsDietOpen(true)}
+                onOpenTraining={() => setIsTrainingOpen(true)}
+                onFinish={handleFinish}
+              />
+
+              {isSaving ? (
+                <p className="mt-4 text-center text-sm text-gray-600">
+                  Salvando no banco...
+                </p>
+              ) : null}
+            </div>
           )}
         </div>
       </div>
 
-      {/* ✅ Modais que abrem ao clicar no Step 3 */}
       <MedicationModal
         isOpen={isMedicationOpen}
         onClose={() => setIsMedicationOpen(false)}

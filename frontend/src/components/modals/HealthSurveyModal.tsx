@@ -187,16 +187,28 @@ const Step3 = ({
   onOpenTraining,
 }: any) => (
   <div className="p-8 space-y-4">
-    <button onClick={onOpenMedication} className="w-full p-3 rounded-full border border-gray-300 hover:border-[#6A38F3]">
-      Medicamentos
+    <button
+      onClick={onOpenMedication}
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+    >
+      <FiPlus className="text-[#6A38F3]" />
+      <span>Adicionar medicamentos</span>
     </button>
 
-    <button onClick={onOpenDiet} className="w-full p-3 rounded-full border border-gray-300 hover:border-[#6A38F3]">
-      Dieta
+    <button
+      onClick={onOpenDiet}
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+    >
+      <FiPlus className="text-[#6A38F3]" />
+      <span>Adicionar dieta</span>
     </button>
 
-    <button onClick={onOpenTraining} className="w-full p-3 rounded-full border border-gray-300 hover:border-[#6A38F3]">
-      Treino
+    <button
+      onClick={onOpenTraining}
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+    >
+      <FiPlus className="text-[#6A38F3]" />
+      <span>Adicionar treino</span>
     </button>
 
     <button

@@ -1077,13 +1077,13 @@ export default function Home() {
         </div>
       </main>
 
-      <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} />
+      <HealthSurveyModal isOpen={isHealthModalOpen} onCloseAction={handleHealthSurveyClose} />
 
       <PostLoginModal
         isOpen={isPostLoginModalOpen}
-        onClose={() => setIsPostLoginModalOpen(false)}
-        onFinish={handlePostLoginFinish}
-        onFillAdditionalInfo={() => {
+        onCloseAction={() => setIsPostLoginModalOpen(false)}
+        onFinishAction={handlePostLoginFinish}
+        onFillAdditionalInfoAction={() => {
           console.log("Preencher Informações Adicionais")
         }}
       />

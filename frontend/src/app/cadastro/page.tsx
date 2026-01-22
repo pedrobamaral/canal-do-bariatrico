@@ -193,7 +193,9 @@ const SignUpForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await createUser(formData.name, formData.email, formData.password);
+      // Remove símbolos do telefone para enviar apenas números
+      const phoneNumbers = formData.telefone.replace(/\D/g, "");
+      const response = await createUser(formData.name, formData.email, formData.password, phoneNumbers);
 
       if (response && response.status === "sucesso") {
         setSuccess("Cadastro realizado! Redirecionando para o login...");

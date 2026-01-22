@@ -56,11 +56,22 @@ export default function Navbar() {
     // Atualiza ao voltar o foco pra aba (extra segurança)
     window.addEventListener("focus", checkAuth)
 
+    // Verifica periodicamente se o token ainda existe
+    const interval = setInterval(() => {
+      const token = localStorage.getItem("bari_token");
+      const currentlyLoggedIn = token !== null;
+      
+      if (isLoggedIn !== currentlyLoggedIn) {
+        checkAuth();
+      }
+    }, 1000);
+
     return () => {
       window.removeEventListener("auth-changed", checkAuth)
       window.removeEventListener("focus", checkAuth)
+      clearInterval(interval);
     }
-  }, [pathname])
+  }, [pathname, isLoggedIn])
 
   const handleLogout = () => {
     localStorage.removeItem("bari_token")

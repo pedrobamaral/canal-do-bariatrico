@@ -2,10 +2,30 @@
 import { deleteUser, updateData } from "@/api/api";
 import { FormEvent, useState, ChangeEvent } from "react";
 import React from "react";
-import { FaCrown, FaEnvelope, FaLock, FaPen, FaTimes, FaTrash, FaUser } from "react-icons/fa";
+import { FaPhoneAlt, FaEnvelope, FaLock, FaPen, FaTimes, FaTrash, FaUser } from "react-icons/fa";
 import { toast } from "react-toastify";
 import EditUserPass from "./UpdatePassModal";
 import { useRouter } from "next/navigation";
+
+// Função de formatação de telefone
+const formatPhoneNumber = (value: string) => {
+  // Remove tudo que não é dígito
+  const numbers = value.replace(/\D/g, "");
+  
+  // Limita a 11 dígitos (DDD + 9 números)
+  const limited = numbers.slice(0, 11);
+
+  // Aplica a formatação (XX) XXXXX-XXXX
+  if (limited.length > 10) {
+    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (limited.length > 6) {
+    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (limited.length > 2) {
+    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+  } else {
+    return limited.replace(/^(\d*)/, "($1");
+  }
+};
 
 interface EditUserModalProps {
     mostrar: boolean;
@@ -41,24 +61,68 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
         }
     }, [foto, selectedFile]);
 
-
-    const UploadFile = async (file: File) => {
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-            
-            const res = await fetch("http://localhost:3001", {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!res.ok) throw new Error("Erro na resposta do servidor de upload");
-
-            const data = await res.json();
-            return data.url;
-        } catch (error) {
-            throw error;
+    // Carregar dados do usuário quando o modal abre
+    React.useEffect(() => {
+        if (mostrar) {
+            console.log('Carregando dados do usuário:', { nome, emailProp, telefoneProp });
+            setName(nome || '');
+            setEmail(emailProp || '');
+            // Formatar telefone ao carregar
+            const formattedPhone = telefoneProp ? formatPhoneNumber(telefoneProp) : '';
+            setTelefone(formattedPhone);
+            setSelectedFile(null);
         }
+    }, [mostrar, nome, emailProp, telefoneProp]);
+
+
+    const compressAndConvertImage = async (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Redimensionar para no máximo 400x400
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 400;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error('Erro ao processar imagem'));
+                        return;
+                    }
+                    
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Converter para base64 com qualidade reduzida (0.7 = 70%)
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(base64);
+                };
+                
+                img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+                img.src = e.target?.result as string;
+            };
+            
+            reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+            reader.readAsDataURL(file);
+        });
     }
 
     const handleClose = () => {
@@ -76,6 +140,11 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
         }
     };
 
+    const handleTelefoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const formatted = formatPhoneNumber(e.target.value);
+        setTelefone(formatted);
+    };
+
     const handleUpdate = async (e:FormEvent) => {
         e.preventDefault();
 
@@ -88,17 +157,23 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
         setLoading(true);
 
         try {
-            let uploadedUrl = null;
+            let fotoBase64 = null;
 
             if (selectedFile) {
-                uploadedUrl = await UploadFile(selectedFile);
+                toast.info('Comprimindo imagem...');
+                fotoBase64 = await compressAndConvertImage(selectedFile);
+                console.log('Tamanho da imagem comprimida:', (fotoBase64.length / 1024).toFixed(2), 'KB');
             }
 
             const data: any = {};
             if (name.trim()) data.nome = name;
             if (email.trim()) data.email = email;
-            if (telefone.trim()) data.telefone = telefone;
-            if (uploadedUrl) data.foto = uploadedUrl;
+            if (telefone.trim()) {
+                // Remove símbolos para enviar apenas números
+                const phoneNumbers = telefone.replace(/\D/g, "");
+                data.telefone = phoneNumbers;
+            }
+            if (fotoBase64) data.foto = fotoBase64;
 
             console.log("Enviando dados para update:", data);
 
@@ -124,6 +199,8 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
             await deleteUser(usuarioId);
             toast.warning('Usuário deletado com sucesso!');
             localStorage.removeItem('bari_token');
+            localStorage.removeItem('bari_user');
+            window.dispatchEvent(new Event('auth-changed'));
             router.push('/');
         } catch (err:any) {
             toast.error("Erro ao deletar");
@@ -174,8 +251,8 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
                             <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
                         </div>
                         <div className="relative mb-4">
-                            <input value={telefone} onChange={(e) => setTelefone(e.target.value)} type="tel" placeholder="Telefone" className="bg-white text-[#2f2f2f] rounded-full p-2 pl-10 w-full border border-transparent focus:border-laranja focus:outline-none"/>
-                            <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
+                            <input value={telefone} onChange={handleTelefoneChange} type="tel" placeholder="Telefone" className="bg-white text-[#2f2f2f] rounded-full p-2 pl-10 w-full border border-transparent focus:border-laranja focus:outline-none"/>
+                            <FaPhoneAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
                         </div>
 
                         <div className="mt-6 flex flex-col gap-3">

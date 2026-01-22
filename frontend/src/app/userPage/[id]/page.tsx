@@ -6,6 +6,14 @@ import Navbar from "@/components/Navbar";
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { toast, ToastContainer } from "react-toastify";
+import {
+  HiOutlineBeaker,
+  HiOutlineLightningBolt,
+  HiOutlineClipboardList,
+  HiOutlineScale,
+  HiOutlineHeart,
+  HiOutlineSparkles,
+} from "react-icons/hi";
 
 // Migração de token antigo para novo no root layout
 // Este efeito seria normalmente no layout.tsx, mas colocamos aqui por segurança
@@ -38,6 +46,29 @@ type Usuario = {
   foto?: string;
 };
 
+const formatPhoneNumber = (value?: string | null) => {
+  if (!value) return "Telefone não informado";
+  
+  // Remove tudo que não é dígito
+  const numbers = value.replace(/\D/g, "");
+  
+  // Limita a 11 dígitos (DDD + 9 números)
+  const limited = numbers.slice(0, 11);
+
+  if (limited.length === 0) return "Telefone não informado";
+
+  // Aplica a formatação (XX) XXXXX-XXXX
+  if (limited.length > 10) {
+    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (limited.length > 6) {
+    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (limited.length > 2) {
+    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+  } else {
+    return limited.replace(/^(\d*)/, "($1");
+  }
+};
+
 const EmailIcon = () => (
   <svg className="h-3 w-4 translate-y-0.5" viewBox="0 0 21 17" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M2.04074 16.3259C1.47954 16.3259 0.999283 16.1263 0.599978 15.727C0.200673 15.3277 0.000680247 14.8471 0 14.2852V2.04074C0 1.47954 0.199993 0.999283 0.599978 0.599978C0.999963 0.200673 1.48022 0.000680247 2.04074 0H18.3667C18.9279 0 19.4085 0.199992 19.8084 0.599978C20.2084 0.999963 20.4081 1.48022 20.4074 2.04074V14.2852C20.4074 14.8464 20.2078 15.327 19.8084 15.727C19.4091 16.127 18.9285 16.3266 18.3667 16.3259H2.04074ZM10.2037 9.18333L18.3667 4.08148V2.04074L10.2037 7.14259L2.04074 2.04074V4.08148L10.2037 9.18333Z" 
@@ -46,6 +77,24 @@ const EmailIcon = () => (
     />
   </svg>
 );
+
+const PhoneIcon = () => (
+  <svg className="h-3 w-4 translate-y-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" 
+      fill="currentColor"
+      fillOpacity="0.6"
+    />
+  </svg>
+);
+
+const progressItems = [
+  { label: "Injetáveis", value: 70, icon: HiOutlineBeaker },
+  { label: "Atividade Física", value: 45, icon: HiOutlineLightningBolt },
+  { label: "Dieta", value: 80, icon: HiOutlineClipboardList },
+  { label: "Medidas", value: 55, icon: HiOutlineScale },
+  { label: "Medicações", value: 30, icon: HiOutlineHeart },
+  { label: "Suplementos", value: 60, icon: HiOutlineSparkles },
+];
 
 export default function UserPage() {
   const { id } = useParams();
@@ -102,6 +151,14 @@ export default function UserPage() {
   useEffect(() => {
     migrateTokenIfNeeded();
     
+    // Verificar autenticação antes de qualquer coisa
+    const token = localStorage.getItem("bari_token");
+    if (!token) {
+      toast.error('Você precisa estar logado para acessar esta página.');
+      router.push('/login');
+      return;
+    }
+    
     if (!id) return;
     
     const fetchInitialData = async () => {
@@ -109,6 +166,12 @@ export default function UserPage() {
       
       try {
         const userData = await getUserById(Number(id));
+        console.log("=== DADOS RECEBIDOS DO BACKEND ===");
+        console.log("userData completo:", userData);
+        console.log("userData.telefone:", userData.telefone);
+        console.log("typeof userData.telefone:", typeof userData.telefone);
+        console.log("usuario.telefone é truthy?", !!userData.telefone);
+        
         setUsuario(userData);
         setError(false);
 
@@ -190,7 +253,10 @@ export default function UserPage() {
               <EmailIcon />
               {usuario.email}
             </p>
-            {usuario.telefone && <p className="text-sm text-gray-600">Tel: {usuario.telefone}</p>}
+            <p className="flex items-center gap-1">
+              <PhoneIcon />
+              {formatPhoneNumber(usuario.telefone)}
+            </p>
           </div>
         </div>
 
@@ -205,6 +271,33 @@ export default function UserPage() {
           </div>
         )}
       </div>
+
+      {/* PROGRESSO */}
+      <div className="max-w-5xl mx-auto px-6 mt-48">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {progressItems.map(({ label, value, icon: Icon }) => (
+            <div key={label}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
+                  <Icon className="w-5 h-5" />
+                  <span>{label}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-600">{value}%</span>
+              </div>
+
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
+                  style={{ width: `${value}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
 
       <EditUserModal
         mostrar={mostrar}

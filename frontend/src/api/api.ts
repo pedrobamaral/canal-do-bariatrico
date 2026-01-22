@@ -85,7 +85,16 @@ export async function getCurrentUser(): Promise<Usuario> {
 
 export async function updateData(id: number, data: Partial<Usuario>) {
   try {
+    console.log('=== updateData ===');
+    console.log('Enviando para:', `/usuarios/${id}`);
+    console.log('Tamanho total do payload:', JSON.stringify(data).length, 'bytes');
+    
     const response = await api.patch(`/usuarios/${id}`, data);
+    
+    console.log('Response status:', response.status);
+    console.log('Response data:', JSON.stringify(response.data, null, 2));
+    console.log('Response data.status:', response.data.status);
+    console.log('Response data.message:', response.data.message);
     
     if (response.data.status === 'sucesso') {
       return response.data.data;
@@ -93,7 +102,10 @@ export async function updateData(id: number, data: Partial<Usuario>) {
     
     throw new Error(response.data.message || 'Erro ao atualizar usuário');
   } catch (error: any) {
-    console.error('Erro ao atualizar usuário:', error);
+    console.error('=== Erro ao atualizar usuário ===');
+    console.error('Status:', error.response?.status);
+    console.error('Data:', error.response?.data);
+    console.error('Message:', error.message);
     throw error;
   }
 }
@@ -126,12 +138,13 @@ export async function deleteUser(id: number) {
   }
 }
 
-export async function createUser(nome: string, email: string, senha: string) {
+export async function createUser(nome: string, email: string, senha: string, telefone?: string) {
   try {
     const response = await api.post('/usuarios', {
       nome,
       email,
-      senha
+      senha,
+      telefone
     });
     
     if (response.data.status === 'sucesso') {

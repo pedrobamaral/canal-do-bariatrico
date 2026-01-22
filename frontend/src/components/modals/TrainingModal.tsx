@@ -1,201 +1,190 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { IoClose, IoChevronDown, IoAddCircleOutline } from "react-icons/io5";
+import { IoClose, IoChevronDown } from "react-icons/io5";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { BsInstagram } from "react-icons/bs";
+import { FaDumbbell, FaRunning, FaUser } from "react-icons/fa";
+
+/* ================== PROPS ================== */
 
 interface TrainingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-/* =======================
-   Styles
-======================= */
+/* ================== ESTILOS (IGUAL HEALTH SURVEY) ================== */
+
 const inputStyle =
-  "w-full h-[50px] px-6 rounded-full border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
+  "w-full h-[50px] pl-12 pr-12 rounded-2xl bg-white/80 backdrop-blur-md text-[#1f1f1f] border border-gray-300/70 focus:border-[#6A38F3] focus:ring-4 focus:ring-[#6A38F3]/20 focus:outline-none transition-all duration-300";
 
-const Header = ({ title, onClose }: { title: string; onClose: () => void }) => (
-  <>
-    <div className="flex items-center justify-between">
-      <h2 className="text-2xl font-bold text-gray-900 font-['Montserrat']">
-        {title}
-      </h2>
+const selectStyle = "appearance-none cursor-pointer";
 
-      <button
-        onClick={onClose}
-        className="text-gray-400 hover:text-gray-800 transition-colors"
-        aria-label="Fechar modal"
-      >
-        <IoClose size={22} />
-      </button>
-    </div>
+/* ================== COMPONENTES AUX ================== */
 
-    <div className="w-full h-px bg-gray-200 mt-4 mb-8" />
-  </>
-);
-
-/* =======================
-   STEP 1
-======================= */
-const StepAddButton = ({
-  onNext,
-  onClose,
-}: {
-  onNext: () => void;
-  onClose: () => void;
-}) => (
-  <div className="flex flex-col h-full">
-    <Header title="Treino" onClose={onClose} />
-
-    <div className="flex-1 flex items-center justify-center">
-      <button
-        type="button"
-        onClick={onNext}
-        className="flex items-center gap-3 bg-[#6F3CF6] text-white py-3 px-10 rounded-full text-sm font-semibold hover:bg-[#5c2fe0] transition-all hover:scale-105 shadow-md"
-      >
-        <IoAddCircleOutline size={22} />
-        Adicionar Treino
-      </button>
-    </div>
+const Input = ({ icon, ...props }: any) => (
+  <div className="relative group">
+    <input {...props} className={inputStyle} />
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
   </div>
 );
 
-/* =======================
-   STEP 2
-======================= */
+const Select = ({ icon, children, ...props }: any) => (
+  <div className="relative group">
+    <select {...props} className={`${inputStyle} ${selectStyle}`}>
+      {children}
+    </select>
+
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
+
+    <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition" />
+  </div>
+);
+
+const ModalHeader = ({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}) => (
+  <div className="relative px-8 py-6 border-b border-gray-300">
+    <h2 className="text-lg font-semibold text-center text-[#2f2f2f]">
+      {title}
+    </h2>
+
+    <button
+      onClick={onClose}
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+    >
+      <IoClose />
+    </button>
+  </div>
+);
+
+/* ================== STEP 1 ================== */
+
+const Step1 = ({ onNext }: { onNext: () => void }) => (
+  <div className="p-8 flex flex-col items-center justify-center space-y-6">
+    <FaDumbbell className="text-[#6A38F3] text-4xl opacity-80" />
+
+    <p className="text-sm text-gray-600 text-center max-w-xs">
+      Vamos entender melhor sua rotina de treinos para criar recomendações mais
+      precisas.
+    </p>
+
+    <button
+      onClick={onNext}
+      className="px-10 py-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+    >
+      Adicionar treino
+    </button>
+  </div>
+);
+
+/* ================== STEP 2 ================== */
+
 type Step2Values = {
   musc: string;
   aero: string;
 };
 
-const StepFrequency = ({
-  onNext,
-  onClose,
-}: {
-  onNext: () => void;
-  onClose: () => void;
-}) => {
-  const [v, setV] = useState<Step2Values>({ musc: "", aero: "" });
-  const isValid = useMemo(() => v.musc !== "" && v.aero !== "", [v]);
+const Step2 = ({ onNext }: { onNext: () => void }) => {
+  const [values, setValues] = useState<Step2Values>({
+    musc: "",
+    aero: "",
+  });
+
+  const valid = values.musc && values.aero;
+
+  const setField =
+    (field: keyof Step2Values) =>
+    (e: React.ChangeEvent<HTMLSelectElement>) =>
+      setValues((p) => ({ ...p, [field]: e.target.value }));
 
   return (
-    <div className="flex flex-col h-full">
-      <Header title="Treino" onClose={onClose} />
+    <div className="p-8 space-y-4">
+      <Select
+        icon={<FaDumbbell />}
+        value={values.musc}
+        onChange={setField("musc")}
+      >
+        <option value="" disabled>
+          Frequência semanal - Musculação
+        </option>
+        <option value="1">1 dia</option>
+        <option value="2">2 dias</option>
+        <option value="3">3 dias</option>
+        <option value="4">4 dias</option>
+        <option value="5">5 dias</option>
+        <option value="6">6 dias</option>
+        <option value="7">Todos os dias</option>
+      </Select>
 
-      <form className="flex-1 space-y-5">
-        <div className="relative">
-          <select
-            className={`${inputStyle} appearance-none cursor-pointer`}
-            value={v.musc}
-            onChange={(e) => setV((p) => ({ ...p, musc: e.target.value }))}
-          >
-            <option value="" disabled>
-              Frequência semanal - Musculação
-            </option>
-            <option value="1">1 dia</option>
-            <option value="2">2 dias</option>
-            <option value="3">3 dias</option>
-            <option value="4">4 dias</option>
-            <option value="5">5 dias</option>
-            <option value="6">6 dias</option>
-            <option value="7">Todos os dias</option>
-          </select>
-          <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-        </div>
+      <Select
+        icon={<FaRunning />}
+        value={values.aero}
+        onChange={setField("aero")}
+      >
+        <option value="" disabled>
+          Frequência semanal - Aeróbico
+        </option>
+        <option value="0">Não faço</option>
+        <option value="1">1 dia</option>
+        <option value="2">2 dias</option>
+        <option value="3">3 dias</option>
+        <option value="4">4 dias</option>
+        <option value="5">5 dias</option>
+        <option value="6">6 dias</option>
+        <option value="7">Todos os dias</option>
+      </Select>
 
-        <div className="relative">
-          <select
-            className={`${inputStyle} appearance-none cursor-pointer`}
-            value={v.aero}
-            onChange={(e) => setV((p) => ({ ...p, aero: e.target.value }))}
-          >
-            <option value="" disabled>
-              Frequência semanal - Aeróbico
-            </option>
-            <option value="0">Não faço</option>
-            <option value="1">1 dia</option>
-            <option value="2">2 dias</option>
-            <option value="3">3 dias</option>
-            <option value="4">4 dias</option>
-            <option value="5">5 dias</option>
-            <option value="6">6 dias</option>
-            <option value="7">Todos os dias</option>
-          </select>
-          <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-        </div>
+      <p className="text-xs text-gray-500 px-2">
+        Aeróbico inclui caminhada, esportes, dança e atividades cardiovasculares.
+      </p>
 
-        <p className="text-xs text-gray-500 leading-snug px-2">
-          Aeróbico inclui atividades como caminhada, esportes, dança, corrida,
-          entre outros.
-        </p>
-
-        <div className="pt-10 flex justify-center">
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!isValid}
-            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-semibold transition-all shadow-md
-              ${
-                isValid
-                  ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-          >
-            Próximo <HiOutlineArrowRight size={16} />
-          </button>
-        </div>
-      </form>
+      <button
+        disabled={!valid}
+        onClick={onNext}
+        className={`w-full p-3 rounded-full border transition
+          ${
+            valid
+              ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
+              : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
+          }`}
+      >
+        Próximo
+      </button>
     </div>
   );
 };
 
-/* =======================
-   STEP 3
-======================= */
-const StepPersonal = ({
-  onFinish,
-  onClose,
-}: {
-  onFinish: () => void;
-  onClose: () => void;
-}) => (
-  <div className="flex flex-col h-full">
-    <Header title="Treino" onClose={onClose} />
+/* ================== STEP 3 ================== */
 
-    <form className="flex-1 space-y-5">
-      <input
-        type="text"
-        placeholder="Nome do personal"
-        className={inputStyle}
-      />
+const Step3 = ({ onFinish }: { onFinish: () => void }) => (
+  <div className="p-8 space-y-4">
+    <Input icon={<FaUser />} placeholder="Nome do personal" />
 
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Instagram do personal"
-          className={`${inputStyle} pl-12`}
-        />
-        <BsInstagram className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/60" />
-      </div>
+    <Input
+      icon={<BsInstagram />}
+      placeholder="Instagram do personal"
+    />
 
-      <div className="pt-12 flex justify-center">
-        <button
-          type="button"
-          onClick={onFinish}
-          className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-semibold hover:bg-[#5c2fe0] transition-all hover:scale-105 shadow-md"
-        >
-          Salvar treino
-        </button>
-      </div>
-    </form>
+    <button
+      onClick={onFinish}
+      className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+    >
+      Salvar treino
+    </button>
   </div>
 );
 
-/* =======================
-   MODAL
-======================= */
+/* ================== MODAL ================== */
+
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
@@ -212,20 +201,19 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
+      onClick={onClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-[720px] min-h-[560px] rounded-3xl p-10 shadow-2xl flex flex-col"
+        className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        {step === 1 && (
-          <StepAddButton onNext={() => setStep(2)} onClose={onClose} />
-        )}
-        {step === 2 && (
-          <StepFrequency onNext={() => setStep(3)} onClose={onClose} />
-        )}
-        {step === 3 && (
-          <StepPersonal onFinish={onClose} onClose={onClose} />
-        )}
+        <ModalHeader title="Treino" onClose={onClose} />
+
+        {step === 1 && <Step1 onNext={() => setStep(2)} />}
+        {step === 2 && <Step2 onNext={() => setStep(3)} />}
+        {step === 3 && <Step3 onFinish={onClose} />}
       </div>
     </div>
   );

@@ -20,15 +20,31 @@ const CORES = {
   vermelhoHover: "#FF3B5C",
 }
 
-export default function HeaderTeste() {
+export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userId, setUserId] = useState<number | null>(null)
   const pathname = usePathname()
   const router = useRouter()
 
   const checkAuth = () => {
     const token =
-      typeof window !== "undefined" ? localStorage.getItem("authToken") : null
-    setIsLoggedIn(!!token)
+      typeof window !== "undefined" ? localStorage.getItem("bari_token") : null
+    
+    if (token) {
+      setIsLoggedIn(true)
+      
+      // Decodifica o token para pegar o ID do usuário
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        setUserId(payload.sub)
+      } catch (err) {
+        console.error("Erro ao decodificar token:", err)
+        setUserId(null)
+      }
+    } else {
+      setIsLoggedIn(false)
+      setUserId(null)
+    }
   }
 
   useEffect(() => {
@@ -40,15 +56,29 @@ export default function HeaderTeste() {
     // Atualiza ao voltar o foco pra aba (extra segurança)
     window.addEventListener("focus", checkAuth)
 
+    // Verifica periodicamente se o token ainda existe
+    const interval = setInterval(() => {
+      const token = localStorage.getItem("bari_token");
+      const currentlyLoggedIn = token !== null;
+      
+      if (isLoggedIn !== currentlyLoggedIn) {
+        checkAuth();
+      }
+    }, 1000);
+
     return () => {
       window.removeEventListener("auth-changed", checkAuth)
       window.removeEventListener("focus", checkAuth)
+      clearInterval(interval);
     }
-  }, [pathname])
+  }, [pathname, isLoggedIn])
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    localStorage.removeItem("bari_token")
     localStorage.removeItem("bari_user")
+    
+    setIsLoggedIn(false)
+    setUserId(null)
 
     window.dispatchEvent(new Event("auth-changed"))
 
@@ -155,7 +185,7 @@ export default function HeaderTeste() {
                   <FaCalculator size={22} className={iconBaseStyle} />
                 </Link>
 
-                <Link href="/pg-usuario" aria-label="Meu Perfil">
+                <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
                   <IoPerson
                     size={26}
                     className="text-white hover:text-[#62B4FF] transition-colors cursor-pointer"

@@ -14,14 +14,14 @@ import {
 import Image from "next/image"
 import { FaArrowRight } from "react-icons/fa6"
 
-// Navbar antiga
-import HeaderTeste from "@/components/header"
+// ✅ Navbar nova
+import Navbar from "@/components/Navbar"
 
-// Só o HealthSurveyModal fica na Home
-import { HealthSurveyModal } from "@/components/HealthSurveyModal"
-
-// Novo modal pós-login
-import { PostLoginModal, type PostLoginData } from "@/components/PostLoginModal"
+// ✅ Modais
+import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
+import { MedicationModal } from "@/components/modals/MedicationModal"
+import { DietModal } from "@/components/modals/DietModal"
+import { TrainingModal } from "@/components/modals/TrainingModal"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -792,10 +792,9 @@ export default function Home() {
                     alignItems: "center",
                     gap: "6px",
                     cursor: "pointer",
-                    transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
+                  <span className="arrow">
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -812,7 +811,16 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
+<<<<<<< HEAD
                 <Image src="/images/endocrinologista.jpg" alt="Endocrinologista" fill style={{ objectFit: "cover" }} />
+=======
+                <Image
+                  src="/images/endocrinologista.png"
+                  alt="Endocrinologista"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+>>>>>>> fix/userPage
               </div>
             </div>
 
@@ -865,10 +873,9 @@ export default function Home() {
                     alignItems: "center",
                     gap: "6px",
                     cursor: "pointer",
-                    transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
+                  <span className="arrow">
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -885,7 +892,16 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
+<<<<<<< HEAD
                 <Image src="/images/nutricionista.webp" alt="Nutricionista" fill style={{ objectFit: "cover" }} />
+=======
+                <Image
+                  src="/images/nutricionista.png"
+                  alt="Nutricionista"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+>>>>>>> fix/userPage
               </div>
             </div>
 
@@ -899,14 +915,6 @@ export default function Home() {
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 gap: "20px",
-                ...(isMobile
-                  ? {}
-                  : {
-                      gridColumn: "1 / -1",
-                      justifySelf: "center",
-                      width: "100%",
-                      maxWidth: "584px",
-                    }),
               }}
             >
               <div style={{ flex: 1 }}>
@@ -946,10 +954,9 @@ export default function Home() {
                     alignItems: "center",
                     gap: "6px",
                     cursor: "pointer",
-                    transition: "color 0.2s, text-decoration 0.2s",
                   }}
                 >
-                  <span className="arrow" style={{ display: "inline-flex", alignItems: "center", transition: "transform 0.2s ease" }}>
+                  <span className="arrow">
                     <FaArrowRight />
                   </span>
                   <span>AGENDAR UMA CONSULTA</span>
@@ -966,7 +973,115 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
+<<<<<<< HEAD
                 <Image src="/images/cirurgiao.jpeg" alt="Cirurgião bariátrico" fill style={{ objectFit: "cover" }} />
+=======
+                <Image
+                  src="/images/cirurgiao.png"
+                  alt="Cirurgião bariátrico"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+>>>>>>> fix/userPage
+              </div>
+            </div>
+
+            {/* Plataforma de Treino */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "24px",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                padding: "28px 32px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: "20px",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <h3
+                  style={{
+                    fontFamily: FONTES.principal,
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
+                    color: CORES.pretoPrincipal,
+                    margin: 0,
+                    marginBottom: "8px",
+                  }}
+                >
+                  BB Fit – Bruno & Barie
+                  <br />
+                  Plataforma de treino inteligente
+                </h3>
+
+                <p
+                  style={{
+                    margin: 0,
+                    marginBottom: "16px",
+                    fontFamily: FONTES.secundaria,
+                    fontSize: "0.95rem",
+                    color: "#555555",
+                  }}
+                >
+                  Acesse sua plataforma de treinos personalizada para potencializar seus resultados.
+                </p>
+
+                <div
+                  style={{
+                    marginBottom: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+
+                  <div style={{ position: "relative", width: "100px", height: "50px" }}>
+                    <Image
+                      src="/images/hotmart.png" 
+                      alt="Hotmart"
+                      fill
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+                </div>
+
+                <a
+                  style={{
+                    fontFamily: FONTES.principal,
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    color: CORES.roxoPrincipal,
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span className="arrow">
+                    <FaArrowRight />
+                  </span>
+                  <span>ACESSAR PLATAFORMA DE TREINO</span>
+                </a>
+              </div>
+
+              <div
+                style={{
+                  width: "78px",
+                  height: "78px",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  position: "relative",
+                  flexShrink: 0,
+                }}
+              >
+                <Image
+                  src="/images/bbfit.png"
+                  alt="BB Fit"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
               </div>
             </div>
           </div>

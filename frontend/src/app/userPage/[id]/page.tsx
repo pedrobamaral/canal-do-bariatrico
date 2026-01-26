@@ -1,19 +1,20 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import { getUserById } from "@/api/api";
-import EditUserModal from "@/components/modals/EditUserModal";
-import { toast, ToastContainer } from "react-toastify";
+import { useEffect, useState } from "react";
 import {
   HiOutlineBeaker,
-  HiOutlineLightningBolt,
   HiOutlineClipboardList,
-  HiOutlineScale,
   HiOutlineHeart,
+  HiOutlineLightningBolt,
+  HiOutlineScale,
   HiOutlineSparkles,
 } from "react-icons/hi";
+import { toast, ToastContainer } from "react-toastify";
+
+import { getUserById } from "@/api/api";
+import EditUserModal from "@/components/modals/EditUserModal";
+import Navbar from "@/components/Navbar";
 
 // Migração de token antigo para novo no root layout
 // Este efeito seria normalmente no layout.tsx, mas colocamos aqui por segurança

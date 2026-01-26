@@ -1,28 +1,27 @@
 // app/page.tsx (ou o arquivo da sua Home)
 "use client"
 
+import Image from "next/image"
 import React, { useEffect, useState } from "react"
+import { FaArrowRight } from "react-icons/fa6"
 import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   Area,
   AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts"
-import Image from "next/image"
-import { FaArrowRight } from "react-icons/fa6"
 
-// ✅ Navbar nova
-import Navbar from "@/components/Navbar"
-
+import { DietModal } from "@/components/modals/DietModal"
 // ✅ Modais
 import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
 import { MedicationModal } from "@/components/modals/MedicationModal"
-import { DietModal } from "@/components/modals/DietModal"
+import { PostLoginData,PostLoginModal } from "@/components/modals/PostLoginModal"
 import { TrainingModal } from "@/components/modals/TrainingModal"
-import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal"
+// ✅ Navbar nova
+import Navbar from "@/components/Navbar"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",

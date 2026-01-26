@@ -1,11 +1,13 @@
 'use client';
-import { deleteUser, updateData } from "@/api/api";
-import { FormEvent, useState, ChangeEvent } from "react";
-import React from "react";
-import { FaPhoneAlt, FaEnvelope, FaLock, FaPen, FaTimes, FaTrash, FaUser } from "react-icons/fa";
-import { toast } from "react-toastify";
-import EditUserPass from "./UpdatePassModal";
 import { useRouter } from "next/navigation";
+import { ChangeEvent,FormEvent, useState } from "react";
+import React from "react";
+import { FaEnvelope, FaLock, FaPen, FaPhoneAlt, FaTimes, FaTrash, FaUser } from "react-icons/fa";
+import { toast } from "react-toastify";
+
+import { deleteUser, updateData } from "@/api/api";
+
+import EditUserPass from "./UpdatePassModal";
 
 // Função de formatação de telefone
 const formatPhoneNumber = (value: string) => {

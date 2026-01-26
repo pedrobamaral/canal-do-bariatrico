@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { type ChangeEvent, type FormEvent,useState } from "react";
+
 import { createUser } from "@/api/api";
 
 /* Ícones inline */

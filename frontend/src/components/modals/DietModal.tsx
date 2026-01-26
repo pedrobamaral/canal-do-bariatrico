@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { HiOutlineArrowRight } from "react-icons/hi";
-import { IoClose, IoChevronDown } from "react-icons/io5";
 import { BsInstagram } from "react-icons/bs";
 import { FiPlus } from "react-icons/fi";
+import { HiOutlineArrowRight } from "react-icons/hi";
+import { IoChevronDown,IoClose } from "react-icons/io5";
 
 interface DietModalProps {
   isOpen: boolean;

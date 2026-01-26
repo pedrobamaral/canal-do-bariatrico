@@ -1,23 +1,22 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FiPlus, FiCalendar } from "react-icons/fi";
+import { FiCalendar,FiPlus } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { IoClose, IoChevronDown } from "react-icons/io5";
-
-// ✅ Modais
-import { MedicationModal } from "@/components/modals/MedicationModal";
-import { DietModal } from "@/components/modals/DietModal";
-import { TrainingModal } from "@/components/modals/TrainingModal";
+import { IoChevronDown,IoClose } from "react-icons/io5";
 
 // IMPORT CERTO (seu api.ts está em src/app/utils/api.ts)
 import {
+  createCiclo,
+  createDia0,
+  createSistema,
   getUserIdFromToken,
   patchUser,
-  createSistema,
-  createDia0,
-  createCiclo,
 } from "@/app/utils/api";
+import { DietModal } from "@/components/modals/DietModal";
+// ✅ Modais
+import { MedicationModal } from "@/components/modals/MedicationModal";
+import { TrainingModal } from "@/components/modals/TrainingModal";
 
 interface HealthSurveyModalProps {
   isOpen: boolean;

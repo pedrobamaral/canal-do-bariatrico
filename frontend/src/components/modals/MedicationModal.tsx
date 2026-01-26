@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { IoClose, IoChevronDown, IoAddCircleOutline } from "react-icons/io5";
-import { HiOutlineArrowRight } from "react-icons/hi";
 import { BsInstagram } from "react-icons/bs";
+import { HiOutlineArrowRight } from "react-icons/hi";
+import { IoAddCircleOutline,IoChevronDown, IoClose } from "react-icons/io5";
 
 interface MedicationModalProps {
   isOpen: boolean;

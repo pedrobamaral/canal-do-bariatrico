@@ -2,14 +2,13 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+// Ícones (mantive os seus do protótipo)
+import { FaCalculator, FaUser,FaUserMd } from "react-icons/fa"
 import { IoIosBody } from "react-icons/io";
 import { IoPerson } from "react-icons/io5";
-
-// Ícones (mantive os seus do protótipo)
-import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
-import { IoNutritionSharp, IoLogOutOutline } from "react-icons/io5"
+import { IoLogOutOutline,IoNutritionSharp } from "react-icons/io5"
 import { RiUser3Fill } from "react-icons/ri"
 
 const CORES = {

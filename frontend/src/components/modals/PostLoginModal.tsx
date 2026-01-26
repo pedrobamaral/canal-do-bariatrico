@@ -1,9 +1,9 @@
 // components/PostLoginModal.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import { IoClose, IoChevronDown } from "react-icons/io5";
+import React, { useMemo, useState } from "react";
+import { IoChevronDown,IoClose } from "react-icons/io5";
 
 export type PostLoginData = {
   peso: string;

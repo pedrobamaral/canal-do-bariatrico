@@ -1,7 +1,8 @@
-import { updatePassword } from "@/api/api";
 import { FormEvent, useState } from "react";
 import { FaArrowLeft, FaEye, FaEyeSlash, FaKey } from "react-icons/fa";
 import { toast } from "react-toastify";
+
+import { updatePassword } from "@/api/api";
 
 interface EditUserPassProps {
   mostrar: boolean;

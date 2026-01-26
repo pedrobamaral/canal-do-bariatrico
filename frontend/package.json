@@ -25,6 +25,7 @@
     "@types/recharts": "^1.8.29",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

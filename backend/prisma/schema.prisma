@@ -10,9 +10,10 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  // Prisma v7+ não permite a propriedade `url` no schema.prisma.
-  // Mova a URL de conexão para prisma.config.ts e configure o client conforme a documentação:
-  // https://pris.ly/d/config-datasource
+  // Connection URL for Prisma client generation and runtime.
+  // If you are migrating to Prisma v7+ you can move this to prisma.config.ts,
+  // but keep it here while the project still uses the schema-based datasource.
+  url = env("DATABASE_URL")
 }
 
 model Usuario {

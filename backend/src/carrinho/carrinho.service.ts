@@ -1,5 +1,4 @@
 import {Injectable, NotFoundException, ConflictException, InternalServerErrorException} from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCarrinhoDto } from './dto/create-carrinho.dto';
 
@@ -15,10 +14,9 @@ export class CarrinhoService {
         },
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002' 
-      ) {
+      // Prisma client runtime types may not always be available during build/generation.
+      // Fall back to checking the error code property to detect unique constraint violations.
+      if ((error as any)?.code === 'P2002') {
         throw new ConflictException(
           'Este usuário já possui um carrinho de compras.',
         );

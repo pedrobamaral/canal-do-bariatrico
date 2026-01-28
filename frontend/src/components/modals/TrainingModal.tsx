@@ -5,12 +5,15 @@ import { IoClose, IoChevronDown } from "react-icons/io5";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { BsInstagram } from "react-icons/bs";
 import { FaDumbbell, FaRunning, FaUser } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { createOrUpdateTreino } from "@/api/api";
 
 /* ================== PROPS ================== */
 
 interface TrainingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuarioId?: number;
 }
 
 /* ================== ESTILOS (IGUAL HEALTH SURVEY) ================== */
@@ -59,7 +62,9 @@ const ModalHeader = ({
 
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
+      aria-label="Fechar modal"
+      type="button"
     >
       <IoClose />
     </button>
@@ -80,6 +85,7 @@ const Step1 = ({ onNext }: { onNext: () => void }) => (
     <button
       onClick={onNext}
       className="px-10 py-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+      type="button"
     >
       Adicionar treino
     </button>
@@ -156,6 +162,7 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
               ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
               : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
           }`}
+        type="button"
       >
         Próximo
       </button>
@@ -165,29 +172,69 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
 
 /* ================== STEP 3 ================== */
 
-const Step3 = ({ onFinish }: { onFinish: () => void }) => (
-  <div className="p-8 space-y-4">
-    <Input icon={<FaUser />} placeholder="Nome do personal" />
+const Step3 = ({ onFinish, usuarioId }: { onFinish: () => void; usuarioId?: number }) => {
+  const [values, setValues] = useState({
+    nomePersonal: "",
+    instagramPersonal: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-    <Input
-      icon={<BsInstagram />}
-      placeholder="Instagram do personal"
-    />
+  const handleSave = async () => {
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
+    }
 
-    <button
-      onClick={onFinish}
-      className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
-    >
-      Salvar treino
-    </button>
-  </div>
-);
+    setLoading(true);
+    try {
+      await createOrUpdateTreino(usuarioId, {
+        nomePersonal: values.nomePersonal,
+        instagramPersonal: values.instagramPersonal,
+      });
+      toast.success('Treino salvo com sucesso!');
+      onFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar treino:', error);
+      toast.error(error.message || 'Erro ao salvar treino');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-8 space-y-4">
+      <Input 
+        icon={<FaUser />} 
+        placeholder="Nome do personal"
+        value={values.nomePersonal}
+        onChange={(e) => setValues(prev => ({ ...prev, nomePersonal: e.target.value }))}
+      />
+
+      <Input
+        icon={<BsInstagram />}
+        placeholder="Instagram do personal"
+        value={values.instagramPersonal}
+        onChange={(e) => setValues(prev => ({ ...prev, instagramPersonal: e.target.value }))}
+      />
+
+      <button
+        onClick={handleSave}
+        disabled={loading}
+        className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
+        type="button"
+      >
+        {loading ? 'Salvando...' : 'Salvar treino'}
+      </button>
+    </div>
+  );
+};
 
 /* ================== MODAL ================== */
 
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
+  usuarioId,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -198,22 +245,32 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
     }
   }, [isOpen]);
 
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const handleFinish = () => {
+    setStep(1);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <ModalHeader title="Treino" onClose={onClose} />
+        <ModalHeader title="Treino" onClose={handleClose} />
 
         {step === 1 && <Step1 onNext={() => setStep(2)} />}
         {step === 2 && <Step2 onNext={() => setStep(3)} />}
-        {step === 3 && <Step3 onFinish={onClose} />}
+        {step === 3 && <Step3 onFinish={handleFinish} usuarioId={usuarioId} />}
       </div>
     </div>
   );

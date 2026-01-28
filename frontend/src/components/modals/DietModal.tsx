@@ -9,12 +9,15 @@ import {
   FaClock,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { createOrUpdateDieta } from "@/api/api";
 
 /* ================== PROPS ================== */
 
 interface DietModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuarioId?: number;
 }
 
 /* ================== ESTILOS (IGUAL MEDICATION / TRAINING) ================== */
@@ -63,8 +66,9 @@ const ModalHeader = ({
 
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
       aria-label="Fechar modal"
+      type="button"
     >
       <IoClose />
     </button>
@@ -85,6 +89,7 @@ const StepIntro = ({ onNext }: { onNext: () => void }) => (
     <button
       onClick={onNext}
       className="px-10 py-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+      type="button"
     >
       Adicionar dieta
     </button>
@@ -93,14 +98,21 @@ const StepIntro = ({ onNext }: { onNext: () => void }) => (
 
 /* ================== STEP 2 — FORM ================== */
 
-const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
-  const [values, setValues] = useState({
+const StepDietForm = ({ onFinish, usuarioId }: { onFinish: () => void; usuarioId?: number }) => {
+  const [values, setValues] = useState<{
+    tipoDieta: "" | "low_carb" | "cetogenica" | "mediterranea" | "vegetariana" | "vegana" | "paleo" | "jejum_intermitente" | "outra";
+    calorias: string;
+    refeicoesDia: string;
+    horarioPreferido: string;
+    inicio: string;
+  }>({
     tipoDieta: "",
     calorias: "",
     refeicoesDia: "",
     horarioPreferido: "",
     inicio: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const setField =
     (field: keyof typeof values) =>
@@ -112,6 +124,31 @@ const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
     values.calorias &&
     values.refeicoesDia &&
     values.inicio;
+
+  const handleSave = async () => {
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createOrUpdateDieta(usuarioId, {
+        tipo: values.tipoDieta,
+        calorias: parseFloat(values.calorias),
+        refeicoes: parseInt(values.refeicoesDia),
+        horarioPreferido: values.horarioPreferido,
+        dataInicio: values.inicio,
+      });
+      toast.success('Dieta salva com sucesso!');
+      onFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar dieta:', error);
+      toast.error(error.message || 'Erro ao salvar dieta');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-8 space-y-4">
@@ -134,6 +171,7 @@ const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
         placeholder="Calorias diárias (kcal)"
         value={values.calorias}
         onChange={setField("calorias")}
+        type="number"
       />
 
       <Input
@@ -141,6 +179,7 @@ const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
         placeholder="Refeições por dia"
         value={values.refeicoesDia}
         onChange={setField("refeicoesDia")}
+        type="number"
       />
 
       <Input
@@ -158,16 +197,17 @@ const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
       />
 
       <button
-        disabled={!valid}
-        onClick={onFinish}
+        disabled={!valid || loading}
+        onClick={handleSave}
         className={`w-full p-3 rounded-full border transition
           ${
-            valid
+            valid && !loading
               ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
               : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
           }`}
+        type="button"
       >
-        Salvar dieta
+        {loading ? 'Salvando...' : 'Salvar dieta'}
       </button>
     </div>
   );
@@ -178,6 +218,7 @@ const StepDietForm = ({ onFinish }: { onFinish: () => void }) => {
 export const DietModal: React.FC<DietModalProps> = ({
   isOpen,
   onClose,
+  usuarioId,
 }) => {
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -188,21 +229,31 @@ export const DietModal: React.FC<DietModalProps> = ({
     }
   }, [isOpen]);
 
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const handleFinish = () => {
+    setStep(1);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <ModalHeader title="Dieta" onClose={onClose} />
+        <ModalHeader title="Dieta" onClose={handleClose} />
 
         {step === 1 && <StepIntro onNext={() => setStep(2)} />}
-        {step === 2 && <StepDietForm onFinish={onClose} />}
+        {step === 2 && <StepDietForm onFinish={handleFinish} usuarioId={usuarioId} />}
       </div>
     </div>
   );

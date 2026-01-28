@@ -5,12 +5,31 @@ import { IoClose, IoChevronDown } from "react-icons/io5";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { BsInstagram } from "react-icons/bs";
 import { FaPills, FaUserMd } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { createOrUpdateMedicacao } from "@/api/api";
 
 /* ================== PROPS ================== */
+
+export type MedicationFrequency = "diaria" | "semanal" | "eventual" | "";
+
+export interface MedicationData {
+  nome: string;
+  concentracao: string;
+  frequencia: MedicationFrequency;
+  nomeMedico: string;
+  instagramMedico: string;
+}
 
 interface MedicationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuarioId?: number;
+  /** Callback quando usuário clica "Sim" - retorna os dados do medicamento */
+  onYesCallback?: (data: MedicationData) => void;
+  /** Callback quando usuário clica "Não" */
+  onNoCallback?: () => void;
+  /** Se true, não salva no banco (usado quando incorporado em outro modal) */
+  embeddedMode?: boolean;
 }
 
 /* ================== ESTILOS (IGUAL TRAINING / HEALTH) ================== */
@@ -22,7 +41,7 @@ const selectStyle = "appearance-none cursor-pointer";
 
 /* ================== COMPONENTES AUX ================== */
 
-const Input = ({ icon, ...props }: any) => (
+const Input = ({ icon, ...props }: { icon: React.ReactNode; [key: string]: any }) => (
   <div className="relative group">
     <input {...props} className={inputStyle} />
     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
@@ -31,7 +50,7 @@ const Input = ({ icon, ...props }: any) => (
   </div>
 );
 
-const Select = ({ icon, children, ...props }: any) => (
+const Select = ({ icon, children, ...props }: { icon: React.ReactNode; children: React.ReactNode; [key: string]: any }) => (
   <div className="relative group">
     <select {...props} className={`${inputStyle} ${selectStyle}`}>
       {children}
@@ -59,7 +78,9 @@ const ModalHeader = ({
 
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
+      aria-label="Fechar modal"
+      type="button"
     >
       <IoClose />
     </button>
@@ -86,6 +107,7 @@ const StepQuestion = ({
       <button
         onClick={onNo}
         className="flex-1 p-3 rounded-full border border-gray-300 text-gray-600 hover:border-[#6A38F3] transition"
+        type="button"
       >
         Não
       </button>
@@ -93,6 +115,7 @@ const StepQuestion = ({
       <button
         onClick={onYes}
         className="flex-1 p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+        type="button"
       >
         Sim
       </button>
@@ -102,12 +125,24 @@ const StepQuestion = ({
 
 /* ================== STEP 2 ================== */
 
-const StepMedication = ({ onNext }: { onNext: () => void }) => {
-  const [values, setValues] = useState({
+const StepMedication = ({ onNext, onValuesChange }: { 
+  onNext: () => void; 
+  onValuesChange: (values: { nome: string; concentracao: string; frequencia: MedicationFrequency }) => void;
+}) => {
+  const [values, setValues] = useState<{
+    nome: string;
+    concentracao: string;
+    frequencia: MedicationFrequency;
+  }>({
     nome: "",
     concentracao: "",
     frequencia: "",
   });
+
+  // Notifica o componente pai quando os valores mudam
+  useEffect(() => {
+    onValuesChange(values);
+  }, [values, onValuesChange]);
 
   const valid =
     values.nome.trim() &&
@@ -157,6 +192,7 @@ const StepMedication = ({ onNext }: { onNext: () => void }) => {
               ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
               : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
           }`}
+        type="button"
       >
         Próximo
       </button>
@@ -166,61 +202,184 @@ const StepMedication = ({ onNext }: { onNext: () => void }) => {
 
 /* ================== STEP 3 ================== */
 
-const StepDoctor = ({ onFinish }: { onFinish: () => void }) => (
-  <div className="p-8 space-y-4">
-    <Input icon={<FaUserMd />} placeholder="Nome do médico" />
+const StepDoctor = ({ 
+  onFinish, 
+  usuarioId, 
+  medicationValues,
+  embeddedMode,
+  onYesCallback 
+}: { 
+  onFinish: () => void; 
+  usuarioId?: number;
+  medicationValues: { nome: string; concentracao: string; frequencia: MedicationFrequency };
+  embeddedMode?: boolean;
+  onYesCallback?: (data: MedicationData) => void;
+}) => {
+  const [values, setValues] = useState({
+    nomeMedico: "",
+    instagramMedico: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-    <Input
-      icon={<BsInstagram />}
-      placeholder="Instagram do médico"
-    />
+  const handleSave = async () => {
+    // Se estiver em modo embutido, apenas retorna os dados via callback
+    if (embeddedMode && onYesCallback) {
+      const fullData: MedicationData = {
+        nome: medicationValues.nome,
+        concentracao: medicationValues.concentracao,
+        frequencia: medicationValues.frequencia,
+        nomeMedico: values.nomeMedico,
+        instagramMedico: values.instagramMedico,
+      };
+      onYesCallback(fullData);
+      onFinish();
+      return;
+    }
 
-    <button
-      onClick={onFinish}
-      className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
-    >
-      Salvar medicamento
-    </button>
-  </div>
-);
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createOrUpdateMedicacao(usuarioId, {
+        nome: medicationValues.nome,
+        concentracao: medicationValues.concentracao,
+        frequencia: medicationValues.frequencia,
+        nomeMedico: values.nomeMedico,
+        instagramMedico: values.instagramMedico,
+      });
+      toast.success('Medicamento salvo com sucesso!');
+      onFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar medicamento:', error);
+      toast.error(error.message || 'Erro ao salvar medicamento');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-8 space-y-4">
+      <Input 
+        icon={<FaUserMd />} 
+        placeholder="Nome do médico"
+        value={values.nomeMedico}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, nomeMedico: e.target.value }))}
+      />
+
+      <Input
+        icon={<BsInstagram />}
+        placeholder="Instagram do médico"
+        value={values.instagramMedico}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, instagramMedico: e.target.value }))}
+      />
+
+      <button
+        onClick={handleSave}
+        disabled={loading}
+        className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
+        type="button"
+      >
+        {loading ? 'Salvando...' : 'Salvar medicamento'}
+      </button>
+    </div>
+  );
+};
 
 /* ================== MODAL ================== */
 
 export const MedicationModal: React.FC<MedicationModalProps> = ({
   isOpen,
   onClose,
+  usuarioId,
+  onYesCallback,
+  onNoCallback,
+  embeddedMode = false,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [medicationValues, setMedicationValues] = useState<{ 
+    nome: string; 
+    concentracao: string; 
+    frequencia: MedicationFrequency 
+  }>({
+    nome: "",
+    concentracao: "",
+    frequencia: "",
+  });
 
   useEffect(() => {
     if (!isOpen) {
-      const t = setTimeout(() => setStep(1), 250);
+      const t = setTimeout(() => {
+        setStep(1);
+        setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+      }, 250);
       return () => clearTimeout(t);
     }
   }, [isOpen]);
+
+  const handleClose = () => {
+    setStep(1);
+    setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+    onClose();
+  };
+
+  const handleNo = () => {
+    if (onNoCallback) {
+      onNoCallback();
+    }
+    handleClose();
+  };
+
+  const handleFinish = () => {
+    setStep(1);
+    setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+    onClose();
+  };
+
+  const handleMedicationValuesChange = useMemo(
+    () => (values: { nome: string; concentracao: string; frequencia: MedicationFrequency }) => {
+      setMedicationValues(values);
+    },
+    []
+  );
 
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <ModalHeader title="Medicamentos" onClose={onClose} />
+        <ModalHeader title="Medicamentos" onClose={handleClose} />
 
         {step === 1 && (
           <StepQuestion
             onYes={() => setStep(2)}
-            onNo={onClose}
+            onNo={handleNo}
           />
         )}
 
-        {step === 2 && <StepMedication onNext={() => setStep(3)} />}
-        {step === 3 && <StepDoctor onFinish={onClose} />}
+        {step === 2 && (
+          <StepMedication 
+            onNext={() => setStep(3)} 
+            onValuesChange={handleMedicationValuesChange}
+          />
+        )}
+        {step === 3 && (
+          <StepDoctor 
+            onFinish={handleFinish} 
+            usuarioId={usuarioId}
+            medicationValues={medicationValues}
+            embeddedMode={embeddedMode}
+            onYesCallback={onYesCallback}
+          />
+        )}
       </div>
     </div>
   );

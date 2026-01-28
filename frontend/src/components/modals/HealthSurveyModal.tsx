@@ -71,7 +71,9 @@ const ModalHeader = ({
 
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
+      type="button"
+      aria-label="Fechar modal"
     >
       <IoClose />
     </button>
@@ -81,7 +83,12 @@ const ModalHeader = ({
 /* ================== STEP 1 ================== */
 
 const Step1 = ({ onNext }: { onNext: () => void }) => {
-  const [values, setValues] = useState({
+  const [values, setValues] = useState<{
+    peso: string;
+    altura: string;
+    idade: string;
+    sexo: "" | "Masculino" | "Feminino" | "Outro";
+  }>({
     peso: "",
     altura: "",
     idade: "",
@@ -98,14 +105,15 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
 
   return (
     <div className="p-8 space-y-4">
-      <Input icon={<FaWeight />} placeholder="Peso (kg)" value={values.peso} onChange={setField("peso")} />
-      <Input icon={<FaRulerVertical />} placeholder="Altura (cm)" value={values.altura} onChange={setField("altura")} />
-      <Input icon={<FaBirthdayCake />} placeholder="Idade" value={values.idade} onChange={setField("idade")} />
+      <Input icon={<FaWeight />} placeholder="Peso (kg)" value={values.peso} onChange={setField("peso")} type="number" />
+      <Input icon={<FaRulerVertical />} placeholder="Altura (cm)" value={values.altura} onChange={setField("altura")} type="number" />
+      <Input icon={<FaBirthdayCake />} placeholder="Idade" value={values.idade} onChange={setField("idade")} type="number" />
 
       <Select icon={<FaVenusMars />} value={values.sexo} onChange={setField("sexo")}>
         <option value="" disabled>Sexo biológico</option>
-        <option value="masculino">Masculino</option>
-        <option value="feminino">Feminino</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Feminino">Feminino</option>
+        <option value="Outro">Outro</option>
       </Select>
 
       <button
@@ -117,6 +125,7 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
               ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
               : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
           }`}
+        type="button"
       >
         Próximo
       </button>
@@ -127,7 +136,13 @@ const Step1 = ({ onNext }: { onNext: () => void }) => {
 /* ================== STEP 2 ================== */
 
 const Step2 = ({ onNext }: { onNext: () => void }) => {
-  const [values, setValues] = useState({
+  const [values, setValues] = useState<{
+    massa: string;
+    gordura: string;
+    pesoMeta: string;
+    data: string;
+    objetivo: "" | "emagrecer" | "manter" | "ganhar_massa";
+  }>({
     massa: "",
     gordura: "",
     pesoMeta: "",
@@ -149,9 +164,9 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
 
   return (
     <div className="p-8 space-y-4">
-      <Input icon={<FaDumbbell />} placeholder="Massa muscular (kg)" value={values.massa} onChange={setField("massa")} />
-      <Input icon={<FaFire />} placeholder="% de gordura" value={values.gordura} onChange={setField("gordura")} />
-      <Input icon={<FaBullseye />} placeholder="Peso desejado (kg)" value={values.pesoMeta} onChange={setField("pesoMeta")} />
+      <Input icon={<FaDumbbell />} placeholder="Massa muscular (kg)" value={values.massa} onChange={setField("massa")} type="number" />
+      <Input icon={<FaFire />} placeholder="% de gordura" value={values.gordura} onChange={setField("gordura")} type="number" />
+      <Input icon={<FaBullseye />} placeholder="Peso desejado (kg)" value={values.pesoMeta} onChange={setField("pesoMeta")} type="number" />
 
       <Input type="date" icon={<FaCalendarAlt />} value={values.data} onChange={setField("data")} />
 
@@ -171,6 +186,7 @@ const Step2 = ({ onNext }: { onNext: () => void }) => {
               ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
               : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
           }`}
+        type="button"
       >
         Próximo
       </button>
@@ -189,7 +205,8 @@ const Step3 = ({
   <div className="p-8 space-y-4">
     <button
       onClick={onOpenMedication}
-      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f] transition"
+      type="button"
     >
       <FiPlus className="text-[#6A38F3]" />
       <span>Adicionar medicamentos</span>
@@ -197,7 +214,8 @@ const Step3 = ({
 
     <button
       onClick={onOpenDiet}
-      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f] transition"
+      type="button"
     >
       <FiPlus className="text-[#6A38F3]" />
       <span>Adicionar dieta</span>
@@ -205,7 +223,8 @@ const Step3 = ({
 
     <button
       onClick={onOpenTraining}
-      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f]"
+      className="w-full h-[50px] rounded-full border border-gray-300 hover:border-[#6A38F3] flex items-center justify-center gap-3 text-[#2f2f2f] transition"
+      type="button"
     >
       <FiPlus className="text-[#6A38F3]" />
       <span>Adicionar treino</span>
@@ -214,6 +233,7 @@ const Step3 = ({
     <button
       onClick={onFinish}
       className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+      type="button"
     >
       Finalizar
     </button>
@@ -222,12 +242,23 @@ const Step3 = ({
 
 /* ================== MODAL PRINCIPAL ================== */
 
-export const HealthSurveyModal = ({ isOpen, onClose }: any) => {
+interface HealthSurveyModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  usuarioId?: number;
+}
+
+export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({ isOpen, onClose, usuarioId }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [med, setMed] = useState(false);
   const [diet, setDiet] = useState(false);
   const [train, setTrain] = useState(false);
+
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -235,19 +266,19 @@ export const HealthSurveyModal = ({ isOpen, onClose }: any) => {
     <>
       <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        onClick={onClose}
+        onClick={handleClose}
       >
         <div
           onClick={(e) => e.stopPropagation()}
           className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
         >
-          <ModalHeader title="Health Survey" onClose={onClose} />
+          <ModalHeader title="Health Survey" onClose={handleClose} />
 
           {step === 1 && <Step1 onNext={() => setStep(2)} />}
           {step === 2 && <Step2 onNext={() => setStep(3)} />}
           {step === 3 && (
             <Step3
-              onFinish={onClose}
+              onFinish={handleClose}
               onOpenMedication={() => setMed(true)}
               onOpenDiet={() => setDiet(true)}
               onOpenTraining={() => setTrain(true)}
@@ -256,9 +287,9 @@ export const HealthSurveyModal = ({ isOpen, onClose }: any) => {
         </div>
       </div>
 
-      <MedicationModal isOpen={med} onClose={() => setMed(false)} />
-      <DietModal isOpen={diet} onClose={() => setDiet(false)} />
-      <TrainingModal isOpen={train} onClose={() => setTrain(false)} />
+      <MedicationModal isOpen={med} onClose={() => setMed(false)} usuarioId={usuarioId} />
+      <DietModal isOpen={diet} onClose={() => setDiet(false)} usuarioId={usuarioId} />
+      <TrainingModal isOpen={train} onClose={() => setTrain(false)} usuarioId={usuarioId} />
     </>
   );
 };

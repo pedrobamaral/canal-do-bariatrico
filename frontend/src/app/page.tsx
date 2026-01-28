@@ -19,10 +19,8 @@ import Navbar from "@/components/Navbar"
 
 // ✅ Modais
 import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
-import { MedicationModal } from "@/components/modals/MedicationModal"
-import { DietModal } from "@/components/modals/DietModal"
-import { TrainingModal } from "@/components/modals/TrainingModal"
 import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal"
+import { getUserById } from "@/api/api"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -349,6 +347,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [metric, setMetric] = useState<"peso" | "imc">("peso")
   const [chartData, setChartData] = useState<ChartPoint[]>([])
+  const [usuarioId, setUsuarioId] = useState<number | undefined>(undefined)
 
   // Só HealthSurveyModal existe aqui
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
@@ -384,23 +383,37 @@ export default function Home() {
     )
   }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipo])
 
-  // Abre o modal pós-login automaticamente
+  // Abre o modal pós-login automaticamente se o usuário não preencheu os dados
   useEffect(() => {
-    const token = localStorage.getItem("authToken")
+    const token = localStorage.getItem("bari_token")
     if (!token) return
 
-    const done = localStorage.getItem("postLoginModalDone") === "1"
-    const shouldOpen = localStorage.getItem("postLoginModal") === "1"
+    // Decodifica o token para pegar o ID do usuário
+    const checkUserData = async () => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const userId = payload.sub
+        setUsuarioId(userId)
 
-    if (!done && shouldOpen) {
-      setIsPostLoginModalOpen(true)
-      localStorage.removeItem("postLoginModal")
+        // Busca os dados do usuário para verificar se já preencheu os dados obrigatórios
+        const userData = await getUserById(userId)
+        
+        // Verifica se os campos obrigatórios estão preenchidos
+        const hasRequiredData = userData.peso && userData.altura && userData.sexo && userData.meta
+        
+        if (!hasRequiredData) {
+          setIsPostLoginModalOpen(true)
+        }
+      } catch (error) {
+        console.error('Erro ao verificar dados do usuário:', error)
+      }
     }
+
+    checkUserData()
   }, [])
 
   const handlePostLoginFinish = (data: PostLoginData) => {
     console.log("Dados pós-login:", data)
-    localStorage.setItem("postLoginModalDone", "1")
     setIsPostLoginModalOpen(false)
   }
 
@@ -1077,7 +1090,7 @@ export default function Home() {
         </div>
       </main>
 
-      <HealthSurveyModal isOpen={isHealthModalOpen} onCloseAction={handleHealthSurveyClose} />
+      <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} usuarioId={usuarioId} />
 
       <PostLoginModal
         isOpen={isPostLoginModalOpen}
@@ -1086,6 +1099,7 @@ export default function Home() {
         onFillAdditionalInfoAction={() => {
           console.log("Preencher Informações Adicionais")
         }}
+        usuarioId={usuarioId}
       />
 
       <style jsx>{`

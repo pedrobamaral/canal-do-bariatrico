@@ -8,28 +8,65 @@ export class MedicamentosController {
   constructor(private readonly medicamentosService: MedicamentosService) {}
 
   @Post()
-  create(@Body() createMedicamentoDto: CreateMedicamentoDto) {
-    return this.medicamentosService.create(createMedicamentoDto);
+  async create(@Body() createMedicamentoDto: CreateMedicamentoDto) {
+    try {
+      const result = await this.medicamentosService.create(createMedicamentoDto);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
+  }
+
+  @Post('usuario/:usuarioId')
+  async createByUsuario(
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
+    @Body() data: any,
+  ) {
+    try {
+      const result = await this.medicamentosService.createByUsuario(usuarioId, data);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Get()
-  findAll() {
-    return this.medicamentosService.findAll();
+  async findAll() {
+    try {
+      const result = await this.medicamentosService.findAll();
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.medicamentosService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const result = await this.medicamentosService.findOne(id);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicamentoDto: UpdateMedicamentoDto) {
-    return this.medicamentosService.update(id, updateMedicamentoDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicamentoDto: UpdateMedicamentoDto) {
+    try {
+      const result = await this.medicamentosService.update(id, updateMedicamentoDto);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.medicamentosService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.medicamentosService.remove(id);
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 }

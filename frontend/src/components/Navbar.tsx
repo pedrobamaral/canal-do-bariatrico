@@ -3,6 +3,9 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { IoIosBody } from "react-icons/io";
+import { IoPerson } from "react-icons/io5";
 
 // Ícones (mantive os seus do protótipo)
 import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
@@ -17,18 +20,70 @@ const CORES = {
   vermelhoHover: "#FF3B5C",
 }
 
-export default function HeaderTeste() {
+export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userId, setUserId] = useState<number | null>(null)
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const checkAuth = () => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("bari_token") : null
+    
+    if (token) {
+      setIsLoggedIn(true)
+      
+      // Decodifica o token para pegar o ID do usuário
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        setUserId(payload.sub)
+      } catch (err) {
+        console.error("Erro ao decodificar token:", err)
+        setUserId(null)
+      }
+    } else {
+      setIsLoggedIn(false)
+      setUserId(null)
+    }
+  }
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("authToken") : null
-    setIsLoggedIn(!!token)
-  }, [])
+    checkAuth()
+
+    // Atualiza quando login/logout "avisar" (mesma aba)
+    window.addEventListener("auth-changed", checkAuth)
+
+    // Atualiza ao voltar o foco pra aba (extra segurança)
+    window.addEventListener("focus", checkAuth)
+
+    // Verifica periodicamente se o token ainda existe
+    const interval = setInterval(() => {
+      const token = localStorage.getItem("bari_token");
+      const currentlyLoggedIn = token !== null;
+      
+      if (isLoggedIn !== currentlyLoggedIn) {
+        checkAuth();
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("auth-changed", checkAuth)
+      window.removeEventListener("focus", checkAuth)
+      clearInterval(interval);
+    }
+  }, [pathname, isLoggedIn])
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
-    window.location.href = "/"
+    localStorage.removeItem("bari_token")
+    localStorage.removeItem("bari_user")
+    
+    setIsLoggedIn(false)
+    setUserId(null)
+
+    window.dispatchEvent(new Event("auth-changed"))
+
+    router.push("/")
+    router.refresh()
   }
 
   const iconBaseStyle =
@@ -54,7 +109,7 @@ export default function HeaderTeste() {
           </div>
         </div>
 
-        {/* ✅ LADO DIREITO: agora ocupa o espaço restante e alinha no fim */}
+        {/* ✅ LADO DIREITO */}
         <div className="flex-1 flex items-center justify-end">
           <div className="flex items-center gap-6 whitespace-nowrap">
             {/* ✅ DESLOGADO */}
@@ -64,7 +119,6 @@ export default function HeaderTeste() {
                   <FaCalculator size={24} className={iconBaseStyle} />
                 </Link>
 
-                {/* LOGIN: hover azul igual protótipo */}
                 <Link
                   href="/login"
                   style={{
@@ -83,7 +137,6 @@ export default function HeaderTeste() {
                   LOGIN
                 </Link>
 
-                {/* CADASTRE-SE: hover fica branco (igual protótipo) */}
                 <Link href="/cadastro" style={{ textDecoration: "none" }}>
                   <button
                     style={{
@@ -125,17 +178,17 @@ export default function HeaderTeste() {
                 </Link>
 
                 <Link href="#" aria-label="Treino">
-                  <FaUser size={22} className={iconBaseStyle} />
+                  <IoIosBody size={27} className={iconBaseStyle} />
                 </Link>
 
                 <Link href="/" aria-label="Calculadora">
                   <FaCalculator size={22} className={iconBaseStyle} />
                 </Link>
 
-                <Link href="/dashboard" aria-label="Meu Perfil">
-                  <RiUser3Fill
+                <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
+                  <IoPerson
                     size={26}
-                    className="text-[#62B4FF] hover:text-white transition-colors cursor-pointer"
+                    className="text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
                   />
                 </Link>
 

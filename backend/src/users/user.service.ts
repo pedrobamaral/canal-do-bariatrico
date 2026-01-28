@@ -31,7 +31,7 @@ export class UsuarioService {
         sexo: createUsuarioDto.sexo,
         peso: createUsuarioDto.peso,
         altura: createUsuarioDto.altura,
-        Nascimento: createUsuarioDto.nascimento,
+        nascimento: createUsuarioDto.nascimento,
         massa_magra: createUsuarioDto.massa_magra,
         meta: createUsuarioDto.meta,
       },
@@ -60,9 +60,19 @@ export class UsuarioService {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id: userId },
       select: {
-        id: true,  
+        id: true,
         nome: true,
         email: true,
+        telefone: true,
+        foto: true,
+        sexo: true,
+        peso: true,
+        altura: true,
+        nascimento: true,
+        massa_magra: true,
+        meta: true,
+        admin: true,
+        ativo: true,
         dataCriacao: true,
       },
     });
@@ -70,6 +80,10 @@ export class UsuarioService {
     if (!usuario) {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
+
+    console.log('=== FINDONE - Usuário retornado ===');
+    console.log('usuario:', usuario);
+    console.log('usuario.telefone:', usuario.telefone);
 
     return usuario;
   }
@@ -88,14 +102,56 @@ export class UsuarioService {
     }
 
     try {
+      // Mapeia os campos do DTO para os campos do Prisma
+      const dataToUpdate: any = {};
+      
+      if (updateUsuarioDto.nome !== undefined) dataToUpdate.nome = updateUsuarioDto.nome;
+      if (updateUsuarioDto.email !== undefined) dataToUpdate.email = updateUsuarioDto.email;
+      if (updateUsuarioDto.senha !== undefined) dataToUpdate.senha = updateUsuarioDto.senha;
+      if (updateUsuarioDto.telefone !== undefined) dataToUpdate.telefone = updateUsuarioDto.telefone;
+      if (updateUsuarioDto.foto !== undefined) dataToUpdate.foto = updateUsuarioDto.foto;
+      if (updateUsuarioDto.sexo !== undefined) dataToUpdate.sexo = updateUsuarioDto.sexo;
+      if (updateUsuarioDto.peso !== undefined) dataToUpdate.peso = updateUsuarioDto.peso;
+      if (updateUsuarioDto.altura !== undefined) dataToUpdate.altura = updateUsuarioDto.altura;
+      if (updateUsuarioDto.nascimento !== undefined) {
+        // Converte para Date se for string
+        dataToUpdate.nascimento = typeof updateUsuarioDto.nascimento === 'string' 
+          ? new Date(updateUsuarioDto.nascimento) 
+          : updateUsuarioDto.nascimento;
+      }
+      if (updateUsuarioDto.massa_magra !== undefined) dataToUpdate.massa_magra = updateUsuarioDto.massa_magra;
+      if (updateUsuarioDto.meta !== undefined) dataToUpdate.meta = updateUsuarioDto.meta;
+      if (updateUsuarioDto.admin !== undefined) dataToUpdate.admin = updateUsuarioDto.admin;
+      if (updateUsuarioDto.ativo !== undefined) dataToUpdate.ativo = updateUsuarioDto.ativo;
+
+      console.log('=== UPDATE USER - dataToUpdate ===');
+      console.log(JSON.stringify(dataToUpdate, null, 2));
+
       const usuarioAtualizado = await this.prisma.usuario.update({
         where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
-        data: updateUsuarioDto,
+        data: dataToUpdate,
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          telefone: true,
+          foto: true,
+          sexo: true,
+          peso: true,
+          altura: true,
+          nascimento: true,
+          massa_magra: true,
+          meta: true,
+          admin: true,
+          ativo: true,
+          dataCriacao: true,
+        },
       });
 
-      const { senha, ...result } = usuarioAtualizado; 
-      return result;
+      return usuarioAtualizado; 
     } catch (error) {
+      console.error('=== UPDATE USER ERROR ===');
+      console.error(error);
       throw new InternalServerErrorException('Não foi possível atualizar o usuário.');
     }
   }

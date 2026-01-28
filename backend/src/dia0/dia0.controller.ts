@@ -17,35 +17,65 @@ export class Dia0Controller {
   constructor(private readonly service: Dia0Service) {}
 
   @Post()
-  create(@Body() dto: CreateDia0Dto) {
-    return this.service.create(dto);
+  async create(@Body() dto: CreateDia0Dto) {
+    try {
+      const result = await this.service.create(dto);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  async findAll() {
+    try {
+      const result = await this.service.findAll();
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.service.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const result = await this.service.findOne(id);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Get('ciclo/:idCiclo')
-  findByCiclo(@Param('idCiclo', ParseIntPipe) idCiclo: number) {
-    return this.service.findByCiclo(idCiclo);
+  async findByCiclo(@Param('idCiclo', ParseIntPipe) idCiclo: number) {
+    try {
+      const result = await this.service.findByCiclo(idCiclo);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateDia0Dto,
   ) {
-    return this.service.update(id, dto);
+    try {
+      const result = await this.service.update(id, dto);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.service.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const result = await this.service.remove(id);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
   }
 }

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import { createUser } from "@/api/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -55,9 +56,36 @@ type FormInputProps = {
 type SignUpFormData = {
   name: string;
   email: string;
+  pais: string;
+  codPais: string;
   telefone: string; 
   password: string;
   confirmPassword: string;
+};
+
+/* Dados de países com códigos e bandeiras */
+type PaisInfo = {
+  codigo: string;
+  bandeira: string;
+};
+
+const PAISES_CODIGOS: Record<string, PaisInfo> = {
+  "Brasil": { codigo: "+55", bandeira: "🇧🇷" },
+  "Estados Unidos": { codigo: "+1", bandeira: "🇺🇸" },
+  "Canadá": { codigo: "+1", bandeira: "🇨🇦" },
+  "Portugal": { codigo: "+351", bandeira: "🇵🇹" },
+  "Espanha": { codigo: "+34", bandeira: "🇪🇸" },
+  "França": { codigo: "+33", bandeira: "🇫🇷" },
+  "Itália": { codigo: "+39", bandeira: "🇮🇹" },
+  "Alemanha": { codigo: "+49", bandeira: "🇩🇪" },
+  "Reino Unido": { codigo: "+44", bandeira: "🇬🇧" },
+  "Austrália": { codigo: "+61", bandeira: "🇦🇺" },
+  "Argentina": { codigo: "+54", bandeira: "🇦🇷" },
+  "Chile": { codigo: "+56", bandeira: "🇨🇱" },
+  "México": { codigo: "+52", bandeira: "🇲🇽" },
+  "Colômbia": { codigo: "+57", bandeira: "🇨🇴" },
+  "Peru": { codigo: "+51", bandeira: "🇵🇪" },
+  "Outro": { codigo: "+55", bandeira: "🌍" },
 };
 
 /* Input com toggle de senha */
@@ -139,20 +167,27 @@ const SignUpForm: React.FC = () => {
   const [formData, setFormData] = useState<SignUpFormData>({
     name: "",
     email: "",
+    pais: "Brasil",
+    codPais: "+55",
     telefone: "",
     password: "",
     confirmPassword: "",
   });
+  const [selectedPaisInfo, setSelectedPaisInfo] = useState<PaisInfo>(PAISES_CODIGOS["Brasil"]);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   // Manipulador de mudança com lógica especial para telefone
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     
-    if (id === "telefone") {
+    if (id === "pais") {
+      const paisInfo = PAISES_CODIGOS[value];
+      setFormData((prev) => ({ ...prev, pais: value, codPais: paisInfo.codigo }));
+      setSelectedPaisInfo(paisInfo);
+    } else if (id === "telefone") {
       setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [id]: value }));
@@ -192,34 +227,26 @@ const SignUpForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: formData.name,
-          email: formData.email,
-          senha: formData.password,
-          // Envia apenas os números (limpos) para o banco
-          telefone: rawPhone 
-        }),
-      });
+      // Remove símbolos do telefone para enviar apenas números
+      const phoneNumbers = formData.telefone.replace(/\D/g, "");
+      // Concatena código do país (sem o +) no início do número
+      const countryCode = selectedPaisInfo.codigo.replace("+", "");
+      const phoneWithCountryCode = `${countryCode}${phoneNumbers}`;
+      const response = await createUser(formData.name, formData.email, formData.password, phoneWithCountryCode);
 
-      const data = await response.json().catch(() => ({})); 
-
-      if (!response.ok) {
-        setError(data.message || "Erro ao cadastrar usuário. Verifique os dados.");
-        return;
+      if (response && response.status === "sucesso") {
+        setSuccess("Cadastro realizado! Redirecionando para o login...");
+        
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
+      } else {
+        setError(response?.message || "Erro ao cadastrar usuário. Verifique os dados.");
       }
 
-      setSuccess("Cadastro realizado! Redirecionando para o login...");
-      
-      setTimeout(() => {
-        router.push("/login");
-      }, 1500);
-
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setError("Erro de conexão. Verifique se o backend está rodando.");
+      setError(error?.message || "Erro desconhecido ao cadastrar usuário.");
     } finally {
       setLoading(false);
     }
@@ -257,16 +284,62 @@ const SignUpForm: React.FC = () => {
         <FormInput id="name" label="Nome Completo" type="text" value={formData.name} onChange={handleChange} required />
         <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
         
-        {/* Input de Telefone com Máscara */}
-        <FormInput 
-          id="telefone" 
-          label="Telefone: (XX) XXXXX-XXXX" 
-          type="tel" 
-          value={formData.telefone} 
-          onChange={handleChange} 
-          required
-          maxLength={15} // Limita tamanho visual da máscara
-        />
+        {/* Input de Telefone com Select de País Integrado */}
+        <div style={{ marginBottom: "20px" }}>
+          <label htmlFor="telefone" className="sr-only">Telefone</label>
+          <div style={{ display: "flex", gap: "0" }}>
+            <select
+              id="pais"
+              value={formData.pais}
+              onChange={handleChange}
+              style={{
+                height: "54px",
+                padding: "0 12px",
+                borderRadius: "32px 0 0 32px",
+                background: "#F3EFDD",
+                border: "none",
+                color: "#19191A",
+                fontSize: "16px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "background 0.2s",
+                minWidth: "110px",
+              }}
+              onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
+              onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
+            >
+              {Object.keys(PAISES_CODIGOS).map((pais) => (
+                <option key={pais} value={pais}>
+                  {PAISES_CODIGOS[pais].bandeira} {PAISES_CODIGOS[pais].codigo}
+                </option>
+              ))}
+            </select>
+            <input
+              id="telefone"
+              type="tel"
+              placeholder="(XX) XXXXX-XXXX"
+              value={formData.telefone}
+              onChange={handleChange}
+              required
+              maxLength={15}
+              style={{
+                flex: 1,
+                height: "54px",
+                padding: "0 22px",
+                borderRadius: "0 32px 32px 0",
+                background: "#F3EFDD",
+                border: "none",
+                color: "#19191A",
+                fontSize: "16px",
+                fontWeight: 500,
+                lineHeight: "24px",
+                transition: "background 0.2s",
+              }}
+              onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
+              onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
+            />
+          </div>
+        </div>
         
         <FormInput id="password" label="Senha" type="password" value={formData.password} onChange={handleChange} required />
         <FormInput id="confirmPassword" label="Confirmar Senha" type="password" value={formData.confirmPassword} onChange={handleChange} required />

@@ -1,9 +1,10 @@
+// app/login/page.tsx (ou o arquivo do seu LoginPage)
 "use client";
 
 import Image from "next/image";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser } from "../utils/api";
+import { loginUser } from "@/api/api";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -130,32 +131,36 @@ const LoginForm: React.FC = () => {
     setLoading(true);
 
     try {
-      // Usando a função centralizada do api.ts
       const data = await loginUser({
         email: formData.email,
         senha: formData.password,
       });
 
-      // Salvar o token
       if (data.access_token) {
+        // ✅ PADRÃO DO HEADER
         localStorage.setItem("bari_token", data.access_token);
-        
-        // Opcional: Salvar informações do usuário
+
+        // user (opcional)
         if (data.user) {
           localStorage.setItem("bari_user", JSON.stringify(data.user));
         }
+
+        // abre o modal pós-login apenas se ainda não foi concluído neste navegador
+        if (localStorage.getItem("postLoginModalDone") !== "1") {
+          localStorage.setItem("postLoginModal", "1");
+        }
+
+        // avisa o header na mesma aba
+        window.dispatchEvent(new Event("auth-changed"));
       }
 
-      // Redirecionar para a Home
       router.push("/");
-
+      router.refresh();
     } catch (error: any) {
-      // Erro já formatado pela função loginUser
       setError(error.message);
-      
-      // Log detalhado para desenvolvimento
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Erro de login:', error);
+
+      if (process.env.NODE_ENV === "development") {
+        console.error("Erro de login:", error);
       }
     } finally {
       setLoading(false);
@@ -311,12 +316,10 @@ const LoginPage: React.FC = () => {
           width: "100%",
         }}
       >
-        {/* Card */}
         <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-start" }}>
           <LoginForm />
         </div>
 
-        {/* Imagem da Bari */}
         <div
           style={{
             flex: "0 1 700px",

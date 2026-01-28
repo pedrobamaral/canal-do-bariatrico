@@ -39,27 +39,26 @@ export class MedicamentosService {
         });
       }
 
-      // Mapeia a frequência
+      // Mapeia a frequência - agora data.frequencia é um número (intervalo em dias)
       let freq_sem = false;
       let freq_dia = false;
-      let qtnd_freq = 1;
+      let qtnd_freq = data.frequencia || 1; // Usa o valor numérico diretamente
 
-      if (data.frequencia === 'semanal') {
+      // Define se é semanal ou diário baseado no intervalo
+      if (qtnd_freq === 7) {
         freq_sem = true;
-        qtnd_freq = 1;
-      } else if (data.frequencia === 'diaria') {
+        freq_dia = false;
+      } else {
         freq_dia = true;
-        qtnd_freq = 1;
-      } else if (data.frequencia === 'eventual') {
-        freq_dia = true;
-        qtnd_freq = 0;
+        freq_sem = false;
       }
 
       // Cria o medicamento associado ao sistema
-      return await this.prisma.medicamentos.create({
+      const medicamento = await this.prisma.medicamentos.create({
         data: {
           idSistema: sistema.id,
           nome: data.nome || 'Não informado',
+          concentracao: data.concentracao || null,
           freq_sem,
           freq_dia,
           qtnd_freq,
@@ -67,6 +66,26 @@ export class MedicamentosService {
           insta_medico: data.instagramMedico || null,
         },
       });
+
+      // Atualiza o ciclo ativo do usuário com a frequência do medicamento
+      const cicloAtivo = await this.prisma.ciclo.findFirst({
+        where: {
+          idUsuario: usuarioId,
+          ativoCiclo: true,
+        },
+      });
+
+      if (cicloAtivo) {
+        await this.prisma.ciclo.update({
+          where: { id: cicloAtivo.id },
+          data: {
+            med_prescrita: true,
+            freq_med_prescrita: qtnd_freq, // Salva o intervalo em dias
+          },
+        });
+      }
+
+      return medicamento;
     } catch (error) {
       console.error('Erro ao criar medicamento por usuário:', error);
       throw new InternalServerErrorException('Erro ao criar o medicamento.');

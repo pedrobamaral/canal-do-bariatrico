@@ -14,7 +14,7 @@ const api = axios.create({
 // Interceptor para adicionar token nas requisições
 api.interceptors.request.use(
   (config) => {
-    console.log('Fazendo requisição para:', config.baseURL + config.url);
+    console.log('Fazendo requisição para:', `${config.baseURL || ''}${config.url || ''}`);
     const token = localStorage.getItem('bari_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

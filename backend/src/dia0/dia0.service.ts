@@ -12,16 +12,19 @@ export class Dia0Service {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateDia0Dto) {
+    // Verifica se já existe um Dia0 para este usuário
     const existente = await this.prisma.dia0.findFirst({
       where: {
         idUsuario: dto.idUsuario,
       },
     });
 
+    // Se já existe, retorna o existente
     if (existente) {
-      throw new BadRequestException('Dia0 já existe para este usuário');
+      return existente;
     }
 
+    // Se não existe, cria um novo
     return this.prisma.dia0.create({
       data: {
         idUsuario: dto.idUsuario,

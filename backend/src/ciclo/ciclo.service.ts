@@ -12,7 +12,7 @@ export class CicloService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateCicloDto) {
-    // garante 1 ciclo ativo por usuário
+    // Verifica se já existe um ciclo ativo para este usuário
     const cicloAtivo = await this.prisma.ciclo.findFirst({
       where: {
         idUsuario: dto.idUsuario,
@@ -20,8 +20,9 @@ export class CicloService {
       },
     });
 
+    // Se já existe um ciclo ativo, retorna ele
     if (cicloAtivo) {
-      throw new BadRequestException('Usuário já possui um ciclo ativo');
+      return cicloAtivo;
     }
 
     return this.prisma.ciclo.create({

@@ -235,7 +235,7 @@ export const PostLoginModal: React.FC<Props> = ({
           {/* STEP 2 — RESUMO MEDICAMENTO (exibido após MedicationModal) */}
           {step === 2 && (
             <div className="text-center space-y-6">
-              <FaPills className="mx-auto text-4xl text-[#6A38F3]" />
+              <FaPills className={`mx-auto text-4xl transition-colors ${medPrescrita ? "text-[#6A38F3]" : "text-gray-400"}`} />
               
               {medPrescrita ? (
                 <>

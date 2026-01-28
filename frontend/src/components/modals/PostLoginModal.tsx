@@ -1,374 +1,396 @@
-// components/PostLoginModal.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { IoClose, IoChevronDown } from "react-icons/io5";
+import {
+  IoClose,
+  IoChevronDown,
+} from "react-icons/io5";
+import {
+  FaWeight,
+  FaRulerVertical,
+  FaBirthdayCake,
+  FaBullseye,
+  FaVenusMars,
+  FaArrowLeft,
+  FaStethoscope,
+  FaPills,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import { updateData, createOrUpdateMedicacao, createDia0, createCiclo } from "@/api/api";
+import { MedicationModal, MedicationData, MedicationFrequency } from "./MedicationModal";
+
+/* ================== TIPOS ================== */
+
+type Step = 1 | 2 | 3;
 
 export type PostLoginData = {
   peso: string;
   altura: string;
-  idade: string;
-  sexo: "" | "Masculino" | "Feminino" | "Outro";
+  dataNascimento: string;
+  sexo: "Masculino" | "Feminino" | "Outro";
   pesoMeta: string;
-  tipoIntervencao:
-    | ""
-    | "cirurgia_bariatrica"
-    | "medicacao"
-    | "dieta_treino";
+  tipoIntervencao: "" | "mounjaro" | "apenas_dieta_treino";
 };
 
-interface PostLoginModalProps {
+
+
+interface Props {
   isOpen: boolean;
-  onClose: () => void;
-  onFinish: (data: PostLoginData) => void;
-  onFillAdditionalInfo?: () => void;
+  onCloseAction: () => void;
+  onFinishAction?: (data: PostLoginData) => void;
+  onFillAdditionalInfoAction?: () => void;
+  usuarioId?: number;
 }
+
+/* ================== ESTILOS ================== */
 
 const inputStyle =
-  "w-full h-[50px] px-6 rounded-full border border-black bg-transparent text-gray-900 placeholder-gray-600 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
+  "w-full h-[50px] pl-12 pr-12 rounded-2xl bg-white/80 backdrop-blur-md text-[#1f1f1f] border border-gray-300/70 focus:border-[#6A38F3] focus:ring-4 focus:ring-[#6A38F3]/20 focus:outline-none transition-all duration-300";
 
-const labelStyle = "sr-only";
+const selectStyle = "appearance-none cursor-pointer";
 
-const FieldError = ({ msg }: { msg?: string }) => {
-  if (!msg) return null;
-  return <p className="mt-1 ml-4 text-xs font-medium text-red-600">{msg}</p>;
-};
+/* ================== COMPONENTE ================== */
 
-function isEmpty(v: string) {
-  return v.trim() === "";
-}
-function toNumberOrNaN(v: string) {
-  if (isEmpty(v)) return NaN;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-const LIMITS = {
-  pesoKg: { min: 20, max: 350 },
-  alturaCm: { min: 120, max: 230 },
-  idadeAnos: { min: 10, max: 120 },
-  pesoMetaKg: { min: 20, max: 350 },
-};
-
-type Step1Errors = Partial<
-  Record<"peso" | "altura" | "idade" | "sexo" | "pesoMeta", string>
->;
-
-function validateStep1(values: PostLoginData): Step1Errors {
-  const errors: Step1Errors = {};
-
-  const peso = toNumberOrNaN(values.peso);
-  const altura = toNumberOrNaN(values.altura);
-  const idade = toNumberOrNaN(values.idade);
-  const pesoMeta = toNumberOrNaN(values.pesoMeta);
-
-  if (isEmpty(values.peso)) errors.peso = "Informe seu peso.";
-  else if (Number.isNaN(peso)) errors.peso = "Peso inválido.";
-  else if (peso < LIMITS.pesoKg.min || peso > LIMITS.pesoKg.max)
-    errors.peso = `Peso deve estar entre ${LIMITS.pesoKg.min} e ${LIMITS.pesoKg.max} kg.`;
-
-  if (isEmpty(values.altura)) errors.altura = "Informe sua altura.";
-  else if (Number.isNaN(altura)) errors.altura = "Altura inválida.";
-  else if (altura < LIMITS.alturaCm.min || altura > LIMITS.alturaCm.max)
-    errors.altura = `Altura deve estar entre ${LIMITS.alturaCm.min} e ${LIMITS.alturaCm.max} cm.`;
-
-  if (isEmpty(values.idade)) errors.idade = "Informe sua idade.";
-  else if (Number.isNaN(idade)) errors.idade = "Idade inválida.";
-  else if (idade < LIMITS.idadeAnos.min || idade > LIMITS.idadeAnos.max)
-    errors.idade = `Idade deve estar entre ${LIMITS.idadeAnos.min} e ${LIMITS.idadeAnos.max} anos.`;
-
-  if (!values.sexo) errors.sexo = "Selecione o sexo biológico.";
-
-  if (isEmpty(values.pesoMeta)) errors.pesoMeta = "Informe o peso que você quer ter.";
-  else if (Number.isNaN(pesoMeta)) errors.pesoMeta = "Peso desejado inválido.";
-  else if (pesoMeta < LIMITS.pesoMetaKg.min || pesoMeta > LIMITS.pesoMetaKg.max)
-    errors.pesoMeta = `Peso desejado deve estar entre ${LIMITS.pesoMetaKg.min} e ${LIMITS.pesoMetaKg.max} kg.`;
-
-  return errors;
-}
-
-function validateStep2(values: PostLoginData) {
-  if (!values.tipoIntervencao) return "Selecione o tipo de intervenção.";
-  return "";
-}
-
-export const PostLoginModal: React.FC<PostLoginModalProps> = ({
+export const PostLoginModal: React.FC<Props> = ({
   isOpen,
-  onClose,
-  onFinish,
-  onFillAdditionalInfo,
+  onCloseAction,
+  onFinishAction,
+  onFillAdditionalInfoAction,
+  usuarioId,
 }) => {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<Step>(1);
+  const [loading, setLoading] = useState(false);
+  const [showMedicationModal, setShowMedicationModal] = useState(false);
 
-  const [values, setValues] = useState<PostLoginData>({
+  /* ===== Medidas ===== */
+  const [values, setValues] = useState<Partial<PostLoginData>>({
     peso: "",
     altura: "",
-    idade: "",
-    sexo: "",
+    dataNascimento: "",
+    sexo: undefined,
     pesoMeta: "",
     tipoIntervencao: "",
   });
 
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  const step1Errors = useMemo(() => validateStep1(values), [values]);
-  const step1Valid = useMemo(
-    () => Object.keys(step1Errors).length === 0,
-    [step1Errors]
-  );
-
-  const step2Error = useMemo(() => validateStep2(values), [values]);
-
-  const canShowError = (field: string) => Boolean(touched[field]);
+  /* ===== Medicamento Prescrito ===== */
+  const [medPrescrita, setMedPrescrita] = useState(false);
+  const [freqMedPrescrita, setFreqMedPrescrita] = useState<MedicationFrequency>(null);
+  const [medicationData, setMedicationData] = useState<MedicationData | null>(null);
 
   const setField =
     (field: keyof PostLoginData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setValues((p) => ({ ...p, [field]: e.target.value as any }));
+      setValues((p) => ({ ...p, [field]: e.target.value }));
 
-  const goNext = () => {
-    setTouched((p) => ({
-      ...p,
-      peso: true,
-      altura: true,
-      idade: true,
-      sexo: true,
-      pesoMeta: true,
-    }));
+  const step1Valid =
+    values.peso &&
+    values.altura &&
+    values.dataNascimento &&
+    values.sexo &&
+    values.pesoMeta;
 
-    const currentErrors = validateStep1(values);
-    if (Object.keys(currentErrors).length > 0) return;
-
-    setStep(2);
+  const handleClose = () => {
+    setStep(1);
+    setValues({
+      peso: "",
+      altura: "",
+      dataNascimento: "",
+      sexo: undefined,
+      pesoMeta: "",
+      tipoIntervencao: "",
+    });
+    setMedPrescrita(false);
+    setFreqMedPrescrita(null);
+    setMedicationData(null);
+    onCloseAction();
   };
 
-  const finish = () => {
-    setTouched((p) => ({ ...p, tipoIntervencao: true }));
+  /* ================== FINALIZAR ================== */
 
-    const err = validateStep2(values);
-    if (err) return;
+  const handleFinish = async () => {
+    if (!usuarioId || !values.sexo || !values.dataNascimento) {
+      toast.error("Dados obrigatórios não preenchidos");
+      return;
+    }
 
-    onFinish(values);
+    setLoading(true);
+    try {
+      // Converter string de data para Date
+      const dataNascimento = new Date(values.dataNascimento);
+
+      // 1. Atualizar dados do usuário
+      await updateData(usuarioId, {
+        peso: Number(values.peso),
+        altura: Number(values.altura),
+        nascimento: dataNascimento,
+        sexo: values.sexo,
+        meta: Number(values.pesoMeta),
+        ativo: true,
+      });
+
+      // 2. Criar medicação se fornecida
+      if (medicationData && medicationData.nome) {
+        await createOrUpdateMedicacao(usuarioId, {
+          nome: medicationData.nome,
+          concentracao: medicationData.concentracao,
+          frequencia: medicationData.frequencia,
+          nomeMedico: medicationData.nomeMedico,
+          instagramMedico: medicationData.instagramMedico,
+        });
+      }
+
+      // 3. Criar Dia0
+      const dia0Response = await createDia0(usuarioId, {
+        dia0: new Date(),
+        quer_msg: true,
+        iniciou_medicamento: false,
+      });
+
+      const dia0Id = dia0Response.id;
+
+      // 4. Criar Ciclo com mounjaro baseado no tipo de intervenção
+      // E med_prescrita e freq_med_prescrita baseado na resposta do MedicationModal
+      const mounjaro = values.tipoIntervencao === "mounjaro";
+      await createCiclo(usuarioId, dia0Id, {
+        numCiclo: 1,
+        ativoCiclo: true,
+        mounjaro: mounjaro,
+        med_prescrita: medPrescrita,
+        freq_med_prescrita: freqMedPrescrita || 0,
+        treino: true,
+        dieta: true,
+        agua: true,
+        bioimpedancia: true,
+        consulta: true,
+      });
+
+      toast.success("Dados salvos com sucesso!");
+      handleClose();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao salvar dados");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={handleClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-[56px] shadow-2xl w-full max-w-[620px] min-h-[540px] p-10 border border-gray-100 flex flex-col"
+        className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
-          aria-label="Fechar modal"
-        >
-          <IoClose size={24} />
-        </button>
-
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-black font-['Montserrat']">
-            Medidas Físicas
+        {/* HEADER */}
+        <div className="relative px-8 py-6 border-b border-gray-300">
+          <h2 className="text-lg font-semibold text-center">
+            {step === 1 && "Medidas físicas"}
+            {step === 2 && "Medicamentos"}
+            {step === 3 && "Tipo de intervenção"}
           </h2>
+
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 text-xl text-gray-500"
+          >
+            <IoClose />
+          </button>
         </div>
 
-        {step === 1 && (
-          <div className="flex flex-col flex-1">
-            <form className="space-y-4 flex-1">
-              <div>
-                <label className={labelStyle}>Peso (kg)</label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  placeholder="Peso (kg)"
-                  className={`${inputStyle} ${
-                    canShowError("peso") && step1Errors.peso
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.peso}
-                  onChange={setField("peso")}
-                  onBlur={() => setTouched((p) => ({ ...p, peso: true }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e" || e.key === "E")
-                      e.preventDefault();
-                  }}
-                />
-                <FieldError msg={canShowError("peso") ? step1Errors.peso : undefined} />
-              </div>
+        {/* CONTEÚDO */}
+        <div className="p-8 space-y-4">
 
-              <div>
-                <label className={labelStyle}>Altura (cm)</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="Altura (cm)"
-                  className={`${inputStyle} ${
-                    canShowError("altura") && step1Errors.altura
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.altura}
-                  onChange={setField("altura")}
-                  onBlur={() => setTouched((p) => ({ ...p, altura: true }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e" || e.key === "E")
-                      e.preventDefault();
-                  }}
-                />
-                <FieldError msg={canShowError("altura") ? step1Errors.altura : undefined} />
-              </div>
+          {/* STEP 1 — MEDIDAS */}
+          {step === 1 && (
+            <>
+              <Input icon={<FaWeight />} placeholder="Peso (kg)" value={values.peso} onChange={setField("peso")} />
+              <Input icon={<FaRulerVertical />} placeholder="Altura (cm)" value={values.altura} onChange={setField("altura")} />
+              <Input 
+                icon={<FaBirthdayCake />} 
+                placeholder="Data de nascimento" 
+                type="date"
+                value={values.dataNascimento} 
+                onChange={setField("dataNascimento")} 
+              />
 
-              <div>
-                <label className={labelStyle}>Idade (anos)</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="Idade (anos)"
-                  className={`${inputStyle} ${
-                    canShowError("idade") && step1Errors.idade
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.idade}
-                  onChange={setField("idade")}
-                  onBlur={() => setTouched((p) => ({ ...p, idade: true }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e" || e.key === "E")
-                      e.preventDefault();
-                  }}
-                />
-                <FieldError msg={canShowError("idade") ? step1Errors.idade : undefined} />
-              </div>
+              <Select icon={<FaVenusMars />} value={values.sexo || ""} onChange={setField("sexo")}>
+                <option value="" disabled>Sexo biológico</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+              </Select>
 
-              <div className="relative">
-                <select
-                  className={`${inputStyle} appearance-none cursor-pointer bg-white ${
-                    canShowError("sexo") && step1Errors.sexo
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.sexo}
-                  onChange={setField("sexo")}
-                  onBlur={() => setTouched((p) => ({ ...p, sexo: true }))}
-                >
-                  <option value="" disabled>
-                    Sexo Biológico
-                  </option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                </select>
-                <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                <FieldError msg={canShowError("sexo") ? step1Errors.sexo : undefined} />
-              </div>
+              <Input icon={<FaBullseye />} placeholder="Peso desejado (kg)" value={values.pesoMeta} onChange={setField("pesoMeta")} />
 
-              <div>
-                <label className={labelStyle}>Peso desejado (kg)</label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  placeholder="Quantos quilos quero ter (kg)"
-                  className={`${inputStyle} ${
-                    canShowError("pesoMeta") && step1Errors.pesoMeta
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.pesoMeta}
-                  onChange={setField("pesoMeta")}
-                  onBlur={() => setTouched((p) => ({ ...p, pesoMeta: true }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e" || e.key === "E")
-                      e.preventDefault();
-                  }}
-                />
-                <FieldError msg={canShowError("pesoMeta") ? step1Errors.pesoMeta : undefined} />
-              </div>
+              <button
+                disabled={!step1Valid}
+                onClick={() => setShowMedicationModal(true)}
+                className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3]"
+              >
+                Próximo
+              </button>
+            </>
+          )}
 
-              <div className="mt-10 flex justify-center">
+          {/* STEP 2 — RESUMO MEDICAMENTO (exibido após MedicationModal) */}
+          {step === 2 && (
+            <div className="text-center space-y-6">
+              <FaPills className={`mx-auto text-4xl transition-colors ${medPrescrita ? "text-[#6A38F3]" : "text-gray-400"}`} />
+              
+              {medPrescrita ? (
+                <>
+                  <p className="text-sm text-gray-600">
+                    ✓ Medicamento prescrito registrado
+                  </p>
+                  {medicationData && (
+                    <div className="text-left bg-white/50 p-4 rounded-xl space-y-1 text-sm text-black">
+                      <p><strong>Medicamento:</strong> {medicationData.nome}</p>
+                      <p><strong>Dosagem:</strong> {medicationData.concentracao}</p>
+                      <p><strong>Frequência:</strong> {medicationData.frequencia}</p>
+                      {medicationData.nomeMedico && (
+                        <p><strong>Médico:</strong> {medicationData.nomeMedico}</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Nenhum medicamento prescrito informado
+                </p>
+              )}
+
+              <div className="flex gap-4">
                 <button
-                  type="button"
-                  onClick={goNext}
-                  disabled={!step1Valid}
-                  className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
-                    ${
-                      step1Valid
-                        ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
-                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                    }`}
+                  className="flex-1 p-3 rounded-full border border-gray-300 text-gray-600"
+                  onClick={() => setShowMedicationModal(true)}
+                >
+                  Alterar
+                </button>
+
+                <button
+                  className="flex-1 p-3 rounded-full border border-[#6A38F3] text-[#6A38F3]"
+                  onClick={() => setStep(3)}
                 >
                   Próximo
                 </button>
               </div>
-            </form>
-          </div>
-        )}
+            </div>
+          )}
 
-        {step === 2 && (
-          <div className="flex flex-col flex-1">
-            <div className="space-y-4 flex-1">
-              <div className="relative">
-                <select
-                  className={`${inputStyle} appearance-none cursor-pointer bg-white ${
-                    canShowError("tipoIntervencao") && step2Error
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                  value={values.tipoIntervencao}
-                  onChange={setField("tipoIntervencao")}
-                  onBlur={() => setTouched((p) => ({ ...p, tipoIntervencao: true }))}
-                >
-                  <option value="" disabled>
-                    Tipo de Intervenção
-                  </option>
-
-                  <option value="cirurgia_bariatrica">Cirurgia bariátrica</option>
-                  <option value="medicacao">Medicação</option>
-                  <option value="dieta_treino">Dieta e treino</option>
-                </select>
-
-                <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                <FieldError msg={canShowError("tipoIntervencao") ? step2Error : undefined} />
-              </div>
-
+          {/* STEP 3 — INTERVENÇÃO */}
+          {step === 3 && (
+            <>
               <button
-                type="button"
-                onClick={onFillAdditionalInfo}
-                className="text-[#6F3CF6] font-semibold underline underline-offset-4 text-sm text-left pl-2"
+                onClick={() => setStep(2)}
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
               >
-                Preencher Informações Adicionais
+                <FaArrowLeft /> Voltar
               </button>
 
-              <p className="text-xs text-gray-500 leading-relaxed px-2">
-                O preenchimento de informações adicionais fará com que a BARI te entregue resultados mais precisos
+              <Select icon={<FaStethoscope />} value={values.tipoIntervencao || ""} onChange={setField("tipoIntervencao")}>
+                <option value="" disabled>Tipo de intervenção</option>
+                <option value="mounjaro">Mounjaro</option>
+                <option value="apenas_dieta_treino">Apenas dieta e treino</option>
+              </Select>
+
+              <p className="text-xs text-gray-500 text-center">
+                Informações adicionais tornam os resultados mais precisos
               </p>
 
-              <div className="flex justify-center pt-3">
-                <div className="relative w-[92px] h-[92px]">
-                  <Image
-                    src="/images/bari_padrao.png"
-                    alt="Mascote Bari"
-                    fill
-                    style={{ objectFit: "contain" }}
-                    priority
-                  />
-                </div>
+              <div className="flex justify-center">
+                <Image src="/images/bari_icon.png" alt="Bari" width={70} height={70} />
               </div>
-            </div>
 
-            <div className="mt-10 flex justify-center">
               <button
-                type="button"
-                onClick={finish}
-                className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
+                onClick={handleFinish}
+                disabled={loading || !values.tipoIntervencao}
+                className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Finalizar
+                {loading ? "Salvando..." : "Finalizar"}
               </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* MedicationModal */}
+      <MedicationModal
+        isOpen={showMedicationModal}
+        onClose={() => {
+          setShowMedicationModal(false);
+          // Se já passou pelo modal de medicamento, vai para step 2
+          if (step === 1) {
+            setStep(2);
+          }
+        }}
+        usuarioId={usuarioId}
+        embeddedMode={true}
+        onYesCallback={(data) => {
+          setMedPrescrita(true);
+          setFreqMedPrescrita(data.frequencia);
+          setMedicationData(data);
+          setShowMedicationModal(false);
+          setStep(2);
+        }}
+        onNoCallback={() => {
+          setMedPrescrita(false);
+          setFreqMedPrescrita(null);
+          setMedicationData(null);
+          setShowMedicationModal(false);
+          setStep(2);
+        }}
+        onBackCallback={() => {
+          setShowMedicationModal(false);
+          setStep(1);
+        }}
+      />
+    </div>
+  );
+};
+
+/* ================== AUX ================== */
+
+const Input = ({ icon, ...props }: { icon: React.ReactNode; [key: string]: any }) => {
+  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
+
+  return (
+    <div className="relative group">
+      <input {...props} className={inputStyle} />
+      <span
+        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      >
+        {icon}
+      </span>
+    </div>
+  );
+};
+
+const Select = ({ icon, children, ...props }: { icon: React.ReactNode; children: React.ReactNode; [key: string]: any }) => {
+  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
+
+  return (
+    <div className="relative group">
+      <select {...props} className={`${inputStyle} ${selectStyle}`}>
+        {children}
+      </select>
+      <span
+        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      >
+        {icon}
+      </span>
+      <IoChevronDown
+        className={`absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      />
     </div>
   );
 };

@@ -15,9 +15,10 @@ import { Dia0Module } from './dia0/dia0.module';
 import { CicloModule } from './ciclo/ciclo.module';
 import { DailyModule } from './daily/daily.module';
 import { DiaCicloModule } from './diaciclo/diaciclo.module';
+import { MedicamentosModule } from './medicamentos/medicamentos.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule, PontuacoesModule, SistemaModule, Dia0Module, CicloModule, DailyModule, DiaCicloModule],
+  imports: [ConfigModule.forRoot({isGlobal: true,}), PrismaModule, UsuarioModule, PagamentoModule, CarrinhoModule, EnderecoModule, AuthModule, ItemCarrinhoModule, PontuacoesModule, SistemaModule, Dia0Module, CicloModule, DailyModule, DiaCicloModule, MedicamentosModule],
   controllers: [AppController],
   providers: [AppService],
 })

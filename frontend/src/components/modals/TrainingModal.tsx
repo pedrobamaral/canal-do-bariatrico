@@ -1,157 +1,240 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { IoClose, IoChevronDown, IoAddCircleOutline } from "react-icons/io5";
+import { IoClose, IoChevronDown } from "react-icons/io5";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { BsInstagram } from "react-icons/bs";
+import { FaDumbbell, FaRunning, FaUser } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { createOrUpdateTreino } from "@/api/api";
+
+/* ================== PROPS ================== */
 
 interface TrainingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuarioId?: number;
 }
 
+/* ================== ESTILOS (IGUAL HEALTH SURVEY) ================== */
+
 const inputStyle =
-  "w-full h-[50px] px-6 rounded-full border border-black bg-transparent text-gray-900 placeholder-gray-600 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
+  "w-full h-[50px] pl-12 pr-12 rounded-2xl bg-white/80 backdrop-blur-md text-[#1f1f1f] border border-gray-300/70 focus:border-[#6A38F3] focus:ring-4 focus:ring-[#6A38F3]/20 focus:outline-none transition-all duration-300";
 
-const HeaderRow = ({ title }: { title: string }) => (
-  <div className="flex justify-between items-center mb-6">
-    <h2 className="text-3xl font-bold text-black font-['Montserrat']">{title}</h2>
+const selectStyle = "appearance-none cursor-pointer";
+
+/* ================== COMPONENTES AUX ================== */
+
+const Input = ({ icon, ...props }: any) => (
+  <div className="relative group">
+    <input {...props} className={inputStyle} />
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
   </div>
 );
 
-// STEP 1
-const StepAddButton = ({ onNext }: { onNext: () => void }) => (
-  <div className="flex flex-col h-full">
-    <HeaderRow title="Treino" />
+const Select = ({ icon, children, ...props }: any) => (
+  <div className="relative group">
+    <select {...props} className={`${inputStyle} ${selectStyle}`}>
+      {children}
+    </select>
 
-    <div className="flex-1 flex items-center justify-center">
-      <button
-        type="button"
-        onClick={onNext}
-        className="flex items-center gap-2 bg-[#6F3CF6] text-white py-3 px-10 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
-      >
-        <IoAddCircleOutline size={22} />
-        Adicionar Treino
-      </button>
-    </div>
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
+
+    <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition" />
   </div>
 );
 
-// STEP 2
+const ModalHeader = ({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}) => (
+  <div className="relative px-8 py-6 border-b border-gray-300">
+    <h2 className="text-lg font-semibold text-center text-[#2f2f2f]">
+      {title}
+    </h2>
+
+    <button
+      onClick={onClose}
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
+      aria-label="Fechar modal"
+      type="button"
+    >
+      <IoClose />
+    </button>
+  </div>
+);
+
+/* ================== STEP 1 ================== */
+
+const Step1 = ({ onNext }: { onNext: () => void }) => (
+  <div className="p-8 flex flex-col items-center justify-center space-y-6">
+    <FaDumbbell className="text-[#6A38F3] text-4xl opacity-80" />
+
+    <p className="text-sm text-gray-600 text-center max-w-xs">
+      Vamos entender melhor sua rotina de treinos para criar recomendações mais
+      precisas.
+    </p>
+
+    <button
+      onClick={onNext}
+      className="px-10 py-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+      type="button"
+    >
+      Adicionar treino
+    </button>
+  </div>
+);
+
+/* ================== STEP 2 ================== */
+
 type Step2Values = {
   musc: string;
   aero: string;
 };
 
-const StepFrequency = ({ onNext }: { onNext: () => void }) => {
-  const [v, setV] = useState<Step2Values>({ musc: "", aero: "" });
-  const isValid = useMemo(() => v.musc !== "" && v.aero !== "", [v]);
+const Step2 = ({ onNext }: { onNext: () => void }) => {
+  const [values, setValues] = useState<Step2Values>({
+    musc: "",
+    aero: "",
+  });
+
+  const valid = values.musc && values.aero;
+
+  const setField =
+    (field: keyof Step2Values) =>
+    (e: React.ChangeEvent<HTMLSelectElement>) =>
+      setValues((p) => ({ ...p, [field]: e.target.value }));
 
   return (
-    <div className="flex flex-col h-full">
-      <HeaderRow title="Treino" />
+    <div className="p-8 space-y-4">
+      <Select
+        icon={<FaDumbbell />}
+        value={values.musc}
+        onChange={setField("musc")}
+      >
+        <option value="" disabled>
+          Frequência semanal - Musculação
+        </option>
+        <option value="1">1 dia</option>
+        <option value="2">2 dias</option>
+        <option value="3">3 dias</option>
+        <option value="4">4 dias</option>
+        <option value="5">5 dias</option>
+        <option value="6">6 dias</option>
+        <option value="7">Todos os dias</option>
+      </Select>
 
-      <form className="space-y-4 flex-1">
-        <div className="relative">
-          <select
-            className={`${inputStyle} appearance-none cursor-pointer bg-white`}
-            value={v.musc}
-            onChange={(e) => setV((p) => ({ ...p, musc: e.target.value }))}
-          >
-            <option value="" disabled>
-              Frequência Semanal - Musculação
-            </option>
-            <option value="1">1 dia na semana</option>
-            <option value="2">2 dias na semana</option>
-            <option value="3">3 dias na semana</option>
-            <option value="4">4 dias na semana</option>
-            <option value="5">5 dias na semana</option>
-            <option value="6">6 dias na semana</option>
-            <option value="7">Todos os dias</option>
-          </select>
-          <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-        </div>
+      <Select
+        icon={<FaRunning />}
+        value={values.aero}
+        onChange={setField("aero")}
+      >
+        <option value="" disabled>
+          Frequência semanal - Aeróbico
+        </option>
+        <option value="0">Não faço</option>
+        <option value="1">1 dia</option>
+        <option value="2">2 dias</option>
+        <option value="3">3 dias</option>
+        <option value="4">4 dias</option>
+        <option value="5">5 dias</option>
+        <option value="6">6 dias</option>
+        <option value="7">Todos os dias</option>
+      </Select>
 
-        <div className="relative">
-          <select
-            className={`${inputStyle} appearance-none cursor-pointer bg-white`}
-            value={v.aero}
-            onChange={(e) => setV((p) => ({ ...p, aero: e.target.value }))}
-          >
-            <option value="" disabled>
-              Frequência Semanal - Aeróbico
-            </option>
-            <option value="0">Não faço</option>
-            <option value="1">1 dia na semana</option>
-            <option value="2">2 dias na semana</option>
-            <option value="3">3 dias na semana</option>
-            <option value="4">4 dias na semana</option>
-            <option value="5">5 dias na semana</option>
-            <option value="6">6 dias na semana</option>
-            <option value="7">Todos os dias</option>
-          </select>
-          <IoChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-        </div>
+      <p className="text-xs text-gray-500 px-2">
+        Aeróbico inclui caminhada, esportes, dança e atividades cardiovasculares.
+      </p>
 
-        <p className="text-[10px] text-gray-500 px-2 leading-tight">
-          Obs: Aeróbico = Atividades físicas como: esportes, caminhada, dança, etc.
-        </p>
-
-        <div className="pt-8 flex justify-center">
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!isValid}
-            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
-              ${
-                isValid
-                  ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
-                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
-              }`}
-          >
-            Próximo <HiOutlineArrowRight size={16} />
-          </button>
-        </div>
-      </form>
+      <button
+        disabled={!valid}
+        onClick={onNext}
+        className={`w-full p-3 rounded-full border transition
+          ${
+            valid
+              ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
+              : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
+          }`}
+        type="button"
+      >
+        Próximo
+      </button>
     </div>
   );
 };
 
-// STEP 3
-const StepPersonal = ({ onFinish }: { onFinish: () => void }) => (
-  <div className="flex flex-col h-full">
-    <HeaderRow title="Treino" />
+/* ================== STEP 3 ================== */
 
-    <form className="space-y-4 flex-1">
-      <input type="text" placeholder="Nome do Personal" className={inputStyle} />
+const Step3 = ({ onFinish, usuarioId }: { onFinish: () => void; usuarioId?: number }) => {
+  const [values, setValues] = useState({
+    nomePersonal: "",
+    instagramPersonal: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Instagram do Personal"
-          className={`${inputStyle} pl-12`}
-        />
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/50">
-          <BsInstagram size={16} />
-        </div>
-      </div>
+  const handleSave = async () => {
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
+    }
 
-      <div className="pt-10 flex justify-center">
-        <button
-          type="button"
-          onClick={onFinish}
-          className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
-        >
-          Adicionar
-        </button>
-      </div>
-    </form>
-  </div>
-);
+    setLoading(true);
+    try {
+      await createOrUpdateTreino(usuarioId, {
+        nomePersonal: values.nomePersonal,
+        instagramPersonal: values.instagramPersonal,
+      });
+      toast.success('Treino salvo com sucesso!');
+      onFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar treino:', error);
+      toast.error(error.message || 'Erro ao salvar treino');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-8 space-y-4">
+      <Input 
+        icon={<FaUser />} 
+        placeholder="Nome do personal"
+        value={values.nomePersonal}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, nomePersonal: e.target.value }))}
+      />
+
+      <Input
+        icon={<BsInstagram />}
+        placeholder="Instagram do personal"
+        value={values.instagramPersonal}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, instagramPersonal: e.target.value }))}
+      />
+
+      <button
+        onClick={handleSave}
+        disabled={loading}
+        className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
+        type="button"
+      >
+        {loading ? 'Salvando...' : 'Salvar treino'}
+      </button>
+    </div>
+  );
+};
+
+/* ================== MODAL ================== */
 
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
+  usuarioId,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -162,25 +245,32 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
     }
   }, [isOpen]);
 
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const handleFinish = () => {
+    setStep(1);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
+      onClick={handleClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-[56px] shadow-2xl w-full max-w-[720px] min-h-[560px] p-10 border border-gray-100 flex flex-col"
+        className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
-          aria-label="Fechar modal"
-        >
-          <IoClose size={24} />
-        </button>
+        <ModalHeader title="Treino" onClose={handleClose} />
 
-        {step === 1 && <StepAddButton onNext={() => setStep(2)} />}
-        {step === 2 && <StepFrequency onNext={() => setStep(3)} />}
-        {step === 3 && <StepPersonal onFinish={onClose} />}
+        {step === 1 && <Step1 onNext={() => setStep(2)} />}
+        {step === 2 && <Step2 onNext={() => setStep(3)} />}
+        {step === 3 && <Step3 onFinish={handleFinish} usuarioId={usuarioId} />}
       </div>
     </div>
   );

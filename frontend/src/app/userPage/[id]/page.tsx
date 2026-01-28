@@ -39,7 +39,7 @@ type Usuario = {
   altura?: number;
   Nascimento?: Date;
   massa_magra?: number;
-  meta?: string;
+  meta?: number;
   admin?: boolean;
   ativo?: boolean;
   dataCriacao?: Date;

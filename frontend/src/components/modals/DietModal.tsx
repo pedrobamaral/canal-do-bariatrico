@@ -1,218 +1,226 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { HiOutlineArrowRight } from "react-icons/hi";
+import React, { useEffect, useState } from "react";
 import { IoClose, IoChevronDown } from "react-icons/io5";
-import { BsInstagram } from "react-icons/bs";
-import { FiPlus } from "react-icons/fi";
+import {
+  FaUtensils,
+  FaFireAlt,
+  FaAppleAlt,
+  FaClock,
+  FaCalendarAlt,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import { createOrUpdateDieta } from "@/api/api";
+
+/* ================== PROPS ================== */
 
 interface DietModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuarioId?: number;
 }
 
+/* ================== ESTILOS (IGUAL MEDICATION / TRAINING) ================== */
+
 const inputStyle =
-  "w-full h-[50px] px-6 rounded-full border border-black bg-transparent text-gray-900 placeholder-gray-600 focus:outline-none focus:border-[#6F3CF6] focus:ring-1 focus:ring-[#6F3CF6] transition-all";
+  "w-full h-[50px] pl-12 pr-12 rounded-2xl bg-white/80 backdrop-blur-md text-[#1f1f1f] border border-gray-300/70 focus:border-[#6A38F3] focus:ring-4 focus:ring-[#6A38F3]/20 focus:outline-none transition-all duration-300";
 
-const HeaderRow = ({ title }: { title: string }) => (
-  <div className="flex justify-between items-center mb-6">
-    <h2 className="text-3xl font-bold text-black font-['Montserrat']">{title}</h2>
+const selectStyle = "appearance-none cursor-pointer";
+
+/* ================== COMPONENTES AUX ================== */
+
+const Input = ({ icon, ...props }: any) => (
+  <div className="relative group">
+    <input {...props} className={inputStyle} />
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
   </div>
 );
 
-const FieldHint = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[10px] text-gray-500 px-2 leading-tight">{children}</p>
-);
+const Select = ({ icon, children, ...props }: any) => (
+  <div className="relative group">
+    <select {...props} className={`${inputStyle} ${selectStyle}`}>
+      {children}
+    </select>
 
-// STEP 1
-const StepAddDiet = ({ onNext }: { onNext: () => void }) => (
-  <div className="flex flex-col h-full">
-    <HeaderRow title="Dieta" />
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition">
+      {icon}
+    </span>
 
-    <div className="flex-1 flex items-center justify-center">
-      <button
-        type="button"
-        onClick={onNext}
-        className="flex items-center gap-2 bg-[#6F3CF6] text-white py-3 px-10 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
-      >
-        <FiPlus size={16} />
-        Adicionar Dieta
-      </button>
-    </div>
+    <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6A38F3] transition" />
   </div>
 );
 
-// STEP 2
-type Step2Form = {
-  frequencia: string;
-  calorias: string;
-  macrosOpen: boolean;
-  carbo: string;
-  proteina: string;
-  gordura: string;
-  hidratacao: string;
-};
+const ModalHeader = ({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}) => (
+  <div className="relative px-8 py-6 border-b border-gray-300">
+    <h2 className="text-lg font-semibold text-center text-[#2f2f2f]">
+      {title}
+    </h2>
 
-const StepDietForm = ({ onNext }: { onNext: () => void }) => {
-  const [v, setV] = useState<Step2Form>({
-    frequencia: "",
+    <button
+      onClick={onClose}
+      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl transition"
+      aria-label="Fechar modal"
+      type="button"
+    >
+      <IoClose />
+    </button>
+  </div>
+);
+
+/* ================== STEP 1 — INTRO ================== */
+
+const StepIntro = ({ onNext }: { onNext: () => void }) => (
+  <div className="p-8 flex flex-col items-center justify-center space-y-6">
+    <FaUtensils className="text-[#6A38F3] text-4xl opacity-80" />
+
+    <p className="text-sm text-gray-600 text-center max-w-xs">
+      Vamos entender melhor sua alimentação para criar uma dieta mais adequada
+      aos seus objetivos.
+    </p>
+
+    <button
+      onClick={onNext}
+      className="px-10 py-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition"
+      type="button"
+    >
+      Adicionar dieta
+    </button>
+  </div>
+);
+
+/* ================== STEP 2 — FORM ================== */
+
+const StepDietForm = ({ onFinish, usuarioId }: { onFinish: () => void; usuarioId?: number }) => {
+  const [values, setValues] = useState<{
+    tipoDieta: "" | "low_carb" | "cetogenica" | "mediterranea" | "vegetariana" | "vegana" | "paleo" | "jejum_intermitente" | "outra";
+    calorias: string;
+    refeicoesDia: string;
+    horarioPreferido: string;
+    inicio: string;
+  }>({
+    tipoDieta: "",
     calorias: "",
-    macrosOpen: false,
-    carbo: "",
-    proteina: "",
-    gordura: "",
-    hidratacao: "",
+    refeicoesDia: "",
+    horarioPreferido: "",
+    inicio: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const isValid = useMemo(() => {
-    if (!v.frequencia.trim()) return false;
-    if (!v.calorias.trim()) return false;
-    if (!v.hidratacao.trim()) return false;
-    if (v.macrosOpen) {
-      if (!v.carbo.trim()) return false;
-      if (!v.proteina.trim()) return false;
-      if (!v.gordura.trim()) return false;
+  const setField =
+    (field: keyof typeof values) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setValues((p) => ({ ...p, [field]: e.target.value }));
+
+  const valid =
+    values.tipoDieta &&
+    values.calorias &&
+    values.refeicoesDia &&
+    values.inicio;
+
+  const handleSave = async () => {
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
     }
-    return true;
-  }, [v]);
+
+    setLoading(true);
+    try {
+      await createOrUpdateDieta(usuarioId, {
+        tipo: values.tipoDieta,
+        calorias: parseFloat(values.calorias),
+        refeicoes: parseInt(values.refeicoesDia),
+        horarioPreferido: values.horarioPreferido,
+        dataInicio: values.inicio,
+      });
+      toast.success('Dieta salva com sucesso!');
+      onFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar dieta:', error);
+      toast.error(error.message || 'Erro ao salvar dieta');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      <HeaderRow title="Dieta" />
+    <div className="p-8 space-y-4">
+      <Select
+        icon={<FaUtensils />}
+        value={values.tipoDieta}
+        onChange={setField("tipoDieta")}
+      >
+        <option value="" disabled>
+          Tipo de dieta
+        </option>
+        <option value="lowcarb">Low carb</option>
+        <option value="hipocalorica">Hipocalórica</option>
+        <option value="hipercalorica">Hipercalórica</option>
+        <option value="balanceada">Balanceada</option>
+      </Select>
 
-      <form className="space-y-4 flex-1 overflow-y-auto pr-1">
-        <input
-          placeholder="Frequência Diária"
-          className={inputStyle}
-          value={v.frequencia}
-          onChange={(e) => setV((p) => ({ ...p, frequencia: e.target.value }))}
-        />
+      <Input
+        icon={<FaFireAlt />}
+        placeholder="Calorias diárias (kcal)"
+        value={values.calorias}
+        onChange={setField("calorias")}
+        type="number"
+      />
 
-        <input
-          placeholder="Calorias Diárias Consumidas"
-          className={inputStyle}
-          value={v.calorias}
-          onChange={(e) => setV((p) => ({ ...p, calorias: e.target.value }))}
-        />
+      <Input
+        icon={<FaAppleAlt />}
+        placeholder="Refeições por dia"
+        value={values.refeicoesDia}
+        onChange={setField("refeicoesDia")}
+        type="number"
+      />
 
-        {!v.macrosOpen ? (
-          <button
-            type="button"
-            onClick={() => setV((p) => ({ ...p, macrosOpen: true }))}
-            className={`${inputStyle} flex items-center justify-between text-left bg-white`}
-          >
-            <span className="text-gray-600">Gramas de Macros</span>
-            <IoChevronDown className="text-gray-500" />
-          </button>
-        ) : (
-          <div className="border border-black rounded-[24px] p-6 bg-white">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-600 font-medium text-sm">Gramas de Macros</p>
-              <button
-                type="button"
-                onClick={() => setV((p) => ({ ...p, macrosOpen: false }))}
-                className="text-gray-500 hover:text-gray-900 transition-colors"
-                aria-label="Fechar macros"
-              >
-                <IoChevronDown className="rotate-180" />
-              </button>
-            </div>
+      <Input
+        icon={<FaClock />}
+        placeholder="Horário preferido (opcional)"
+        value={values.horarioPreferido}
+        onChange={setField("horarioPreferido")}
+      />
 
-            <div className="space-y-3">
-              <input
-                placeholder="Carboidrato"
-                className={inputStyle}
-                value={v.carbo}
-                onChange={(e) => setV((p) => ({ ...p, carbo: e.target.value }))}
-              />
-              <input
-                placeholder="Proteína"
-                className={inputStyle}
-                value={v.proteina}
-                onChange={(e) =>
-                  setV((p) => ({ ...p, proteina: e.target.value }))
-                }
-              />
-              <input
-                placeholder="Gordura"
-                className={inputStyle}
-                value={v.gordura}
-                onChange={(e) =>
-                  setV((p) => ({ ...p, gordura: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-        )}
+      <Input
+        type="date"
+        icon={<FaCalendarAlt />}
+        value={values.inicio}
+        onChange={setField("inicio")}
+      />
 
-        <input
-          placeholder="Hidratação"
-          className={inputStyle}
-          value={v.hidratacao}
-          onChange={(e) =>
-            setV((p) => ({ ...p, hidratacao: e.target.value }))
-          }
-        />
-
-        <FieldHint>
-          Obs para dica: Peso x 30 ml = qtd. de água diária do paciente (calcular
-          e já entregar o valor que o paciente precisa consumir)
-        </FieldHint>
-
-        <div className="pt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!isValid}
-            className={`flex items-center gap-2 py-3 px-12 rounded-full text-sm font-bold transition-transform shadow-md
-              ${
-                isValid
-                  ? "bg-[#6F3CF6] text-white hover:bg-[#5c2fe0] hover:scale-105"
-                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
-              }`}
-          >
-            Próximo <HiOutlineArrowRight size={16} />
-          </button>
-        </div>
-      </form>
+      <button
+        disabled={!valid || loading}
+        onClick={handleSave}
+        className={`w-full p-3 rounded-full border transition
+          ${
+            valid && !loading
+              ? "border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white"
+              : "border-gray-300 text-gray-400 cursor-not-allowed opacity-60"
+          }`}
+        type="button"
+      >
+        {loading ? 'Salvando...' : 'Salvar dieta'}
+      </button>
     </div>
   );
 };
 
-// STEP 3
-const StepNutritionist = ({ onFinish }: { onFinish: () => void }) => (
-  <div className="flex flex-col h-full">
-    <HeaderRow title="Dieta" />
+/* ================== MODAL ================== */
 
-    <form className="space-y-4 flex-1">
-      <input type="text" placeholder="Nome do Nutricionista" className={inputStyle} />
-
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Instagram do Nutricionista"
-          className={`${inputStyle} pl-12`}
-        />
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6F3CF6]/50">
-          <BsInstagram size={16} />
-        </div>
-      </div>
-
-      <div className="pt-10 flex justify-center">
-        <button
-          type="button"
-          onClick={onFinish}
-          className="bg-[#6F3CF6] text-white py-3 px-14 rounded-full text-sm font-bold hover:bg-[#5c2fe0] transition-transform hover:scale-105 shadow-md"
-        >
-          Adicionar
-        </button>
-      </div>
-    </form>
-  </div>
-);
-
-export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+export const DietModal: React.FC<DietModalProps> = ({
+  isOpen,
+  onClose,
+  usuarioId,
+}) => {
+  const [step, setStep] = useState<1 | 2>(1);
 
   useEffect(() => {
     if (!isOpen) {
@@ -221,25 +229,31 @@ export const DietModal: React.FC<DietModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
+
+  const handleFinish = () => {
+    setStep(1);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-transparent backdrop-blur-sm p-4 transition-all duration-300">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
+      onClick={handleClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-[56px] shadow-2xl w-full max-w-[720px] min-h-[560px] p-10 border border-gray-100 flex flex-col"
+        className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
       >
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
-          aria-label="Fechar modal"
-        >
-          <IoClose size={24} />
-        </button>
+        <ModalHeader title="Dieta" onClose={handleClose} />
 
-        {step === 1 && <StepAddDiet onNext={() => setStep(2)} />}
-        {step === 2 && <StepDietForm onNext={() => setStep(3)} />}
-        {step === 3 && <StepNutritionist onFinish={onClose} />}
+        {step === 1 && <StepIntro onNext={() => setStep(2)} />}
+        {step === 2 && <StepDietForm onFinish={handleFinish} usuarioId={usuarioId} />}
       </div>
     </div>
   );

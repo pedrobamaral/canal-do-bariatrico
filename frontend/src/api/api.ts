@@ -28,21 +28,42 @@ api.interceptors.request.use(
 
 // ==================== USUARIOS ====================
 
+// Enum para sexo - deve corresponder ao enum Prisma
+export type SexoType = 'Masculino' | 'Feminino' | 'Outro';
+
 export interface Usuario {
   id: number;
   nome: string;
   email: string;
   telefone?: string;
-  sexo?: string;
+  sexo?: SexoType;
   peso?: number;
   altura?: number;
-  Nascimento?: Date;
+  nascimento?: Date;
   massa_magra?: number;
-  meta?: string;
+  meta?: number;
   admin?: boolean;
   ativo?: boolean;
   dataCriacao?: Date;
   foto?: string;
+}
+
+export async function getAllUsers(): Promise<Usuario[]> {
+  try {
+    const response = await api.get('/usuarios');
+    
+    console.log('=== API - getAllUsers ===');
+    console.log('response.data:', response.data);
+    
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao buscar usuários');
+  } catch (error: any) {
+    console.error('Erro ao buscar usuários:', error);
+    throw error;
+  }
 }
 
 export async function getUserById(id: number): Promise<Usuario> {
@@ -104,7 +125,12 @@ export async function updateData(id: number, data: Partial<Usuario>) {
   } catch (error: any) {
     console.error('=== Erro ao atualizar usuário ===');
     console.error('Status:', error.response?.status);
-    console.error('Data:', error.response?.data);
+    try {
+      console.error('Data:', JSON.stringify(error.response?.data, null, 2));
+    } catch (e) {
+      console.error('Data (raw):', error.response?.data);
+    }
+    console.error('Headers:', JSON.stringify(error.response?.headers || {}, null, 2));
     console.error('Message:', error.message);
     throw error;
   }
@@ -173,6 +199,63 @@ export async function loginUser(credentials: { email: string; senha: string }) {
   }
 }
 
+// ==================== DIETA ====================
+
+export async function createOrUpdateDieta(usuarioId: number, data: any) {
+  try {
+    const response = await api.post(`/dieta`, {
+      usuarioId,
+      ...data,
+    });
+    
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao salvar dieta');
+  } catch (error: any) {
+    console.error('Erro ao salvar dieta:', error);
+    throw error;
+  }
+}
+
+// ==================== MEDICAMENTOS ====================
+
+export async function createOrUpdateMedicacao(usuarioId: number, data: any) {
+  try {
+    const response = await api.post(`/medicamentos/usuario/${usuarioId}`, data);
+    
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao salvar medicamento');
+  } catch (error: any) {
+    console.error('Erro ao salvar medicamento:', error);
+    throw error;
+  }
+}
+
+// ==================== TREINO ====================
+
+export async function createOrUpdateTreino(usuarioId: number, data: any) {
+  try {
+    const response = await api.post(`/treino`, {
+      usuarioId,
+      ...data,
+    });
+    
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao salvar treino');
+  } catch (error: any) {
+    console.error('Erro ao salvar treino:', error);
+    throw error;
+  }
+}
+
 // ==================== PRODUTOS ====================
 // Funções placeholder - implementar conforme necessário
 export async function getProductsByUser(userId: number) {
@@ -206,6 +289,58 @@ export async function getUserRatings(userId: number) {
   } catch (error: any) {
     console.error('Erro ao buscar avaliações do usuário:', error);
     return [];
+  }
+}
+
+// ==================== DIA0 ====================
+
+export async function createDia0(usuarioId: number, data?: any) {
+  try {
+    const response = await api.post(`/dia0`, {
+      idUsuario: usuarioId,
+      quer_msg: true,
+      iniciou_medicamento: false,
+      dia0: new Date(),
+      ...data,
+    });
+    
+    if (response.data.status === 'sucesso' || response.data.data) {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao criar dia0');
+  } catch (error: any) {
+    console.error('Erro ao criar dia0:', error);
+    throw error;
+  }
+}
+
+// ==================== CICLO ====================
+
+export async function createCiclo(usuarioId: number, dia0Id: number, data?: any) {
+  try {
+    const response = await api.post(`/ciclo`, {
+      idUsuario: usuarioId,
+      dia0Id: dia0Id,
+      numCiclo: 1,
+      ativoCiclo: true,
+      mounjaro: data?.mounjaro || false,
+      treino: true,
+      dieta: true,
+      agua: true,
+      bioimpedancia: true,
+      consulta: true,
+      ...data,
+    });
+    
+    if (response.data.status === 'sucesso' || response.data.data) {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao criar ciclo');
+  } catch (error: any) {
+    console.error('Erro ao criar ciclo:', error);
+    throw error;
   }
 }
 

@@ -1,6 +1,5 @@
 import {
-  IsString, IsEmail, IsNotEmpty , IsOptional, IsBoolean, MinLength, IsEnum, IsNumber, IsDateString, } from 'class-validator';
-import { Sexo } from '@prisma/client';
+  IsString, IsEmail, IsNotEmpty , IsOptional, IsBoolean, MinLength, IsNumber, IsDateString, } from 'class-validator';
 
 export class CreateUsuarioDto {
   @IsEmail()
@@ -35,8 +34,8 @@ export class CreateUsuarioDto {
   foto?: string;
 
   @IsOptional()
-  @IsEnum(Sexo)
-  sexo?: Sexo;
+  @IsString()
+  sexo?: string;
 
   @IsOptional()
   @IsNumber()

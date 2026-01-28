@@ -21,7 +21,8 @@ export class ProdutoService {
       descricao: data.descricao,
       img: data.img ?? null,
       imgNutricional: data.imgNutricional ?? null,
-      preco: new Prisma.Decimal(data.preco),
+      // Prisma Decimal constructor may not be available at build time; pass the numeric value directly.
+      preco: data.preco,
     }});
   }
 

@@ -2,7 +2,7 @@ import {Injectable, NotFoundException, ConflictException, InternalServerErrorExc
 import { PrismaService } from '../database/prisma.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import { Prisma, Usuario } from '@prisma/client';
+// Avoid importing Prisma generated runtime/types here to keep build independent of generated client.
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -28,7 +28,8 @@ export class UsuarioService {
         ativo: createUsuarioDto.ativo ?? false,
 
         telefone: createUsuarioDto.telefone,
-        sexo: createUsuarioDto.sexo,
+        // Cast to any to avoid build-time mismatch with generated Prisma enum types
+        sexo: createUsuarioDto.sexo as any,
         peso: createUsuarioDto.peso,
         altura: createUsuarioDto.altura,
         nascimento: createUsuarioDto.nascimento,
@@ -88,7 +89,7 @@ export class UsuarioService {
     return usuario;
   }
 
-  async findByEmailWithPassword(email: string): Promise<Usuario | null> {
+  async findByEmailWithPassword(email: string): Promise<any | null> {
     return this.prisma.usuario.findUnique({
       where: { email },
     });

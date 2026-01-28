@@ -2,7 +2,6 @@ import {Injectable, NotFoundException, ConflictException, InternalServerErrorExc
 import { PrismaService } from '../../prisma/prisma.service'; 
 import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 import { UpdatePagamentoDto } from './dto/update-pagamento.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PagamentoService {
@@ -14,10 +13,7 @@ export class PagamentoService {
         data: createPagamentoDto,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if ((error as any)?.code === 'P2002') {
         throw new ConflictException(
           'Já existe um pagamento registrado para este carrinho.',
         );
@@ -53,10 +49,7 @@ export class PagamentoService {
         data: updatePagamentoDto,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if ((error as any)?.code === 'P2002') {
         throw new ConflictException(
           'O carrinhoId informado já está associado a outro pagamento.',
         );

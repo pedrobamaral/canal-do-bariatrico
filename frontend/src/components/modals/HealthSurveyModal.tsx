@@ -284,6 +284,33 @@ export const HealthSurveyModal: React.FC<HealthSurveyModalProps> = ({ isOpen, on
               onOpenTraining={() => setTrain(true)}
             />
           )}
+
+          {step === 2 && (
+            <Step2
+              initialValues={step2}
+              onChange={setStep2}
+              onNext={() => setStep(3)}
+            />
+          )}
+
+          {step === 3 && (
+            <div className="flex-1 flex flex-col">
+              <Step3
+                initialValues={step3}
+                setInitialValues={setStep3}
+                onOpenMedication={() => setIsMedicationOpen(true)}
+                onOpenDiet={() => setIsDietOpen(true)}
+                onOpenTraining={() => setIsTrainingOpen(true)}
+                onFinish={handleFinish}
+              />
+
+              {isSaving ? (
+                <p className="mt-4 text-center text-sm text-gray-600">
+                  Salvando no banco...
+                </p>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
 

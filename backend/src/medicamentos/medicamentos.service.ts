@@ -58,7 +58,6 @@ export class MedicamentosService {
         data: {
           idSistema: sistema.id,
           nome: data.nome || 'Não informado',
-          concentracao: data.concentracao || null,
           freq_sem,
           freq_dia,
           qtnd_freq,

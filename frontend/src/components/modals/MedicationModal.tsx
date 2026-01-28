@@ -10,7 +10,7 @@ import { createOrUpdateMedicacao } from "@/api/api";
 
 /* ================== PROPS ================== */
 
-export type MedicationFrequency = "diaria" | "semanal" | "eventual" | "";
+export type MedicationFrequency = number | null;
 
 export interface MedicationData {
   nome: string;
@@ -28,6 +28,8 @@ interface MedicationModalProps {
   onYesCallback?: (data: MedicationData) => void;
   /** Callback quando usuário clica "Não" */
   onNoCallback?: () => void;
+  /** Callback para voltar - retorna ao passo anterior */
+  onBackCallback?: () => void;
   /** Se true, não salva no banco (usado quando incorporado em outro modal) */
   embeddedMode?: boolean;
 }
@@ -125,9 +127,10 @@ const StepQuestion = ({
 
 /* ================== STEP 2 ================== */
 
-const StepMedication = ({ onNext, onValuesChange }: { 
+const StepMedication = ({ onNext, onValuesChange, onBack }: { 
   onNext: () => void; 
   onValuesChange: (values: { nome: string; concentracao: string; frequencia: MedicationFrequency }) => void;
+  onBack?: () => void;
 }) => {
   const [values, setValues] = useState<{
     nome: string;
@@ -136,8 +139,10 @@ const StepMedication = ({ onNext, onValuesChange }: {
   }>({
     nome: "",
     concentracao: "",
-    frequencia: "",
+    frequencia: null,
   });
+  const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
+  const [customFrequency, setCustomFrequency] = useState<string>("");
 
   // Notifica o componente pai quando os valores mudam
   useEffect(() => {
@@ -147,12 +152,40 @@ const StepMedication = ({ onNext, onValuesChange }: {
   const valid =
     values.nome.trim() &&
     values.concentracao.trim() &&
-    values.frequencia;
+    values.frequencia !== null &&
+    values.frequencia > 0;
 
   const setField =
     (field: string) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setValues((p) => ({ ...p, [field]: e.target.value }));
+
+  const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value === "outro") {
+      // Ativa o modo personalizado
+      setShowCustomInput(true);
+      setCustomFrequency("");
+      setValues((p) => ({ ...p, frequencia: null }));
+    } else {
+      // Seleciona uma opção predefinida
+      const numValue = value ? parseInt(value, 10) : null;
+      setValues((p) => ({ ...p, frequencia: numValue }));
+      setShowCustomInput(false);
+      setCustomFrequency("");
+    }
+  };
+
+  const handleCustomFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCustomFrequency(value);
+    const numValue = value ? parseInt(value, 10) : null;
+    if (numValue && numValue > 0) {
+      setValues((p) => ({ ...p, frequencia: numValue }));
+    } else {
+      setValues((p) => ({ ...p, frequencia: null }));
+    }
+  };
 
   return (
     <div className="p-8 space-y-4">
@@ -172,16 +205,38 @@ const StepMedication = ({ onNext, onValuesChange }: {
 
       <Select
         icon={<FaPills />}
-        value={values.frequencia}
-        onChange={setField("frequencia")}
+        value={
+          showCustomInput
+            ? "outro"
+            : values.frequencia === null
+            ? ""
+            : values.frequencia.toString()
+        }
+        onChange={handleFrequencyChange}
       >
         <option value="" disabled>
           Frequência de uso
         </option>
-        <option value="diaria">Diária</option>
-        <option value="semanal">Semanal</option>
-        <option value="eventual">Eventual</option>
+        <option value="1">Todo dia</option>
+        <option value="2">De 2 em 2 dias</option>
+        <option value="3">De 3 em 3 dias</option>
+        <option value="4">De 4 em 4 dias</option>
+        <option value="5">De 5 em 5 dias</option>
+        <option value="6">De 6 em 6 dias</option>
+        <option value="7">De 7 em 7 dias</option>
+        <option value="outro">Outro (personalizado)</option>
       </Select>
+
+      {showCustomInput && (
+        <Input
+          icon={<FaPills />}
+          type="number"
+          min="1"
+          placeholder="Digite o intervalo em dias"
+          value={customFrequency}
+          onChange={handleCustomFrequencyChange}
+        />
+      )}
 
       <button
         disabled={!valid}
@@ -195,6 +250,16 @@ const StepMedication = ({ onNext, onValuesChange }: {
         type="button"
       >
         Próximo
+
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="w-full p-3 rounded-full border border-gray-300 text-gray-600 hover:border-gray-400 transition"
+          type="button"
+        >
+          Voltar
+        </button>
+      )}
       </button>
     </div>
   );
@@ -296,6 +361,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
   usuarioId,
   onYesCallback,
   onNoCallback,
+  onBackCallback,
   embeddedMode = false,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -306,14 +372,14 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
   }>({
     nome: "",
     concentracao: "",
-    frequencia: "",
+    frequencia: null,
   });
 
   useEffect(() => {
     if (!isOpen) {
       const t = setTimeout(() => {
         setStep(1);
-        setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+        setMedicationValues({ nome: "", concentracao: "", frequencia: null });
       }, 250);
       return () => clearTimeout(t);
     }
@@ -321,7 +387,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
 
   const handleClose = () => {
     setStep(1);
-    setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+    setMedicationValues({ nome: "", concentracao: "", frequencia: null });
     onClose();
   };
 
@@ -334,7 +400,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
 
   const handleFinish = () => {
     setStep(1);
-    setMedicationValues({ nome: "", concentracao: "", frequencia: "" });
+    setMedicationValues({ nome: "", concentracao: "", frequencia: null });
     onClose();
   };
 
@@ -369,6 +435,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
           <StepMedication 
             onNext={() => setStep(3)} 
             onValuesChange={handleMedicationValuesChange}
+            onBack={onBackCallback}
           />
         )}
         {step === 3 && (

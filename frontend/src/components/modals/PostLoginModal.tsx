@@ -33,19 +33,7 @@ export type PostLoginData = {
   tipoIntervencao: "" | "mounjaro" | "apenas_dieta_treino";
 };
 
-// Helper para converter frequencia em número para o banco de dados
-const frequencyToNumber = (freq: MedicationFrequency): number => {
-  switch (freq) {
-    case "diaria":
-      return 1; // 1 = diária
-    case "semanal":
-      return 7; // 7 = semanal
-    case "eventual":
-      return 0; // 0 = eventual
-    default:
-      return 0;
-  }
-};
+
 
 interface Props {
   isOpen: boolean;
@@ -83,7 +71,7 @@ export const PostLoginModal: React.FC<Props> = ({
 
   /* ===== Medicamento Prescrito ===== */
   const [medPrescrita, setMedPrescrita] = useState(false);
-  const [freqMedPrescrita, setFreqMedPrescrita] = useState<MedicationFrequency>("");
+  const [freqMedPrescrita, setFreqMedPrescrita] = useState<MedicationFrequency>(null);
   const [medicationData, setMedicationData] = useState<MedicationData | null>(null);
 
   const setField =
@@ -109,7 +97,7 @@ export const PostLoginModal: React.FC<Props> = ({
       tipoIntervencao: "",
     });
     setMedPrescrita(false);
-    setFreqMedPrescrita("");
+    setFreqMedPrescrita(null);
     setMedicationData(null);
     onCloseAction();
   };
@@ -165,7 +153,7 @@ export const PostLoginModal: React.FC<Props> = ({
         ativoCiclo: true,
         mounjaro: mounjaro,
         med_prescrita: medPrescrita,
-        freq_med_prescrita: frequencyToNumber(freqMedPrescrita),
+        freq_med_prescrita: freqMedPrescrita || 0,
         treino: true,
         dieta: true,
         agua: true,
@@ -255,7 +243,7 @@ export const PostLoginModal: React.FC<Props> = ({
                     ✓ Medicamento prescrito registrado
                   </p>
                   {medicationData && (
-                    <div className="text-left bg-white/50 p-4 rounded-xl space-y-1 text-sm">
+                    <div className="text-left bg-white/50 p-4 rounded-xl space-y-1 text-sm text-black">
                       <p><strong>Medicamento:</strong> {medicationData.nome}</p>
                       <p><strong>Dosagem:</strong> {medicationData.concentracao}</p>
                       <p><strong>Frequência:</strong> {medicationData.frequencia}</p>
@@ -346,10 +334,14 @@ export const PostLoginModal: React.FC<Props> = ({
         }}
         onNoCallback={() => {
           setMedPrescrita(false);
-          setFreqMedPrescrita("");
+          setFreqMedPrescrita(null);
           setMedicationData(null);
           setShowMedicationModal(false);
           setStep(2);
+        }}
+        onBackCallback={() => {
+          setShowMedicationModal(false);
+          setStep(1);
         }}
       />
     </div>

@@ -350,23 +350,43 @@ export const PostLoginModal: React.FC<Props> = ({
 
 /* ================== AUX ================== */
 
-const Input = ({ icon, ...props }: { icon: React.ReactNode; [key: string]: any }) => (
-  <div className="relative group">
-    <input {...props} className={inputStyle} />
-    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-      {icon}
-    </span>
-  </div>
-);
+const Input = ({ icon, ...props }: { icon: React.ReactNode; [key: string]: any }) => {
+  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
 
-const Select = ({ icon, children, ...props }: { icon: React.ReactNode; children: React.ReactNode; [key: string]: any }) => (
-  <div className="relative group">
-    <select {...props} className={`${inputStyle} ${selectStyle}`}>
-      {children}
-    </select>
-    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-      {icon}
-    </span>
-    <IoChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
-  </div>
-);
+  return (
+    <div className="relative group">
+      <input {...props} className={inputStyle} />
+      <span
+        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      >
+        {icon}
+      </span>
+    </div>
+  );
+};
+
+const Select = ({ icon, children, ...props }: { icon: React.ReactNode; children: React.ReactNode; [key: string]: any }) => {
+  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
+
+  return (
+    <div className="relative group">
+      <select {...props} className={`${inputStyle} ${selectStyle}`}>
+        {children}
+      </select>
+      <span
+        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      >
+        {icon}
+      </span>
+      <IoChevronDown
+        className={`absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
+          hasValue ? "text-[#6A38F3]" : ""
+        }`}
+      />
+    </div>
+  );
+};

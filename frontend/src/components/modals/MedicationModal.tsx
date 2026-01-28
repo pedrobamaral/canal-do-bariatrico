@@ -250,6 +250,7 @@ const StepMedication = ({ onNext, onValuesChange, onBack }: {
         type="button"
       >
         Próximo
+      </button>
 
       {onBack && (
         <button
@@ -260,7 +261,6 @@ const StepMedication = ({ onNext, onValuesChange, onBack }: {
           Voltar
         </button>
       )}
-      </button>
     </div>
   );
 };

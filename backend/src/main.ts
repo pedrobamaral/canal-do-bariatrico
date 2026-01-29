@@ -4,8 +4,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express';
 
-const frontendUrl = process.env.FRONTEND_URL; 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -15,30 +13,24 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
+  const allowedOrigin = process.env.FRONTEND_URL;
+
+  if (!allowedOrigin) {
+    throw new Error('FRONTEND_URL nao definida');
+  }
+
   app.enableCors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      frontendUrl,
-    ];
-
-    // Permite chamadas server-to-server e preflight
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    // ❌ Nunca lance Error aqui
-    return callback(null, false);
-  },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: 'Content-Type, Authorization',
-  credentials: true,
-});
-
-
+    origin: (origin, callback) => {
+      if (origin === allowedOrigin) {
+        callback(null, true);         // libera
+      } else {
+        callback(new Error('Not allowed by CORS')); // bloqueia
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH','OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }

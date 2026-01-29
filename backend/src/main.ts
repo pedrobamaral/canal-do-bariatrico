@@ -20,13 +20,7 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: (origin, callback) => {
-      if (origin === allowedOrigin) {
-        callback(null, true);         // libera
-      } else {
-        callback(new Error('Not allowed by CORS')); // bloqueia
-      }
-    },
+    origin: allowedOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH','OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

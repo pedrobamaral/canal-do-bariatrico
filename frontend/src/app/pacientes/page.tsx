@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -37,6 +37,9 @@ interface PatientTooltipProps {
 
 const PatientNameWithTooltip: React.FC<PatientTooltipProps> = ({ nome, email, telefone }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [placement, setPlacement] = useState<'bottom' | 'top'>('bottom');
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const formatPhone = (phone?: string) => {
     if (!phone) return 'Não informado';
@@ -47,8 +50,23 @@ const PatientNameWithTooltip: React.FC<PatientTooltipProps> = ({ nome, email, te
     return phone;
   };
 
+  // Ajustar posição (cima/baixo) quando o tooltip for exibido
+  useLayoutEffect(() => {
+    if (!showTooltip || !containerRef.current || !tooltipRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const tipRect = tooltipRef.current.getBoundingClientRect();
+    const margin = 8;
+    // Se não couber abaixo, posiciona acima
+    if (rect.bottom + tipRect.height + margin > window.innerHeight) {
+      setPlacement('top');
+    } else {
+      setPlacement('bottom');
+    }
+  }, [showTooltip]);
+
   return (
     <div 
+      ref={containerRef}
       className="relative inline-block"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -58,10 +76,11 @@ const PatientNameWithTooltip: React.FC<PatientTooltipProps> = ({ nome, email, te
       </span>
       
       {showTooltip && (
-        <div className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl border border-gray-700 animate-fadeIn">
-          {/* Seta do tooltip */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-gray-900"></div>
-          
+        <div
+          ref={tooltipRef}
+          className={`absolute z-50 left-20 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl border border-gray-700 animate-fadeIn ${placement === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
+        >
+
           <div className="space-y-2">
             <div>
               <span className="text-gray-400 block text-[10px] uppercase tracking-wide">Email</span>

@@ -169,16 +169,8 @@ export default function Navbar() {
             {/* ✅ LOGADO */}
             {isLoggedIn && (
               <>
-                <Link href="#" aria-label="Médico">
+                <Link href="/pacientes" aria-label="Médico">
                   <FaUserMd size={24} className={iconBaseStyle} />
-                </Link>
-
-                <Link href="#" aria-label="Dieta">
-                  <IoNutritionSharp size={24} className={iconBaseStyle} />
-                </Link>
-
-                <Link href="#" aria-label="Treino">
-                  <IoIosBody size={27} className={iconBaseStyle} />
                 </Link>
 
                 <Link href="/" aria-label="Calculadora">

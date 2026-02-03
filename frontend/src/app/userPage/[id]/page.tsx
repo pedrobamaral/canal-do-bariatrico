@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import PatientsTable, { PatientData } from '@/components/PatientsTable';
+import { getAllUsers } from '@/api/api';
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { toast, ToastContainer } from "react-toastify";
@@ -102,6 +104,9 @@ export default function UserPage() {
 
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
+  const [patients, setPatients] = useState<PatientData[]>([]);
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
   const [Dono, setDono] = useState(false);
   const [mostrar, setMostrar] = useState(false);
   const [error, setError] = useState(false);
@@ -211,6 +216,54 @@ export default function UserPage() {
     fetchInitialData();
   }, [id, router]);
 
+  // Se for admin, buscar pacientes para exibir a tabela dentro da userPage
+  useEffect(() => {
+    const fetchPatients = async () => {
+      if (!usuario || !usuario.admin) return;
+      setLoadingPatients(true);
+      try {
+        const data = await getAllUsers();
+        // calcular status simples (mesma lógica do DashboardPacientes)
+        const patientsWithStatus = data.map((user: any) => ({
+          ...user,
+          dietaStatus: user.meta ? 'green' : 'gray',
+          hidratacaoStatus: user.ativo ? 'yellow' : 'gray',
+          medicacaoStatus: user.ativo ? 'green' : 'gray',
+          checkins: user.ativo ? '3/5' : '0/5',
+          adesao: user.ativo ? 'Regular' : 'Sem resposta',
+        }));
+        setPatients(patientsWithStatus);
+        setFilteredPatients(patientsWithStatus);
+      } catch (e) {
+        console.error('Erro ao buscar pacientes:', e);
+      } finally {
+        setLoadingPatients(false);
+      }
+    };
+
+    fetchPatients();
+  }, [usuario]);
+
+  const getStatusColor = (color: string) => {
+    switch (color) {
+      case 'red': return 'bg-red-500';
+      case 'yellow': return 'bg-yellow-400';
+      case 'green': return 'bg-green-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const formatDate = (date?: Date | string) => {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('pt-BR');
+  };
+
+  const handlePatientClick = (patient: PatientData) => {
+    // navegar para a página do paciente ao clicar
+    router.push(`/userPage/${patient.id}`);
+  };
+
 
   if (loading) return (
     <main className="min-h-screen flex items-center justify-center bg-white">
@@ -231,8 +284,9 @@ export default function UserPage() {
       </div>
     </main>
   );
+  // Não fazemos return aqui — iremos mostrar a tabela dentro da mesma página
 
-  return ( 
+  return (
     <main className="min-h-screen text-black bg-white pb-16">
       <Navbar />
 
@@ -272,31 +326,47 @@ export default function UserPage() {
         )}
       </div>
 
-      {/* PROGRESSO */}
-      <div className="max-w-5xl mx-auto px-6 mt-48">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {progressItems.map(({ label, value, icon: Icon }) => (
-            <div key={label}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
-                  <Icon className="w-5 h-5" />
-                  <span>{label}</span>
-                </div>
-                <span className="text-sm font-medium text-gray-600">{value}%</span>
-              </div>
+      {/* Espaçador para reservar área do perfil (evita sobreposição com a tabela) */}
+      <div className="h-1" />
 
-              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
-                  style={{ width: `${value}%` }}
-                />
-              </div>
-            </div>
-          ))}
+      {/* PROGRESSO ou TABELA (se admin) */}
+      {usuario.admin ? (
+        <div className="max-w-6xl mx-auto p-6 mt-44">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quantidade de pacientes ativos: <span className="font-semibold">{patients.length}</span></h3>
+          <PatientsTable
+            filteredPatients={filteredPatients}
+            loading={loadingPatients}
+            onPatientClick={handlePatientClick}
+            formatDate={formatDate}
+            getStatusColor={getStatusColor}
+          />
         </div>
-      </div>
+      ) : (
+        <div className="max-w-5xl mx-auto px-6 mt-48">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {progressItems.map(({ label, value, icon: Icon }) => (
+              <div key={label}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
+                    <Icon className="w-5 h-5" />
+                    <span>{label}</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600">{value}%</span>
+                </div>
+
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
+                    style={{ width: `${value}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
 
       <EditUserModal

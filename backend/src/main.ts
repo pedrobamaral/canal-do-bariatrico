@@ -13,9 +13,16 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
+  const allowedOrigin = process.env.FRONTEND_URL;
+
+  if (!allowedOrigin) {
+    throw new Error('FRONTEND_URL nao definida');
+  }
+
   app.enableCors({
-    origin: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: allowedOrigin,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH','OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 

@@ -23,23 +23,34 @@ const EyeSlashIcon: React.FC<IconProps> = ({ className }) => (
 );
 
 /* --- Função de Máscara de Telefone --- */
-const formatPhoneNumber = (value: string) => {
+const formatPhoneNumber = (value: string, countryCode = "+55") => {
   // Remove tudo que não é dígito
   const numbers = value.replace(/\D/g, "");
-  
-  // Limita a 11 dígitos (DDD + 9 números)
-  const limited = numbers.slice(0, 11);
+  const codeDigits = countryCode.replace(/\D/g, "");
+
+  // Se o user já inseriu o código do país, remover temporariamente para formatar o número local
+  let local = numbers;
+  if (codeDigits && numbers.startsWith(codeDigits)) {
+    local = numbers.slice(codeDigits.length);
+  }
+
+  // Garantir os últimos 11 dígitos do número local (DDD + 9 dígitos)
+  const limited = local.slice(-11);
 
   // Aplica a formatação (XX) XXXXX-XXXX
+  let maskedLocal = "";
   if (limited.length > 10) {
-    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+    maskedLocal = limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
   } else if (limited.length > 6) {
-    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+    maskedLocal = limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
   } else if (limited.length > 2) {
-    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+    maskedLocal = limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
   } else {
-    return limited.replace(/^(\d*)/, "($1");
+    maskedLocal = limited.replace(/^(\d*)/, "($1");
   }
+
+  // Retornar com o código do país na frente (ex: +55 (XX) XXXXX-XXXX)
+  return `${countryCode} ${maskedLocal}`.trim();
 };
 
 /* Tipos */
@@ -185,10 +196,11 @@ const SignUpForm: React.FC = () => {
     
     if (id === "pais") {
       const paisInfo = PAISES_CODIGOS[value];
-      setFormData((prev) => ({ ...prev, pais: value, codPais: paisInfo.codigo }));
+      setFormData((prev) => ({ ...prev, pais: value, codPais: paisInfo.codigo, telefone: formatPhoneNumber(prev.telefone || "", paisInfo.codigo) }));
       setSelectedPaisInfo(paisInfo);
     } else if (id === "telefone") {
-      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value) }));
+      const country = selectedPaisInfo?.codigo || formData.codPais || "+55";
+      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value, country) }));
     } else {
       setFormData((prev) => ({ ...prev, [id]: value }));
     }
@@ -208,9 +220,11 @@ const SignUpForm: React.FC = () => {
     }
 
     // --- VALIDAÇÃO DE TELEFONE ---
-    // Remove símbolos para contar apenas números
+    // Remove símbolos para contar apenas números (verifica número local)
     const rawPhone = formData.telefone.replace(/\D/g, "");
-    if (rawPhone.length < 10) {
+    const countryCodeDigits = selectedPaisInfo?.codigo.replace(/\D/g, "") || formData.codPais.replace(/\D/g, "");
+    const localDigits = rawPhone.startsWith(countryCodeDigits) ? rawPhone.slice(countryCodeDigits.length) : rawPhone;
+    if (localDigits.length < 10) {
       setError("Por favor, preencha o telefone corretamente: (DD) XXXXX-XXXX");
       return;
     }
@@ -229,9 +243,9 @@ const SignUpForm: React.FC = () => {
     try {
       // Remove símbolos do telefone para enviar apenas números
       const phoneNumbers = formData.telefone.replace(/\D/g, "");
-      // Concatena código do país (sem o +) no início do número
-      const countryCode = selectedPaisInfo.codigo.replace("+", "");
-      const phoneWithCountryCode = `${countryCode}${phoneNumbers}`;
+      // Concatena código do país (sem o +) no início do número, evitando duplicação
+      const countryCode = selectedPaisInfo.codigo.replace(/\D/g, "");
+      const phoneWithCountryCode = phoneNumbers.startsWith(countryCode) ? phoneNumbers : `${countryCode}${phoneNumbers}`;
       const response = await createUser(formData.name, formData.email, formData.password, phoneWithCountryCode);
 
       if (response && response.status === "sucesso") {

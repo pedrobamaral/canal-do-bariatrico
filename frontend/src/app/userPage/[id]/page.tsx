@@ -48,27 +48,37 @@ type Usuario = {
   foto?: string;
 };
 
-const formatPhoneNumber = (value?: string | null) => {
+const formatPhoneNumber = (value?: string | null, countryCode = "+55") => {
   if (!value) return "Telefone não informado";
-  
+
   // Remove tudo que não é dígito
   const numbers = value.replace(/\D/g, "");
-  
-  // Limita a 11 dígitos (DDD + 9 números)
-  const limited = numbers.slice(0, 11);
+  const codeDigits = countryCode.replace(/\D/g, "");
+
+  // Se o backend já enviou o código do país, remova-o temporariamente para formatar o número local
+  let local = numbers;
+  if (codeDigits && numbers.startsWith(codeDigits)) {
+    local = numbers.slice(codeDigits.length);
+  }
+
+  // Garantir os últimos 11 dígitos do número local (DDD + 9 dígitos)
+  const limited = local.slice(-11);
 
   if (limited.length === 0) return "Telefone não informado";
 
   // Aplica a formatação (XX) XXXXX-XXXX
+  let maskedLocal = "";
   if (limited.length > 10) {
-    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+    maskedLocal = limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
   } else if (limited.length > 6) {
-    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+    maskedLocal = limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
   } else if (limited.length > 2) {
-    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+    maskedLocal = limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
   } else {
-    return limited.replace(/^(\d*)/, "($1");
+    maskedLocal = limited.replace(/^(\d*)/, "($1");
   }
+
+  return `${countryCode} ${maskedLocal}`.trim();
 };
 
 const EmailIcon = () => (

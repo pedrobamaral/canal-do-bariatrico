@@ -7,24 +7,28 @@ import { toast } from "react-toastify";
 import EditUserPass from "./UpdatePassModal";
 import { useRouter } from "next/navigation";
 
-// Função de formatação de telefone
-const formatPhoneNumber = (value: string) => {
-  // Remove tudo que não é dígito
-  const numbers = value.replace(/\D/g, "");
-  
-  // Limita a 11 dígitos (DDD + 9 números)
-  const limited = numbers.slice(0, 11);
+// Função de formatação de telefone (mantém código do país na frente, padrão +55)
+const formatPhoneNumber = (value: string, countryCode = "+55") => {
+    // Remove tudo que não é dígito
+    const numbers = value.replace(/\D/g, "");
+    const codeDigits = countryCode.replace(/\D/g, "");
 
-  // Aplica a formatação (XX) XXXXX-XXXX
-  if (limited.length > 10) {
-    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
-  } else if (limited.length > 6) {
-    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-  } else if (limited.length > 2) {
-    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
-  } else {
-    return limited.replace(/^(\d*)/, "($1");
-  }
+    let local = numbers;
+    if (codeDigits && numbers.startsWith(codeDigits)) {
+        local = numbers.slice(codeDigits.length);
+    }
+
+    const limited = local.slice(-11);
+
+    if (limited.length > 10) {
+        return `${countryCode} ${limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3")}`.trim();
+    } else if (limited.length > 6) {
+        return `${countryCode} ${limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3")}`.trim();
+    } else if (limited.length > 2) {
+        return `${countryCode} ${limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2")}`.trim();
+    } else {
+        return `${countryCode} ${limited.replace(/^(\d*)/, "($1")}`.trim();
+    }
 };
 
 interface EditUserModalProps {
@@ -67,8 +71,8 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
             console.log('Carregando dados do usuário:', { nome, emailProp, telefoneProp });
             setName(nome || '');
             setEmail(emailProp || '');
-            // Formatar telefone ao carregar
-            const formattedPhone = telefoneProp ? formatPhoneNumber(telefoneProp) : '';
+            // Formatar telefone ao carregar (mantém +55 na frente por padrão)
+            const formattedPhone = telefoneProp ? formatPhoneNumber(telefoneProp, "+55") : '';
             setTelefone(formattedPhone);
             setSelectedFile(null);
         }
@@ -141,7 +145,7 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
     };
 
     const handleTelefoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const formatted = formatPhoneNumber(e.target.value);
+        const formatted = formatPhoneNumber(e.target.value, "+55");
         setTelefone(formatted);
     };
 
@@ -169,9 +173,10 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
             if (name.trim()) data.nome = name;
             if (email.trim()) data.email = email;
             if (telefone.trim()) {
-                // Remove símbolos para enviar apenas números
+                // Remove símbolos para enviar apenas números e garantir código 55 na frente
                 const phoneNumbers = telefone.replace(/\D/g, "");
-                data.telefone = phoneNumbers;
+                const countryCode = '55';
+                data.telefone = phoneNumbers.startsWith(countryCode) ? phoneNumbers : `${countryCode}${phoneNumbers}`;
             }
             if (fotoBase64) data.foto = fotoBase64;
 

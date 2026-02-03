@@ -4,13 +4,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { IoIosBody } from "react-icons/io";
 import { IoPerson } from "react-icons/io5";
 
 // Ícones (mantive os seus do protótipo)
 import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
-import { IoNutritionSharp, IoLogOutOutline } from "react-icons/io5"
-import { RiUser3Fill } from "react-icons/ri"
+import { IoLogOutOutline } from "react-icons/io5"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -100,7 +98,7 @@ export default function Navbar() {
         >
           <div className="relative w-[320px] h-11 min-w-0">
             <Image
-              src="/imagens/logo.png"
+              src="/images/logo.png"
               alt="Logo BARIE"
               fill
               className="object-contain object-left"

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import PatientsTable, { PatientData } from '@/components/PatientsTable';
-import { getAllUsers } from '@/api/api';
+import { getAllUsers, getUserAdherenceStats } from '@/api/api';
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { toast, ToastContainer } from "react-toastify";
@@ -233,17 +233,41 @@ export default function UserPage() {
       setLoadingPatients(true);
       try {
         const data = await getAllUsers();
-        // calcular status simples (mesma lógica do DashboardPacientes)
-        const patientsWithStatus = data.map((user: any) => ({
-          ...user,
-          dietaStatus: user.meta ? 'green' : 'gray',
-          hidratacaoStatus: user.ativo ? 'yellow' : 'gray',
-          medicacaoStatus: user.ativo ? 'green' : 'gray',
-          checkins: user.ativo ? '3/5' : '0/5',
-          adesao: user.ativo ? 'Regular' : 'Sem resposta',
-        }));
-        setPatients(patientsWithStatus);
-        setFilteredPatients(patientsWithStatus);
+        
+        // Busca estatísticas de adesão para cada paciente em paralelo
+        const patientsWithStats = await Promise.all(
+          data.map(async (user: any) => {
+            try {
+              const stats = await getUserAdherenceStats(user.id);
+              return {
+                ...user,
+                dietaStatus: stats?.dieta.status || 'gray',
+                hidratacaoStatus: stats?.hidratacao.status || 'gray',
+                medicacaoStatus: stats?.medicacao.status || 'gray',
+                checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
+                adesao: stats && stats.dieta.porcentagem !== null 
+                  ? `${Math.round((
+                      (stats.dieta.porcentagem || 0) + 
+                      (stats.hidratacao.porcentagem || 0) + 
+                      (stats.medicacao.porcentagem || 0)
+                    ) / 3)}%` 
+                  : 'Sem dados',
+              };
+            } catch (error) {
+              return {
+                ...user,
+                dietaStatus: 'gray' as const,
+                hidratacaoStatus: 'gray' as const,
+                medicacaoStatus: 'gray' as const,
+                checkins: '0/0',
+                adesao: 'Sem dados',
+              };
+            }
+          })
+        );
+        
+        setPatients(patientsWithStats);
+        setFilteredPatients(patientsWithStats);
       } catch (e) {
         console.error('Erro ao buscar pacientes:', e);
       } finally {

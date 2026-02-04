@@ -8,7 +8,7 @@ import { FaUserEdit, FaHeartbeat, FaUtensils, FaPills, FaDumbbell, FaEye, FaSear
 import { IoClose } from 'react-icons/io5';
 
 // API
-import { getAllUsers, getCurrentUser, Usuario } from '@/api/api';
+import { getAllUsers, getCurrentUser, Usuario, getUserAdherenceStats, UserAdherenceStats } from '@/api/api';
 
 // Modais
 import EditUserModal from '@/components/modals/EditUserModal';
@@ -204,35 +204,51 @@ const DashboardPacientes = () => {
     checkAdminAccess();
   }, [router]);
 
-  // Função para calcular status dos indicadores (você pode customizar essa lógica)
-  const calculateStatus = (patient: Usuario): Partial<PatientData> => {
-    // Lógica exemplo - ajuste conforme seus dados reais
-    const dietaStatus = patient.meta ? 'green' : 'gray';
-    const hidratacaoStatus = patient.ativo ? 'yellow' : 'gray';
-    const medicacaoStatus = patient.ativo ? 'green' : 'gray';
-    
-    return {
-      dietaStatus,
-      hidratacaoStatus,
-      medicacaoStatus,
-      checkins: patient.ativo ? '3/5' : '0/5',
-      adesao: patient.ativo ? 'Regular' : 'Sem resposta',
-    };
-  };
-
-  // Buscar pacientes
+  // Buscar pacientes com estatísticas reais de adesão
   const fetchPatients = useCallback(async () => {
     if (!isAdmin) return;
     
     setLoading(true);
     try {
       const data = await getAllUsers();
-      const patientsWithStatus = data.map((user: Usuario) => ({
-        ...user,
-        ...calculateStatus(user),
-      }));
-      setPatients(patientsWithStatus);
-      setFilteredPatients(patientsWithStatus);
+      
+      // Busca estatísticas de adesão para cada paciente em paralelo
+      const patientsWithStats = await Promise.all(
+        data.map(async (user: Usuario) => {
+          try {
+            const stats = await getUserAdherenceStats(user.id);
+            return {
+              ...user,
+              dietaStatus: stats?.dieta.status || 'gray',
+              hidratacaoStatus: stats?.hidratacao.status || 'gray',
+              medicacaoStatus: stats?.medicacao.status || 'gray',
+              checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
+              adesao: stats && stats.dieta.porcentagem !== null 
+                ? `${Math.round((
+                    (stats.dieta.porcentagem || 0) + 
+                    (stats.hidratacao.porcentagem || 0) + 
+                    (stats.medicacao.porcentagem || 0)
+                  ) / 3)}%` 
+                : 'Sem dados',
+              // Guardar stats completas para uso no modal
+              adherenceStats: stats,
+            };
+          } catch (error) {
+            // Se falhar ao buscar stats, retorna valores padrão
+            return {
+              ...user,
+              dietaStatus: 'gray' as const,
+              hidratacaoStatus: 'gray' as const,
+              medicacaoStatus: 'gray' as const,
+              checkins: '0/0',
+              adesao: 'Sem dados',
+            };
+          }
+        })
+      );
+      
+      setPatients(patientsWithStats);
+      setFilteredPatients(patientsWithStats);
     } catch (error: any) {
       console.error('Erro ao buscar pacientes:', error);
       toast.error('Erro ao carregar lista de pacientes');

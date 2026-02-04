@@ -164,6 +164,42 @@ export async function deleteUser(id: number) {
   }
 }
 
+// Tipos para estatísticas de adesão
+export interface AdherenceMetric {
+  total: number;
+  cumprida: number;
+  porcentagem: number | null;
+  status: 'green' | 'yellow' | 'red' | 'gray';
+}
+
+export interface UserAdherenceStats {
+  dieta: AdherenceMetric;
+  hidratacao: AdherenceMetric;
+  medicacao: AdherenceMetric;
+  totalDiaCiclos: number;
+  diasComDaily: number;
+}
+
+/**
+ * Busca estatísticas de adesão de um usuário (dieta, hidratação, medicação).
+ * Compara DiaCiclo (planejado) com Daily (realizado) e retorna porcentagens.
+ */
+export async function getUserAdherenceStats(userId: number): Promise<UserAdherenceStats | null> {
+  try {
+    const response = await api.get(`/usuarios/${userId}/stats`);
+    
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    
+    console.warn('Erro ao buscar stats:', response.data.message);
+    return null;
+  } catch (error: any) {
+    console.error('Erro ao buscar estatísticas de adesão:', error);
+    return null;
+  }
+}
+
 export async function createUser(nome: string, email: string, senha: string, telefone?: string) {
   try {
     const response = await api.post('/usuarios', {

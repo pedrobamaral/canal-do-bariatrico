@@ -163,4 +163,95 @@ export class UsuarioService {
       where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
     });
   }
+
+  /**
+   * Calcula estatísticas de adesão do usuário comparando DiaCiclo (planejado) com Daily (realizado).
+   * Retorna porcentagens para dieta, hidratação (água) e medicação.
+   */
+  async getAdherenceStats(userId: number | string) {
+    const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+
+    // Busca todos os DiaCiclos do usuário que têm um Daily associado
+    const diaCiclos = await this.prisma.diaCiclo.findMany({
+      where: { idUsuario: id },
+      include: {
+        daily: true,
+      },
+    });
+
+    // Inicializa contadores
+    let dietaTotal = 0;
+    let dietaCumprida = 0;
+    let aguaTotal = 0;
+    let aguaCumprida = 0;
+    let medicacaoTotal = 0;
+    let medicacaoCumprida = 0;
+
+    for (const dc of diaCiclos) {
+      // Dieta: se tem_dieta está marcado no DiaCiclo, conta como esperado
+      if (dc.tem_dieta) {
+        dietaTotal++;
+        // Se o Daily existe e dieta_check é true, conta como cumprido
+        if (dc.daily?.dieta_check === true) {
+          dietaCumprida++;
+        }
+      }
+
+      // Água/Hidratação: se tem_agua está marcado no DiaCiclo
+      if (dc.tem_agua) {
+        aguaTotal++;
+        if (dc.daily?.agua_check === true) {
+          aguaCumprida++;
+        }
+      }
+
+      // Medicação: considera med_prescrita e/ou mounjaro
+      if (dc.tem_med_prescrita || dc.tem_mounjaro) {
+        medicacaoTotal++;
+        // Verifica se cumpriu pelo menos uma das medicações esperadas
+        const cumprouMed = (dc.tem_med_prescrita && dc.daily?.med_prescrita_check === true) ||
+                          (dc.tem_mounjaro && dc.daily?.mounjaro_check === true);
+        if (cumprouMed) {
+          medicacaoCumprida++;
+        }
+      }
+    }
+
+    // Calcula porcentagens (evita divisão por zero)
+    const dietaPct = dietaTotal > 0 ? Math.round((dietaCumprida / dietaTotal) * 100) : null;
+    const aguaPct = aguaTotal > 0 ? Math.round((aguaCumprida / aguaTotal) * 100) : null;
+    const medicacaoPct = medicacaoTotal > 0 ? Math.round((medicacaoCumprida / medicacaoTotal) * 100) : null;
+
+    // Determina cor do status baseado na porcentagem
+    const getStatusColor = (pct: number | null): string => {
+      if (pct === null) return 'gray'; // sem dados
+      if (pct >= 80) return 'green';
+      if (pct >= 50) return 'yellow';
+      return 'red';
+    };
+
+    return {
+      dieta: {
+        total: dietaTotal,
+        cumprida: dietaCumprida,
+        porcentagem: dietaPct,
+        status: getStatusColor(dietaPct),
+      },
+      hidratacao: {
+        total: aguaTotal,
+        cumprida: aguaCumprida,
+        porcentagem: aguaPct,
+        status: getStatusColor(aguaPct),
+      },
+      medicacao: {
+        total: medicacaoTotal,
+        cumprida: medicacaoCumprida,
+        porcentagem: medicacaoPct,
+        status: getStatusColor(medicacaoPct),
+      },
+      // Dados agregados do ciclo atual (se houver)
+      totalDiaCiclos: diaCiclos.length,
+      diasComDaily: diaCiclos.filter(dc => dc.daily !== null).length,
+    };
+  }
 }

@@ -4,18 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import PatientsTable, { PatientData } from '@/components/PatientsTable';
-import { getAllUsers, getUserAdherenceStats } from '@/api/api';
+import { getAllUsers, getUserAdherenceStats, UserAdherenceStats } from '@/api/api';
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { toast, ToastContainer } from "react-toastify";
 import {
-  HiOutlineBeaker,
-  HiOutlineLightningBolt,
   HiOutlineClipboardList,
+  HiOutlineLightningBolt,
   HiOutlineScale,
-  HiOutlineHeart,
-  HiOutlineSparkles,
 } from "react-icons/hi";
+import { IoWaterOutline } from "react-icons/io5";
 
 // Migração de token antigo para novo no root layout
 // Este efeito seria normalmente no layout.tsx, mas colocamos aqui por segurança
@@ -99,13 +97,12 @@ const PhoneIcon = () => (
   </svg>
 );
 
-const progressItems = [
-  { label: "Injetáveis", value: 70, icon: HiOutlineBeaker },
-  { label: "Atividade Física", value: 45, icon: HiOutlineLightningBolt },
-  { label: "Dieta", value: 80, icon: HiOutlineClipboardList },
-  { label: "Medidas", value: 55, icon: HiOutlineScale },
-  { label: "Medicações", value: 30, icon: HiOutlineHeart },
-  { label: "Suplementos", value: 60, icon: HiOutlineSparkles },
+// Configuração das 4 métricas de progresso
+const progressConfig = [
+  { key: 'hidratacao' as const, label: "Hidratação", icon: IoWaterOutline },
+  { key: 'dieta' as const, label: "Dieta", icon: HiOutlineClipboardList },
+  { key: 'treino' as const, label: "Treino", icon: HiOutlineLightningBolt },
+  { key: 'bioimpedancia' as const, label: "Bioimpedância", icon: HiOutlineScale },
 ];
 
 export default function UserPage() {
@@ -120,6 +117,8 @@ export default function UserPage() {
   const [Dono, setDono] = useState(false);
   const [mostrar, setMostrar] = useState(false);
   const [error, setError] = useState(false);
+  const [userStats, setUserStats] = useState<UserAdherenceStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   const fetchAllPageData = async () => {
     if (!id) return;
@@ -243,14 +242,16 @@ export default function UserPage() {
                 ...user,
                 dietaStatus: stats?.dieta.status || 'gray',
                 hidratacaoStatus: stats?.hidratacao.status || 'gray',
-                medicacaoStatus: stats?.medicacao.status || 'gray',
+                treinoStatus: stats?.treino.status || 'gray',
+                bioimpedanciaStatus: stats?.bioimpedancia.status || 'gray',
                 checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
                 adesao: stats && stats.dieta.porcentagem !== null 
                   ? `${Math.round((
                       (stats.dieta.porcentagem || 0) + 
                       (stats.hidratacao.porcentagem || 0) + 
-                      (stats.medicacao.porcentagem || 0)
-                    ) / 3)}%` 
+                      (stats.treino.porcentagem || 0) +
+                      (stats.bioimpedancia.porcentagem || 0)
+                    ) / 4)}%` 
                   : 'Sem dados',
               };
             } catch (error) {
@@ -258,7 +259,8 @@ export default function UserPage() {
                 ...user,
                 dietaStatus: 'gray' as const,
                 hidratacaoStatus: 'gray' as const,
-                medicacaoStatus: 'gray' as const,
+                treinoStatus: 'gray' as const,
+                bioimpedanciaStatus: 'gray' as const,
                 checkins: '0/0',
                 adesao: 'Sem dados',
               };
@@ -276,6 +278,24 @@ export default function UserPage() {
     };
 
     fetchPatients();
+  }, [usuario]);
+
+  // Se NÃO for admin, buscar stats do próprio usuário para exibir as barras de progresso
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!usuario || usuario.admin) return;
+      setLoadingStats(true);
+      try {
+        const stats = await getUserAdherenceStats(usuario.id);
+        setUserStats(stats);
+      } catch (e) {
+        console.error('Erro ao buscar stats do usuário:', e);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchUserStats();
   }, [usuario]);
 
   const getStatusColor = (color: string) => {
@@ -379,26 +399,42 @@ export default function UserPage() {
         <div className="max-w-5xl mx-auto px-6 mt-48">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {progressItems.map(({ label, value, icon: Icon }) => (
-              <div key={label}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
-                    <Icon className="w-5 h-5" />
-                    <span>{label}</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-600">{value}%</span>
-                </div>
+          {loadingStats ? (
+            <p className="text-center text-gray-500">Carregando estatísticas...</p>
+          ) : userStats ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {progressConfig.map(({ key, label, icon: Icon }) => {
+                const metric = userStats[key];
+                const value = metric?.porcentagem ?? 0;
+                
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
+                        <Icon className="w-5 h-5" />
+                        <span>{label}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-600">
+                        {metric?.porcentagem !== null ? `${value}%` : 'Sem dados'}
+                        <span className="text-xs text-gray-400 ml-1">
+                          ({metric?.cumprida ?? 0}/{metric?.total ?? 0})
+                        </span>
+                      </span>
+                    </div>
 
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
-                    style={{ width: `${value}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+                    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">Nenhum dado de progresso disponível ainda.</p>
+          )}
         </div>
       )}
 

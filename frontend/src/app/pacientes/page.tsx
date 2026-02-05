@@ -23,7 +23,8 @@ interface PatientData extends Usuario {
   retorno?: string;
   dietaStatus?: 'red' | 'yellow' | 'green' | 'gray';
   hidratacaoStatus?: 'red' | 'yellow' | 'green' | 'gray';
-  medicacaoStatus?: 'red' | 'yellow' | 'green' | 'gray';
+  treinoStatus?: 'red' | 'yellow' | 'green' | 'gray';
+  bioimpedanciaStatus?: 'red' | 'yellow' | 'green' | 'gray';
   checkins?: string;
   adesao?: string;
 }
@@ -117,18 +118,22 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           </div>
 
           {/* Indicadores de Status */}
-          <div className="flex justify-center gap-6 py-4 border-t border-b border-gray-700">
+          <div className="flex justify-center gap-4 py-4 border-t border-b border-gray-700">
+            <div className="flex flex-col items-center gap-1">
+              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.hidratacaoStatus || 'gray')}`} />
+              <span className="text-xs text-gray-400">Hidrat.</span>
+            </div>
             <div className="flex flex-col items-center gap-1">
               <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.dietaStatus || 'gray')}`} />
               <span className="text-xs text-gray-400">Dieta</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.hidratacaoStatus || 'gray')}`} />
-              <span className="text-xs text-gray-400">Hidratação</span>
+              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.treinoStatus || 'gray')}`} />
+              <span className="text-xs text-gray-400">Treino</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.medicacaoStatus || 'gray')}`} />
-              <span className="text-xs text-gray-400">Medicação</span>
+              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.bioimpedanciaStatus || 'gray')}`} />
+              <span className="text-xs text-gray-400">Bioimp.</span>
             </div>
           </div>
 
@@ -221,14 +226,16 @@ const DashboardPacientes = () => {
               ...user,
               dietaStatus: stats?.dieta.status || 'gray',
               hidratacaoStatus: stats?.hidratacao.status || 'gray',
-              medicacaoStatus: stats?.medicacao.status || 'gray',
+              treinoStatus: stats?.treino.status || 'gray',
+              bioimpedanciaStatus: stats?.bioimpedancia.status || 'gray',
               checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
               adesao: stats && stats.dieta.porcentagem !== null 
                 ? `${Math.round((
                     (stats.dieta.porcentagem || 0) + 
                     (stats.hidratacao.porcentagem || 0) + 
-                    (stats.medicacao.porcentagem || 0)
-                  ) / 3)}%` 
+                    (stats.treino.porcentagem || 0) +
+                    (stats.bioimpedancia.porcentagem || 0)
+                  ) / 4)}%` 
                 : 'Sem dados',
               // Guardar stats completas para uso no modal
               adherenceStats: stats,
@@ -239,7 +246,8 @@ const DashboardPacientes = () => {
               ...user,
               dietaStatus: 'gray' as const,
               hidratacaoStatus: 'gray' as const,
-              medicacaoStatus: 'gray' as const,
+              treinoStatus: 'gray' as const,
+              bioimpedanciaStatus: 'gray' as const,
               checkins: '0/0',
               adesao: 'Sem dados',
             };

@@ -82,10 +82,6 @@ export class UsuarioService {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
 
-    console.log('=== FINDONE - Usuário retornado ===');
-    console.log('usuario:', usuario);
-    console.log('usuario.telefone:', usuario.telefone);
-
     return usuario;
   }
 
@@ -125,9 +121,6 @@ export class UsuarioService {
       if (updateUsuarioDto.admin !== undefined) dataToUpdate.admin = updateUsuarioDto.admin;
       if (updateUsuarioDto.ativo !== undefined) dataToUpdate.ativo = updateUsuarioDto.ativo;
 
-      console.log('=== UPDATE USER - dataToUpdate ===');
-      console.log(JSON.stringify(dataToUpdate, null, 2));
-
       const usuarioAtualizado = await this.prisma.usuario.update({
         where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
         data: dataToUpdate,
@@ -166,17 +159,29 @@ export class UsuarioService {
 
   /**
    * Calcula estatísticas de adesão do usuário comparando DiaCiclo (planejado) com Daily (realizado).
-   * Retorna porcentagens para dieta, hidratação (água) e medicação.
+   * Considera APENAS os dias que já passaram (data_dia <= hoje), não o ciclo inteiro.
+   * Retorna porcentagens para água, dieta, treino e bioimpedância.
    */
   async getAdherenceStats(userId: number | string) {
     const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
 
-    // Busca todos os DiaCiclos do usuário que têm um Daily associado
+    // Data de hoje (fim do dia para comparação justa)
+    const hoje = new Date();
+    hoje.setHours(23, 59, 59, 999);
+
+    // Busca todos os DiaCiclos do usuário com Daily associado
     const diaCiclos = await this.prisma.diaCiclo.findMany({
       where: { idUsuario: id },
       include: {
         daily: true,
       },
+      orderBy: { dia_ciclo: 'asc' },
+    });
+
+    // Filtra apenas os dias que já passaram (data_dia <= hoje)
+    const diasPassados = diaCiclos.filter(dc => {
+      if (!dc.data_dia) return false;
+      return new Date(dc.data_dia) <= hoje;
     });
 
     // Inicializa contadores
@@ -184,10 +189,12 @@ export class UsuarioService {
     let dietaCumprida = 0;
     let aguaTotal = 0;
     let aguaCumprida = 0;
-    let medicacaoTotal = 0;
-    let medicacaoCumprida = 0;
+    let treinoTotal = 0;
+    let treinoCumprido = 0;
+    let bioimpedanciaTotal = 0;
+    let bioimpedanciaCumprida = 0;
 
-    for (const dc of diaCiclos) {
+    for (const dc of diasPassados) {
       // Dieta: se tem_dieta está marcado no DiaCiclo, conta como esperado
       if (dc.tem_dieta) {
         dietaTotal++;
@@ -205,14 +212,19 @@ export class UsuarioService {
         }
       }
 
-      // Medicação: considera med_prescrita e/ou mounjaro
-      if (dc.tem_med_prescrita || dc.tem_mounjaro) {
-        medicacaoTotal++;
-        // Verifica se cumpriu pelo menos uma das medicações esperadas
-        const cumprouMed = (dc.tem_med_prescrita && dc.daily?.med_prescrita_check === true) ||
-                          (dc.tem_mounjaro && dc.daily?.mounjaro_check === true);
-        if (cumprouMed) {
-          medicacaoCumprida++;
+      // Treino: se tem_treino está marcado no DiaCiclo
+      if (dc.tem_treino) {
+        treinoTotal++;
+        if (dc.daily?.treino_check === true) {
+          treinoCumprido++;
+        }
+      }
+
+      // Bioimpedância: se tem_bioimpedancia está marcado no DiaCiclo
+      if (dc.tem_bioimpedancia) {
+        bioimpedanciaTotal++;
+        if (dc.daily?.bioimpedancia_check === true) {
+          bioimpedanciaCumprida++;
         }
       }
     }
@@ -220,7 +232,8 @@ export class UsuarioService {
     // Calcula porcentagens (evita divisão por zero)
     const dietaPct = dietaTotal > 0 ? Math.round((dietaCumprida / dietaTotal) * 100) : null;
     const aguaPct = aguaTotal > 0 ? Math.round((aguaCumprida / aguaTotal) * 100) : null;
-    const medicacaoPct = medicacaoTotal > 0 ? Math.round((medicacaoCumprida / medicacaoTotal) * 100) : null;
+    const treinoPct = treinoTotal > 0 ? Math.round((treinoCumprido / treinoTotal) * 100) : null;
+    const bioimpedanciaPct = bioimpedanciaTotal > 0 ? Math.round((bioimpedanciaCumprida / bioimpedanciaTotal) * 100) : null;
 
     // Determina cor do status baseado na porcentagem
     const getStatusColor = (pct: number | null): string => {
@@ -243,15 +256,21 @@ export class UsuarioService {
         porcentagem: aguaPct,
         status: getStatusColor(aguaPct),
       },
-      medicacao: {
-        total: medicacaoTotal,
-        cumprida: medicacaoCumprida,
-        porcentagem: medicacaoPct,
-        status: getStatusColor(medicacaoPct),
+      treino: {
+        total: treinoTotal,
+        cumprida: treinoCumprido,
+        porcentagem: treinoPct,
+        status: getStatusColor(treinoPct),
       },
-      // Dados agregados do ciclo atual (se houver)
-      totalDiaCiclos: diaCiclos.length,
-      diasComDaily: diaCiclos.filter(dc => dc.daily !== null).length,
+      bioimpedancia: {
+        total: bioimpedanciaTotal,
+        cumprida: bioimpedanciaCumprida,
+        porcentagem: bioimpedanciaPct,
+        status: getStatusColor(bioimpedanciaPct),
+      },
+      // Dados agregados: dias que já passaram vs dias com resposta
+      totalDiaCiclos: diasPassados.length,
+      diasComDaily: diasPassados.filter(dc => dc.daily !== null).length,
     };
   }
 }

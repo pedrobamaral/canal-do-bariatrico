@@ -68,7 +68,6 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
     // Carregar dados do usuário quando o modal abre
     React.useEffect(() => {
         if (mostrar) {
-            console.log('Carregando dados do usuário:', { nome, emailProp, telefoneProp });
             setName(nome || '');
             setEmail(emailProp || '');
             // Formatar telefone ao carregar (mantém +55 na frente por padrão)
@@ -153,7 +152,6 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
         e.preventDefault();
 
         if (!name && !email && !telefone && !selectedFile) {
-            console.log("Nenhum dado preenchido");
             toast.warn('Por favor, preencha algum campo.');
             return;
         }
@@ -166,7 +164,6 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
             if (selectedFile) {
                 toast.info('Comprimindo imagem...');
                 fotoBase64 = await compressAndConvertImage(selectedFile);
-                console.log('Tamanho da imagem comprimida:', (fotoBase64.length / 1024).toFixed(2), 'KB');
             }
 
             const data: any = {};
@@ -179,8 +176,6 @@ export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, e
                 data.telefone = phoneNumbers.startsWith(countryCode) ? phoneNumbers : `${countryCode}${phoneNumbers}`;
             }
             if (fotoBase64) data.foto = fotoBase64;
-
-            console.log("Enviando dados para update:", data);
 
             await updateData(usuarioId, data);
 

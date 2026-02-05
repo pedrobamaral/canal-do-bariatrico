@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-console.log('API URL configurada:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
@@ -14,7 +13,6 @@ const api = axios.create({
 // Interceptor para adicionar token nas requisições
 api.interceptors.request.use(
   (config) => {
-    console.log('Fazendo requisição para:', `${config.baseURL || ''}${config.url || ''}`);
     const token = localStorage.getItem('bari_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -52,9 +50,6 @@ export async function getAllUsers(): Promise<Usuario[]> {
   try {
     const response = await api.get('/usuarios');
     
-    console.log('=== API - getAllUsers ===');
-    console.log('response.data:', response.data);
-    
     if (response.data.status === 'sucesso') {
       return response.data.data;
     }
@@ -69,11 +64,6 @@ export async function getAllUsers(): Promise<Usuario[]> {
 export async function getUserById(id: number): Promise<Usuario> {
   try {
     const response = await api.get(`/usuarios/${id}`);
-    
-    console.log('=== API - getUserById ===');
-    console.log('response.data:', response.data);
-    console.log('response.data.data:', response.data.data);
-    console.log('response.data.data.telefone:', response.data.data?.telefone);
     
     if (response.data.status === 'sucesso') {
       return response.data.data;
@@ -106,16 +96,8 @@ export async function getCurrentUser(): Promise<Usuario> {
 
 export async function updateData(id: number, data: Partial<Usuario>) {
   try {
-    console.log('=== updateData ===');
-    console.log('Enviando para:', `/usuarios/${id}`);
-    console.log('Tamanho total do payload:', JSON.stringify(data).length, 'bytes');
     
     const response = await api.patch(`/usuarios/${id}`, data);
-    
-    console.log('Response status:', response.status);
-    console.log('Response data:', JSON.stringify(response.data, null, 2));
-    console.log('Response data.status:', response.data.status);
-    console.log('Response data.message:', response.data.message);
     
     if (response.data.status === 'sucesso') {
       return response.data.data;

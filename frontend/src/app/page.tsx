@@ -436,7 +436,6 @@ export default function Home() {
   }, [])
 
   const handlePostLoginFinish = (data: PostLoginData) => {
-    console.log("Dados pós-login:", data)
     setIsPostLoginModalOpen(false)
   }
 
@@ -1117,7 +1116,6 @@ export default function Home() {
         onCloseAction={() => setIsPostLoginModalOpen(false)}
         onFinishAction={handlePostLoginFinish}
         onFillAdditionalInfoAction={() => {
-          console.log("Preencher Informações Adicionais")
         }}
         usuarioId={usuarioId}
       />

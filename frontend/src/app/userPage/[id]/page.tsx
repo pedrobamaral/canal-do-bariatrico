@@ -126,9 +126,6 @@ export default function UserPage() {
 
     try {
       const userData = await getUserById(Number(id));
-      console.log("=== DADOS DO USUÁRIO ===");
-      console.log("userData:", userData);
-      console.log("userData.telefone:", userData.telefone);
       setUsuario(userData);
       setError(false);
 
@@ -181,11 +178,6 @@ export default function UserPage() {
       
       try {
         const userData = await getUserById(Number(id));
-        console.log("=== DADOS RECEBIDOS DO BACKEND ===");
-        console.log("userData completo:", userData);
-        console.log("userData.telefone:", userData.telefone);
-        console.log("typeof userData.telefone:", typeof userData.telefone);
-        console.log("usuario.telefone é truthy?", !!userData.telefone);
         
         setUsuario(userData);
         setError(false);

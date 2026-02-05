@@ -54,9 +54,6 @@ export class UsuarioController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto,) {
     try {
-      console.log('=== CONTROLLER UPDATE ===');
-      console.log('ID:', id);
-      console.log('DTO recebido:', JSON.stringify(updateUsuarioDto, null, 2));
       const result = await this.usuarioService.update(+id, updateUsuarioDto);
       return { status: 'sucesso', data: result };
     } catch (error) {

@@ -82,10 +82,6 @@ export class UsuarioService {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
 
-    console.log('=== FINDONE - Usuário retornado ===');
-    console.log('usuario:', usuario);
-    console.log('usuario.telefone:', usuario.telefone);
-
     return usuario;
   }
 
@@ -124,9 +120,6 @@ export class UsuarioService {
       if (updateUsuarioDto.meta !== undefined) dataToUpdate.meta = updateUsuarioDto.meta;
       if (updateUsuarioDto.admin !== undefined) dataToUpdate.admin = updateUsuarioDto.admin;
       if (updateUsuarioDto.ativo !== undefined) dataToUpdate.ativo = updateUsuarioDto.ativo;
-
-      console.log('=== UPDATE USER - dataToUpdate ===');
-      console.log(JSON.stringify(dataToUpdate, null, 2));
 
       const usuarioAtualizado = await this.prisma.usuario.update({
         where: { id: typeof id === 'string' ? parseInt(id, 10) : id },

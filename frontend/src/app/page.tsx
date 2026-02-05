@@ -1,4 +1,4 @@
-// app/page.tsx (ou o arquivo da sua Home)
+// app/page.tsx
 "use client"
 
 import React, { useEffect, useState } from "react"
@@ -14,10 +14,8 @@ import {
 import Image from "next/image"
 import { FaArrowRight } from "react-icons/fa6"
 
-// ✅ Navbar nova
 import Navbar from "@/components/Navbar"
 
-// ✅ Modais
 import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
 import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal"
 import { getUserById } from "@/api/api"
@@ -335,12 +333,11 @@ function calcularTrajetoria({
   return data
 }
 
-// ✅ 1 SELECT com optgroup
 type IntervencaoSelectValue =
   | ""
   | "dieta_treino"
   | "med_mounjaro"
-  | "med_ozempic" // ✅ ADICIONADO
+  | "med_ozempic"
   | "med_topiramato"
   | "med_naltrexona_bupropiona"
   | "med_outro"
@@ -378,10 +375,6 @@ export default function Home() {
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
   const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false)
 
-  const handleConseguiResultados = () => {
-    setIsHealthModalOpen(true)
-  }
-
   const handleHealthSurveyClose = () => {
     setIsHealthModalOpen(false)
   }
@@ -406,29 +399,26 @@ export default function Home() {
     )
   }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipoCirurgia])
 
-  // Abre o modal pós-login automaticamente se o usuário não preencheu os dados
   useEffect(() => {
     const token = localStorage.getItem("bari_token")
     if (!token) return
 
-    // Decodifica o token para pegar o ID do usuário
     const checkUserData = async () => {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
+        const payload = JSON.parse(atob(token.split(".")[1]))
         const userId = payload.sub
         setUsuarioId(userId)
 
-        // Busca os dados do usuário para verificar se já preencheu os dados obrigatórios
         const userData = await getUserById(userId)
-        
-        // Verifica se os campos obrigatórios estão preenchidos
-        const hasRequiredData = userData.peso && userData.altura && userData.sexo && userData.meta
-        
+
+        const hasRequiredData =
+          userData.peso && userData.altura && userData.sexo && userData.meta
+
         if (!hasRequiredData) {
           setIsPostLoginModalOpen(true)
         }
       } catch (error) {
-        console.error('Erro ao verificar dados do usuário:', error)
+        console.error("Erro ao verificar dados do usuário:", error)
       }
     }
 
@@ -453,16 +443,26 @@ export default function Home() {
         }}
       >
         <div style={{ maxWidth: "1200px", width: "100%" }}>
+          {/* ✅ GRID PRINCIPAL (mobile centralizado, desktop intacto) */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: "30px",
+
+              // ✅ SOMENTE MOBILE:
+              maxWidth: isMobile ? "520px" : undefined,
+              margin: isMobile ? "0 auto" : undefined,
+              width: "100%",
             }}
           >
+            {/* ✅ COLUNA ESQUERDA */}
             <div
               style={{
-                minWidth: "350px",
+                // ✅ SOMENTE MOBILE:
+                minWidth: isMobile ? "unset" : "350px",
+                width: "100%",
+
                 display: "flex",
                 flexDirection: "column",
                 gap: "24px",
@@ -492,9 +492,33 @@ export default function Home() {
                     padding: "32px",
                   }}
                 >
-                  <SliderInput label="Peso" unit="kg" value={peso} min={25} max={300} step={1} onChange={setPeso} />
-                  <SliderInput label="Altura" unit="cm" value={altura} min={100} max={230} step={1} onChange={setAltura} />
-                  <SliderInput label="Idade" unit="anos" value={idade} min={18} max={80} step={1} onChange={setIdade} />
+                  <SliderInput
+                    label="Peso"
+                    unit="kg"
+                    value={peso}
+                    min={25}
+                    max={300}
+                    step={1}
+                    onChange={setPeso}
+                  />
+                  <SliderInput
+                    label="Altura"
+                    unit="cm"
+                    value={altura}
+                    min={100}
+                    max={230}
+                    step={1}
+                    onChange={setAltura}
+                  />
+                  <SliderInput
+                    label="Idade"
+                    unit="anos"
+                    value={idade}
+                    min={18}
+                    max={80}
+                    step={1}
+                    onChange={setIdade}
+                  />
 
                   <div style={{ marginTop: "32px" }}>
                     <Toggle label="Fumante" checked={fumante} onChange={setFumante} />
@@ -518,7 +542,9 @@ export default function Home() {
                         <select
                           className="pill-select"
                           value={diabetes}
-                          onChange={(e) => setDiabetes(e.target.value as DiabetesOption)}
+                          onChange={(e) =>
+                            setDiabetes(e.target.value as DiabetesOption)
+                          }
                         >
                           <option value="sem_diabetes">Sem diabetes</option>
                           <option value="pre_diabetes">Pré-diabetes</option>
@@ -530,7 +556,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* ✅ INTERVENÇÃO: 1 SELECT */}
+              {/* ✅ INTERVENÇÃO */}
               <div>
                 <label
                   style={{
@@ -570,7 +596,12 @@ export default function Home() {
                     </label>
                   </div>
 
-                  <div style={{ marginBottom: intervencaoData.value === "med_outro" ? "14px" : 0 }}>
+                  <div
+                    style={{
+                      marginBottom:
+                        intervencaoData.value === "med_outro" ? "14px" : 0,
+                    }}
+                  >
                     <div className="pill-select-wrapper">
                       <select
                         className="pill-select"
@@ -580,7 +611,8 @@ export default function Home() {
                           setIntervencaoData((prev) => ({
                             ...prev,
                             value: v,
-                            medicamentoOutro: v === "med_outro" ? prev.medicamentoOutro : "",
+                            medicamentoOutro:
+                              v === "med_outro" ? prev.medicamentoOutro : "",
                             tipoCirurgia: mapSelectToTipoCirurgia(v),
                           }))
                         }}
@@ -593,9 +625,11 @@ export default function Home() {
 
                         <optgroup label="Canetinhas Emagrecedoras">
                           <option value="med_mounjaro">Mounjaro</option>
-                          <option value="med_ozempic">Ozempic</option> {/* ✅ ADICIONADO */}
+                          <option value="med_ozempic">Ozempic</option>
                           <option value="med_topiramato">Topiramato</option>
-                          <option value="med_naltrexona_bupropiona">Naltrexona + bupropiona</option>
+                          <option value="med_naltrexona_bupropiona">
+                            Naltrexona + bupropiona
+                          </option>
                           <option value="med_outro">Outro</option>
                         </optgroup>
 
@@ -633,13 +667,25 @@ export default function Home() {
                     lineHeight: 1.3,
                   }}
                 >
-                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter de prescrição ou recomendação médica.
-                  Tanto a bariátrica quanto os medicamentos precisam de dieta e treino para resultados a longo prazo
+                  <b>Obs:</b> Informações autorreferidas pelo paciente, sem caráter de
+                  prescrição ou recomendação médica. Tanto a bariátrica quanto os
+                  medicamentos precisam de dieta e treino para resultados a longo
+                  prazo
                 </div>
               </div>
             </div>
 
-            <div style={{ minWidth: "350px", height: "100%", alignSelf: "stretch" }}>
+            {/* ✅ COLUNA DIREITA (GRÁFICO) */}
+            <div
+              style={{
+                // ✅ SOMENTE MOBILE:
+                minWidth: isMobile ? "unset" : "350px",
+                width: "100%",
+
+                height: "100%",
+                alignSelf: "stretch",
+              }}
+            >
               <div
                 style={{
                   background: "white",
@@ -677,7 +723,9 @@ export default function Home() {
                       <select
                         className="pill-select"
                         value={metric}
-                        onChange={(e) => setMetric(e.target.value as "peso" | "imc")}
+                        onChange={(e) =>
+                          setMetric(e.target.value as "peso" | "imc")
+                        }
                       >
                         <option value="peso">Peso (kg)</option>
                         <option value="imc">IMC</option>
@@ -688,25 +736,44 @@ export default function Home() {
 
                 <div style={{ flex: 1, minHeight: "300px" }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                    <AreaChart
+                      data={chartData}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                    >
                       <defs>
                         <linearGradient id="colorMain" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={CORES.roxoPrincipal} stopOpacity={0.3} />
-                          <stop offset="95%" stopColor={CORES.roxoPrincipal} stopOpacity={0} />
+                          <stop
+                            offset="5%"
+                            stopColor={CORES.roxoPrincipal}
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={CORES.roxoPrincipal}
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
 
                       <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
                       <XAxis
                         dataKey="month"
-                        label={{ value: "Meses após cirurgia", position: "insideBottomRight", offset: -10 }}
+                        label={{
+                          value: "Meses após cirurgia",
+                          position: "insideBottomRight",
+                          offset: -10,
+                        }}
                         stroke={CORES.cinzaIcone}
                         tickCount={7}
                         domain={[0, 60]}
                         type="number"
                       />
                       <YAxis
-                        label={{ value: metric === "peso" ? "Peso (kg)" : "IMC", angle: -90, position: "insideLeft" }}
+                        label={{
+                          value: metric === "peso" ? "Peso (kg)" : "IMC",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
                         stroke={CORES.cinzaIcone}
                         allowDecimals={false}
                       />
@@ -756,8 +823,12 @@ export default function Home() {
                     transition: "background 0.2s",
                     marginTop: "24px",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = CORES.roxoHover)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = CORES.roxoPrincipal)
+                  }
                   onClick={() => setIsHealthModalOpen(true)}
                 >
                   Consegui Resultados
@@ -766,17 +837,22 @@ export default function Home() {
             </div>
           </div>
 
-          {/* cards finais mantidos iguais */}
+          {/* ✅ CARDS FINAIS (mobile centralizado, desktop intacto) */}
           <div
             style={{
-              maxWidth: "1200px",
               width: "100%",
               marginTop: "60px",
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: "32px",
+
+              // ✅ SOMENTE MOBILE:
+              maxWidth: isMobile ? "520px" : "1200px",
+              marginLeft: isMobile ? "auto" : undefined,
+              marginRight: isMobile ? "auto" : undefined,
             }}
           >
+            {/* Card 1 */}
             <div
               style={{
                 background: "white",
@@ -854,6 +930,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Card 2 */}
             <div
               style={{
                 background: "white",
@@ -931,6 +1008,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Card 3 */}
             <div
               style={{
                 background: "white",
@@ -1008,7 +1086,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Plataforma de Treino */}
+            {/* Card 4 */}
             <div
               style={{
                 background: "white",
@@ -1046,7 +1124,8 @@ export default function Home() {
                     color: "#555555",
                   }}
                 >
-                  Acesse sua plataforma de treinos personalizada para potencializar seus resultados.
+                  Acesse sua plataforma de treinos personalizada para potencializar
+                  seus resultados.
                 </p>
 
                 <div
@@ -1057,10 +1136,9 @@ export default function Home() {
                     gap: "8px",
                   }}
                 >
-
                   <div style={{ position: "relative", width: "100px", height: "50px" }}>
                     <Image
-                      src="/images/hotmart.png" 
+                      src="/images/hotmart.png"
                       alt="Hotmart"
                       fill
                       style={{ objectFit: "contain" }}
@@ -1098,19 +1176,18 @@ export default function Home() {
                   flexShrink: 0,
                 }}
               >
-                <Image
-                  src="/images/bbfit.png"
-                  alt="BB Fit"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
+                <Image src="/images/bbfit.png" alt="BB Fit" fill style={{ objectFit: "cover" }} />
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} usuarioId={usuarioId} />
+      <HealthSurveyModal
+        isOpen={isHealthModalOpen}
+        onClose={handleHealthSurveyClose}
+        usuarioId={usuarioId}
+      />
 
       <PostLoginModal
         isOpen={isPostLoginModalOpen}

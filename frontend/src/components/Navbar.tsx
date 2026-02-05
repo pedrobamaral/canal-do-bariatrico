@@ -275,8 +275,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <FiEdit2 size={18} />
-                <span className="font-medium">Cadastro</span>
+                <FiEdit2 size={28} />
+                <span className="font-medium text-lg">Cadastro</span>
               </Link>
 
               <Link
@@ -284,8 +284,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <FiUser size={18} />
-                <span className="font-medium">Login</span>
+                <FiUser size={28} />
+                <span className="font-medium text-lg">Login</span>
               </Link>
 
               <Link
@@ -293,8 +293,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <MdCalculate size={18} />
-                <span className="font-medium">Calculadora</span>
+                <MdCalculate size={28} />
+                <span className="font-medium text-lg">Calculadora</span>
               </Link>
             </>
           ) : (
@@ -304,8 +304,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <FiUser size={18} />
-                <span className="font-medium">Perfil de Usuário</span>
+                <FiUser size={28} />
+                <span className="font-medium text-lg">Perfil de Usuário</span>
               </Link>
 
               <Link
@@ -313,8 +313,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <MdCalculate size={18} />
-                <span className="font-medium">Calculadora</span>
+                <MdCalculate size={28} />
+                <span className="font-medium text-lg">Calculadora</span>
               </Link>
 
               <Link
@@ -322,8 +322,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3"
               >
-                <FaUserMd size={18} />
-                <span className="font-medium">Pacientes</span>
+                <FaUserMd size={28} />
+                <span className="font-medium text-lg">Pacientes</span>
               </Link>
 
               <button
@@ -334,8 +334,8 @@ export default function Navbar() {
                 }}
                 className="mt-2 flex items-center gap-3 text-left"
               >
-                <IoLogOutOutline size={20} />
-                <span className="font-medium">Sair</span>
+                <IoLogOutOutline size={28} />
+                <span className="font-medium text-lg">Sair</span>
               </button>
             </>
           )}

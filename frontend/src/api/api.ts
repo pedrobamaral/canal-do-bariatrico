@@ -157,13 +157,14 @@ export interface AdherenceMetric {
 export interface UserAdherenceStats {
   dieta: AdherenceMetric;
   hidratacao: AdherenceMetric;
-  medicacao: AdherenceMetric;
+  treino: AdherenceMetric;
+  bioimpedancia: AdherenceMetric;
   totalDiaCiclos: number;
   diasComDaily: number;
 }
 
 /**
- * Busca estatísticas de adesão de um usuário (dieta, hidratação, medicação).
+ * Busca estatísticas de adesão de um usuário (água, dieta, treino, bioimpedância).
  * Compara DiaCiclo (planejado) com Daily (realizado) e retorna porcentagens.
  */
 export async function getUserAdherenceStats(userId: number): Promise<UserAdherenceStats | null> {

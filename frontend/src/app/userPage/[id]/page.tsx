@@ -111,11 +111,10 @@ export default function UserPage() {
     if (!id) return;
 
     try {
-      const userData = await getUserById(Number(id));
-      console.log("=== DADOS DO USUÁRIO ===");
-      console.log("userData:", userData);
-      console.log("userData.telefone:", userData.telefone);
-      setUsuario(userData);
+    const userData = await getUserById(Number(id));
+    // debug log removido para producao
+    // console.log("Dados do usuário obtidos:", userData);
+    setUsuario(userData);
       setError(false);
 
       const token = localStorage.getItem("bari_token");
@@ -165,13 +164,10 @@ export default function UserPage() {
     const fetchInitialData = async () => {
       setLoading(true);
       
-      try {
-        const userData = await getUserById(Number(id));
-        console.log("=== DADOS RECEBIDOS DO BACKEND ===");
-        console.log("userData completo:", userData);
-        console.log("userData.telefone:", userData.telefone);
-        console.log("typeof userData.telefone:", typeof userData.telefone);
-        console.log("usuario.telefone é truthy?", !!userData.telefone);
+        try {
+          // debug log removido para producao
+          // console.log(`Buscando dados para usuário ID: ${id}`);
+          const userData = await getUserById(Number(id));
         
         setUsuario(userData);
         setError(false);

@@ -170,11 +170,7 @@ export async function getUserById(id: number): Promise<Usuario> {
   try {
     const response = await api.get(`/usuarios/${id}`);
 
-    // logs úteis do seu código antigo
-    console.log("=== API - getUserById ===");
-    console.log("response.data:", response.data);
-    console.log("response.data.data:", (response.data as any)?.data);
-    console.log("response.data.data.telefone:", (response.data as any)?.data?.telefone);
+    // remove debug logs
 
     return unwrapData<Usuario>(response.data);
   } catch (error: any) {
@@ -197,16 +193,13 @@ export async function getIdUser(id: string) {
 // API 1 (mantido)
 export async function updateData(id: number, data: Partial<Usuario>) {
   try {
-    console.log("=== updateData ===");
-    console.log("Enviando para:", `/usuarios/${id}`);
-    console.log("Tamanho total do payload:", JSON.stringify(data).length, "bytes");
-
     const response = await api.patch(`/usuarios/${id}`, data);
-
-    console.log("Response status:", response.status);
-    console.log("Response data:", JSON.stringify(response.data, null, 2));
-    console.log("Response data.status:", (response.data as any)?.status);
-    console.log("Response data.message:", (response.data as any)?.message);
+    // remove debug logs
+    // console.log(`Atualizando usuário ${id} com dados:`, data);
+    // console.log("Resposta da atualização:", response.data);
+    // console.log("Status da resposta:", response.status);
+    // console.log("Headers da resposta:", response.headers);
+    // console.log("Dados brutos da resposta:", response);
 
     return unwrapData(response.data);
   } catch (error: any) {

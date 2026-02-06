@@ -267,7 +267,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
   if (!isOpen) return null;
 
   const handleFinish = () => {
-    console.log("Fluxo Medicamentos Finalizado!");
+    // console.log("Dados do medicamento coletados, pronto para enviar para API");
     onClose();
   };
 

@@ -420,7 +420,7 @@ export default function Home() {
   }, [])
 
   const handlePostLoginFinish = (data: PostLoginData) => {
-    console.log("Dados pós-login:", data)
+    // debug log removed
     localStorage.setItem("postLoginModalDone", "1")
     setIsPostLoginModalOpen(false)
   }
@@ -1102,7 +1102,7 @@ export default function Home() {
         onClose={() => setIsPostLoginModalOpen(false)}
         onFinish={handlePostLoginFinish}
         onFillAdditionalInfo={() => {
-          console.log("Preencher Informações Adicionais")
+          // debug log removido
         }}
       />
 

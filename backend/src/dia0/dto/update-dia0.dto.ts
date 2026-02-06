@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateDia0Dto } from './create-dia0.dto';
-
-export class UpdateDia0Dto extends PartialType(CreateDia0Dto) {}
+export class UpdateDia0Dto {
+  idCiclo?: number;
+  quer_msg?: boolean;
+  iniciou_medicamento?: boolean;
+  dia_iniciar_med?: Date;
+  dia1?: Date;
+  dia0?: Date;
+}

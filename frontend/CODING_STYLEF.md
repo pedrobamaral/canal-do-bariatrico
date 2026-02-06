@@ -62,3 +62,18 @@ A estrutura de pastas deve seguir as convenções do Next.js para organização 
     - `docs:` Alterações na documentação.
     - `style:` Alterações de formatação do código, a forma como ele esta escrita.
     - `refactor:` Refatoração de código, não corrige e nem adicione nada, serve como uma otimização.
+
+### 6. Imports e Alias
+
+- Use o alias `@/` para todos os imports internos (aponta para a pasta `src/`).
+- Ordene imports em blocos: (1) React/Next (2) libs externas (3) internos (4) assets/styles. O ESLint já roda `simple-import-sort`.
+- Remova imports não usados — o ESLint está configurado para apontar/remover quando possível.
+
+### 7. Checklist para PR (Frontend)
+
+- **Lint:** `npm run lint` (sem warnings de `no-console` e sem erros críticos).
+- **Build:** `npm run build` (garantir que a build Next não quebrou o fluxo afetado).
+- **Fluxo testado:** Confirme manualmente o fluxo afetado no `dev` (ex: login, cadastro, navegação).
+- **Commits claros:** Use mensagens pequenas e descritivas (ex.: `refactor: padroniza imports do modal PostLoginModal`).
+
+Seguindo estas regras ajudamos a manter o projeto consistente e fácil de manter até o MVP.

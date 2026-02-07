@@ -189,7 +189,8 @@ export async function createUser(nome: string, email: string, senha: string, tel
       nome,
       email,
       senha,
-      telefone
+      telefone,
+      ativoCiclo : false,
     });
     
     if (response.data.status === 'sucesso') {
@@ -338,7 +339,12 @@ export async function createDia0(usuarioId: number, data?: any) {
 
 export async function createCiclo(usuarioId: number, dia0Id: number, data?: any) {
   try {
-    const response = await api.post(`/ciclo`, {
+
+    const maxPontosValue = 87 + 
+      (data.mounjaro ? 3 : 0) + 
+      (data.freq_med_prescrita > 0 ? Math.floor(28 / data.freq_med_prescrita) : 0);
+    
+    const responseCiclo = await api.post(`/ciclo`, {
       idUsuario: usuarioId,
       dia0Id: dia0Id,
       numCiclo: 1,
@@ -349,14 +355,23 @@ export async function createCiclo(usuarioId: number, dia0Id: number, data?: any)
       agua: true,
       bioimpedancia: true,
       consulta: true,
+      maxPontos : maxPontosValue,
       ...data,
     });
+
+    console.log('POST OK');
+
+    const responseD0 = await api.patch(`/dia0/${dia0Id}`, {
+      idCiclo : responseCiclo.data.data.id
+    });
+
+    console.log('PATCH OK');
     
-    if (response.data.status === 'sucesso' || response.data.data) {
-      return response.data.data;
+    if (responseCiclo.data.status === 'sucesso' && responseD0.data.status === 'sucesso') {
+      return {ciclo: responseCiclo.data.data, dia0: responseD0.data.data};
     }
     
-    throw new Error(response.data.message || 'Erro ao criar ciclo');
+    throw new Error(responseCiclo.data.message || 'Erro ao criar ciclo');
   } catch (error: any) {
     console.error('Erro ao criar ciclo:', error);
     throw error;

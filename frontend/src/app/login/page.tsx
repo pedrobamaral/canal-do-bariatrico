@@ -154,7 +154,39 @@ const LoginForm: React.FC = () => {
         window.dispatchEvent(new Event("auth-changed"));
       }
 
-      router.push("/");
+      // tenta obter o id do usuário para redirecionar para sua página
+      let userId: number | undefined;
+      if (data.user && (data.user.id || data.user.userId || data.user.usuarioId)) {
+        userId = data.user.id || data.user.userId || data.user.usuarioId;
+      }
+
+      // se não veio no payload, tenta ler do localStorage (caso o backend retorne somente token)
+      if (!userId) {
+        const stored = localStorage.getItem("bari_user");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            userId = parsed?.id || parsed?.userId || parsed?.usuarioId;
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
+      // último recurso: decodifica o token
+      if (!userId) {
+        const token = data.access_token || localStorage.getItem("bari_token");
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            userId = payload?.sub;
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
+      router.push(userId ? `/userPage/${userId}` : "/userPage");
       router.refresh();
     } catch (error: any) {
       setError(error.message);

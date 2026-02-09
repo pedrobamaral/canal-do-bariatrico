@@ -378,7 +378,7 @@ export default function UserPage() {
       {/* PROGRESSO ou TABELA (se admin) */}
       {usuario.admin ? (
         <div className="max-w-6xl mx-auto p-6 mt-44">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quantidade de pacientes ativos: <span className="font-semibold">{patients.length}</span></h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quantidade de pacientes ativos: <span className="font-semibold">{patients.filter((p) => !p.admin).length}</span></h3>
           <PatientsTable
             filteredPatients={filteredPatients}
             loading={loadingPatients}

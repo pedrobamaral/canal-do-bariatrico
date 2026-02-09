@@ -94,14 +94,22 @@ const PatientsTable: React.FC<Props> = ({ filteredPatients, loading, onPatientCl
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
         </div>
-      ) : filteredPatients.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-600">
-          <FaSearch className="text-4xl mb-4 opacity-50" />
-          <p>Nenhum paciente encontrado</p>
-        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-black border-collapse">
+        // Filtra qualquer usuário admin por segurança
+        (() => {
+          const visiblePatients = filteredPatients.filter((p) => !p.admin);
+          if (visiblePatients.length === 0) {
+            return (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-600">
+                <FaSearch className="text-4xl mb-4 opacity-50" />
+                <p>Nenhum paciente encontrado</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="overflow-x-auto">
+              <table className="w-full text-black border-collapse">
             <thead>
               <tr className="text-[10px] md:text-xs uppercase font-bold text-center bg-gray-300">
                 <th className="py-4 md:py-6 px-2 md:px-4">Nome</th>
@@ -117,7 +125,7 @@ const PatientsTable: React.FC<Props> = ({ filteredPatients, loading, onPatientCl
             </thead>
 
             <tbody className="text-sm font-medium">
-              {filteredPatients.map((patient) => (
+              {visiblePatients.map((patient) => (
                 <tr
                   key={patient.id}
                   className="border-t border-gray-400 hover:bg-gray-200 transition cursor-pointer"
@@ -155,10 +163,12 @@ const PatientsTable: React.FC<Props> = ({ filteredPatients, loading, onPatientCl
                     </button>
                   </td>
                 </tr>
-              ))}
+                ))}
             </tbody>
           </table>
         </div>
+          );
+          })()
       )}
     </div>
   );

@@ -216,10 +216,13 @@ const DashboardPacientes = () => {
     setLoading(true);
     try {
       const data = await getAllUsers();
-      
+
+      // Remover usuários com role admin antes de processar
+      const nonAdminUsers = data.filter((u: Usuario) => !u.admin);
+
       // Busca estatísticas de adesão para cada paciente em paralelo
       const patientsWithStats = await Promise.all(
-        data.map(async (user: Usuario) => {
+        nonAdminUsers.map(async (user: Usuario) => {
           try {
             const stats = await getUserAdherenceStats(user.id);
             return {
@@ -398,7 +401,7 @@ const DashboardPacientes = () => {
 
         {/* Contador de resultados */}
         <p className="text-center text-gray-400 text-sm">
-          {filteredPatients.length} paciente{filteredPatients.length !== 1 ? 's' : ''} encontrado{filteredPatients.length !== 1 ? 's' : ''}
+          {filteredPatients.filter((p) => !p.admin).length} paciente{filteredPatients.filter((p) => !p.admin).length !== 1 ? 's' : ''} encontrado{filteredPatients.filter((p) => !p.admin).length !== 1 ? 's' : ''}
         </p>
       </div>
 

@@ -102,7 +102,7 @@ const StepQuestion = ({
     <FaPills className="text-[#6A38F3] text-4xl opacity-80" />
 
     <p className="text-sm text-gray-600 text-center max-w-xs">
-      Você faz uso contínuo de algum medicamento?
+      Você vai tomar algum medicamento manipulado para emagrecer?
     </p>
 
     <div className="flex gap-4 w-full">

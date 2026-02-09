@@ -51,6 +51,13 @@ export class UsuarioService {
         id: true,
         nome: true,
         email: true,
+        telefone: true,
+        foto: true,
+        peso: true,
+        altura: true,
+        meta: true,
+        admin: true,
+        ativo: true,
         dataCriacao: true,
       },
     });

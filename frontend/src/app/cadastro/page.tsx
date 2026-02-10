@@ -65,6 +65,7 @@ type FormInputProps = {
 
 type SignUpFormData = {
   name: string;
+  sobrenome: string;
   email: string;
   pais: string;
   codPais: string;
@@ -128,19 +129,20 @@ const FormInput: React.FC<FormInputProps> = ({
           maxLength={maxLength}
           style={{
             width: "100%",
-            height: "54px",
-            padding: "0 52px 0 22px",
-            borderRadius: "32px",
+            height: "48px",
+            padding: "0 16px",
+            borderRadius: "24px",
             background: "#F3EFDD",
             border: "none",
             color: "#19191A",
-            fontSize: "16px",
+            fontSize: "15px",
             fontWeight: 500,
-            lineHeight: "24px",
+            lineHeight: "20px",
             letterSpacing: "0.01em",
             outline: isPassword ? "2px solid #6F3CF6" : "none",
             boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08)",
             transition: "outline .2s",
+            boxSizing: "border-box",
           }}
         />
         {isPassword && (
@@ -178,6 +180,7 @@ const SignUpForm: React.FC = () => {
 
   const [formData, setFormData] = useState<SignUpFormData>({
     name: "",
+    sobrenome: "",
     email: "",
     pais: "Brasil",
     codPais: "+55",
@@ -219,7 +222,8 @@ const SignUpForm: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    if (!formData.name || !formData.email || !formData.password || !formData.telefone) {
+    // Validações básicas
+    if (!formData.name || !formData.sobrenome || !formData.email || !formData.password || !formData.telefone) {
       setError("Preencha todos os campos obrigatórios!");
       return;
     }
@@ -250,11 +254,8 @@ const SignUpForm: React.FC = () => {
     try {
       const phoneNumbers = formData.telefone.replace(/\D/g, "");
       const countryCode = selectedPaisInfo.codigo.replace(/\D/g, "");
-      const phoneWithCountryCode = phoneNumbers.startsWith(countryCode)
-        ? phoneNumbers
-        : `${countryCode}${phoneNumbers}`;
-
-      const response = await createUser(formData.name, formData.email, formData.password, phoneWithCountryCode);
+      const phoneWithCountryCode = `${countryCode}${phoneNumbers}`;
+      const response = await createUser(formData.name, formData.sobrenome, formData.email, formData.password, phoneWithCountryCode);
 
       if (response && response.status === "sucesso") {
         setSuccess("Cadastro realizado! Redirecionando para o login...");
@@ -275,11 +276,11 @@ const SignUpForm: React.FC = () => {
       className="authCard"
       style={{
         width: "100%",
-        maxWidth: "530px",
+        maxWidth: "460px",
         background: "#19191A",
-        borderRadius: "36px",
-        padding: "48px 50px 40px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.38)",
+        borderRadius: "24px",
+        padding: "40px 44px 32px",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.28)",
       }}
       role="form"
       aria-labelledby="signup-title"
@@ -289,11 +290,11 @@ const SignUpForm: React.FC = () => {
         className="authTitle"
         style={{
           color: "#fff",
-          fontSize: "2.25rem",
+          fontSize: "1.5rem",
           fontWeight: 800,
           textAlign: "center",
-          marginBottom: "2rem",
-          letterSpacing: "0.09em",
+          marginBottom: "1.5rem",
+          letterSpacing: "0.06em",
           fontFamily: "'Montserrat', 'Arial', sans-serif",
         }}
       >
@@ -301,7 +302,8 @@ const SignUpForm: React.FC = () => {
       </h2>
 
       <form onSubmit={handleSubmit} autoComplete="off">
-        <FormInput id="name" label="Nome Completo" type="text" value={formData.name} onChange={handleChange} required />
+        <FormInput id="name" label="Nome" type="text" value={formData.name} onChange={handleChange} required />
+        <FormInput id="sobrenome" label="Sobrenome" type="text" value={formData.sobrenome} onChange={handleChange} required />
         <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
 
         <div style={{ marginBottom: "20px" }}>
@@ -314,9 +316,9 @@ const SignUpForm: React.FC = () => {
               value={formData.pais}
               onChange={handleChange}
               style={{
-                height: "54px",
+                height: "48px",
                 padding: "0 8px",
-                borderRadius: "32px 0 0 32px",
+                borderRadius: "24px 0 0 24px",
                 background: "#F3EFDD",
                 border: "none",
                 color: "#19191A",
@@ -324,8 +326,9 @@ const SignUpForm: React.FC = () => {
                 fontWeight: 600,
                 cursor: "pointer",
                 transition: "background 0.2s",
-                minWidth: "90px",
-                maxWidth: "110px",
+                minWidth: "86px",
+                boxSizing: "border-box",
+                appearance: "none",
               }}
               onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
               onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
@@ -347,15 +350,18 @@ const SignUpForm: React.FC = () => {
               maxLength={15}
               style={{
                 flex: 1,
-                height: "54px",
-                padding: "0 16px",
-                borderRadius: "0 32px 32px 0",
+                height: "48px",
+                padding: "0 12px",
+                borderRadius: "0 24px 24px 0",
                 background: "#F3EFDD",
                 border: "none",
                 color: "#19191A",
-                fontSize: "16px",
+                fontSize: "15px",
                 fontWeight: 500,
-                lineHeight: "24px",
+                lineHeight: "20px",
+                minWidth: 0,
+                boxSizing: "border-box",
+                overflow: "hidden",
                 transition: "background 0.2s",
                 minWidth: 0,
               }}
@@ -380,14 +386,14 @@ const SignUpForm: React.FC = () => {
           disabled={loading}
           style={{
             width: "100%",
-            height: "54px",
-            borderRadius: "32px",
+            height: "48px",
+            borderRadius: "24px",
             background: loading ? "#8e6ff7" : "#6F3CF6",
             color: "#fff",
             border: "none",
             fontWeight: 800,
             letterSpacing: "0.04em",
-            fontSize: "1rem",
+            fontSize: "0.95rem",
             cursor: loading ? "not-allowed" : "pointer",
             boxShadow: "0 2px 8px rgba(111,60,246,0.12)",
             transition: "background .2s",

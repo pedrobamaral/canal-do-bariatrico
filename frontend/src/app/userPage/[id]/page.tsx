@@ -7,6 +7,7 @@ import PatientsTable, { PatientData } from '@/components/PatientsTable';
 import { getAllUsers, getUserAdherenceStats, UserAdherenceStats } from '@/api/api';
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
+import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal";
 import { toast, ToastContainer } from "react-toastify";
 import {
   HiOutlineClipboardList,
@@ -119,6 +120,7 @@ export default function UserPage() {
   const [error, setError] = useState(false);
   const [userStats, setUserStats] = useState<UserAdherenceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false);
 
   const fetchAllPageData = async () => {
     if (!id) return;
@@ -290,6 +292,24 @@ export default function UserPage() {
     fetchUserStats();
   }, [usuario]);
 
+  // Abre o modal pós-login na página de perfil do próprio usuário se faltar dados obrigatórios
+  useEffect(() => {
+    if (!usuario || !Dono) return;
+    
+    // Verifica se os campos obrigatórios estão preenchidos
+    const hasRequiredData = usuario.peso && usuario.altura && usuario.sexo && usuario.meta;
+    
+    if (!hasRequiredData) {
+      setIsPostLoginModalOpen(true);
+    }
+  }, [usuario, Dono]);
+
+  const handlePostLoginFinish = (data: PostLoginData) => {
+    setIsPostLoginModalOpen(false);
+    // Recarrega os dados do usuário após salvar
+    fetchAllPageData();
+  };
+
   const getStatusColor = (color: string) => {
     switch (color) {
       case 'red': return 'bg-red-500';
@@ -430,6 +450,13 @@ export default function UserPage() {
         </div>
       )}
 
+
+      <PostLoginModal
+        isOpen={isPostLoginModalOpen}
+        onCloseAction={() => setIsPostLoginModalOpen(false)}
+        onFinishAction={handlePostLoginFinish}
+        usuarioId={usuario.id}
+      />
 
       <EditUserModal
         mostrar={mostrar}

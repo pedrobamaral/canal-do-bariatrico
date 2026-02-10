@@ -130,12 +130,13 @@ function unwrapData<T = any>(respData: any): T {
 // -------------------- USERS --------------------
 export async function createUser(
   nome: string,
+  sobrenome: string,
   email: string,
   senha: string,
   telefone?: string
 ) {
   try {
-    const response = await api.post("/usuarios", { nome, email, senha, telefone });
+    const response = await api.post("/usuarios", { nome, sobrenome, email, senha, telefone, ativoCiclo: false });
     return response.data;
   } catch (error) {
     console.error(error);

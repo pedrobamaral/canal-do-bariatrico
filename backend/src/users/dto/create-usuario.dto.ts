@@ -15,6 +15,10 @@ export class CreateUsuarioDto {
   @IsNotEmpty()
   nome: string;
 
+  @IsString()
+  @IsNotEmpty()
+  sobrenome: string;
+
   @IsOptional()
   @IsBoolean()
   admin?: boolean;

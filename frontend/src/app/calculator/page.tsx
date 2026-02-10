@@ -422,15 +422,11 @@ export default function Home() {
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: "30px",
-              justifyItems: isMobile ? "center" : "stretch",
             }}
           >
             <div
               style={{
-                minWidth: isMobile ? "auto" : "350px",
-                width: "100%",
-                maxWidth: isMobile ? "460px" : "none",
-                margin: isMobile ? "0 auto" : "0",
+                minWidth: "350px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "24px",
@@ -607,16 +603,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div
-              style={{
-                minWidth: isMobile ? "auto" : "350px",
-                width: "100%",
-                maxWidth: isMobile ? "460px" : "none",
-                margin: isMobile ? "0 auto" : "0",
-                height: "100%",
-                alignSelf: "stretch",
-              }}
-            >
+            <div style={{ minWidth: "350px", height: "100%", alignSelf: "stretch" }}>
               <div
                 style={{
                   background: "white",

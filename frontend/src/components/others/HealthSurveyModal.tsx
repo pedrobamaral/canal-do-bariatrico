@@ -18,8 +18,8 @@ import {
 
 // Modais
 import { MedicationModal } from "@/components/modals/MedicationModal";
-import { DietModal } from "@/components/modals/DietModal";
-import { TrainingModal } from "@/components/modals/TrainingModal";
+import { DietModal } from "@/components/others/DietModal";
+import { TrainingModal } from "@/components/others/TrainingModal";
 
 /* ================== ESTILOS PADRÃO (IGUAL PostLogin) ================== */
 

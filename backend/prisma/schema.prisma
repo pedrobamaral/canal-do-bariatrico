@@ -21,6 +21,7 @@ model Usuario {
   email       String   @unique @db.VarChar(100)
   senha       String   @db.VarChar(100)
   nome        String   @db.VarChar(100)
+  sobrenome   String   @db.VarChar(100)
   telefone    String?  @db.VarChar(25)
   foto        String?  @db.LongText
   admin       Boolean  @default(false)

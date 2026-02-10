@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { HealthSurveyModal } from '@/components/modals/HealthSurveyModal';
+import { HealthSurveyModal } from '@/components/others/HealthSurveyModal';
 import { MedicationModal } from '@/components/modals/MedicationModal';
-import { TrainingModal } from '@/components/modals/TrainingModal'; 
+import { TrainingModal } from '@/components/others/TrainingModal'; 
 
 export default function TesteModalPage() {
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);

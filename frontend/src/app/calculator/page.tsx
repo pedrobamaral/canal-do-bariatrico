@@ -16,9 +16,7 @@ import {
 import Navbar from "@/components/Navbar"
 
 // ✅ Modais
-import { HealthSurveyModal } from "@/components/modals/HealthSurveyModal"
-import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal"
-import { getUserById } from "@/api/api"
+import { HealthSurveyModal } from "@/components/others/HealthSurveyModal"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -351,7 +349,7 @@ function mapSelectToTipoCirurgia(v: IntervencaoSelectValue): string {
   return "Outra Intervenção"
 }
 
-export default function Calculator() {
+export default function Home() {
   const [peso, setPeso] = useState(80)
   const [altura, setAltura] = useState(170)
   const [idade, setIdade] = useState(35)
@@ -374,10 +372,12 @@ export default function Calculator() {
   const [usuarioId, setUsuarioId] = useState<number | undefined>(undefined)
 
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
-  const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false)
 
   const handleConseguiResultados = () => {
-    setIsHealthModalOpen(true)
+    // redireciona para Hotmart conforme solicitado
+    if (typeof window !== 'undefined') {
+      window.location.href = 'https://hotmart.com/pt-br'
+    }
   }
 
   const handleHealthSurveyClose = () => {
@@ -403,39 +403,6 @@ export default function Calculator() {
       })
     )
   }, [peso, altura, idade, fumante, diabetes, intervencaoData.tipoCirurgia])
-
-  // Abre o modal pós-login automaticamente se o usuário não preencheu os dados
-  useEffect(() => {
-    const token = localStorage.getItem("bari_token")
-    if (!token) return
-
-    // Decodifica o token para pegar o ID do usuário
-    const checkUserData = async () => {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        const userId = payload.sub
-        setUsuarioId(userId)
-
-        // Busca os dados do usuário para verificar se já preencheu os dados obrigatórios
-        const userData = await getUserById(userId)
-        
-        // Verifica se os campos obrigatórios estão preenchidos
-        const hasRequiredData = userData.peso && userData.altura && userData.sexo && userData.meta
-        
-        if (!hasRequiredData) {
-          setIsPostLoginModalOpen(true)
-        }
-      } catch (error) {
-        console.error('Erro ao verificar dados do usuário:', error)
-      }
-    }
-
-    checkUserData()
-  }, [])
-
-  const handlePostLoginFinish = (data: PostLoginData) => {
-    setIsPostLoginModalOpen(false)
-  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFDD" }}>
@@ -755,7 +722,7 @@ export default function Calculator() {
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = CORES.roxoHover)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = CORES.roxoPrincipal)}
-                  onClick={() => setIsHealthModalOpen(true)}
+                  onClick={handleConseguiResultados}
                 >
                   Conseguir Resultados
                 </button>
@@ -766,15 +733,6 @@ export default function Calculator() {
       </main>
 
       <HealthSurveyModal isOpen={isHealthModalOpen} onClose={handleHealthSurveyClose} usuarioId={usuarioId} />
-
-      <PostLoginModal
-        isOpen={isPostLoginModalOpen}
-        onCloseAction={() => setIsPostLoginModalOpen(false)}
-        onFinishAction={handlePostLoginFinish}
-        onFillAdditionalInfoAction={() => {
-        }}
-        usuarioId={usuarioId}
-      />
 
       <style jsx>{`
         input[type='range']::-webkit-slider-thumb {

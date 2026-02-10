@@ -12,10 +12,10 @@ import { getAllUsers, getCurrentUser, Usuario, getUserAdherenceStats, UserAdhere
 
 // Modais
 import EditUserModal from '@/components/modals/EditUserModal';
-import { HealthSurveyModal } from '@/components/modals/HealthSurveyModal';
-import { DietModal } from '@/components/modals/DietModal';
+import { HealthSurveyModal } from '@/components/others/HealthSurveyModal';
+import { DietModal } from '@/components/others/DietModal';
 import { MedicationModal } from '@/components/modals/MedicationModal';
-import { TrainingModal } from '@/components/modals/TrainingModal';
+import { TrainingModal } from '@/components/others/TrainingModal';
 
 // Interface estendida do paciente com dados calculados
 interface PatientData extends Usuario {

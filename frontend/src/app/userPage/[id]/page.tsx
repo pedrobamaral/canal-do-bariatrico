@@ -292,29 +292,23 @@ export default function UserPage() {
     fetchUserStats();
   }, [usuario]);
 
-  // Abre o modal pós-login na página de perfil do próprio usuário
+  // Abre o modal pós-login na página de perfil do próprio usuário se faltar dados obrigatórios
   useEffect(() => {
-    if (!usuario) return;
-    // só exibir para o dono da página
-    const token = localStorage.getItem("bari_token");
-    if (!token) return;
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.sub != usuario.id) return;
-    } catch (e) {
-      return;
-    }
-
-    const shouldShowFlag = localStorage.getItem("postLoginModal") === "1";
-    const alreadyDone = localStorage.getItem("postLoginModalDone") === "1";
-
-    const missingRequired = !usuario.peso || !usuario.altura || !usuario.sexo || !usuario.meta;
-
-    if (shouldShowFlag && !alreadyDone && missingRequired) {
+    if (!usuario || !Dono) return;
+    
+    // Verifica se os campos obrigatórios estão preenchidos
+    const hasRequiredData = usuario.peso && usuario.altura && usuario.sexo && usuario.meta;
+    
+    if (!hasRequiredData) {
       setIsPostLoginModalOpen(true);
     }
-  }, [usuario]);
+  }, [usuario, Dono]);
+
+  const handlePostLoginFinish = (data: PostLoginData) => {
+    setIsPostLoginModalOpen(false);
+    // Recarrega os dados do usuário após salvar
+    fetchAllPageData();
+  };
 
   const getStatusColor = (color: string) => {
     switch (color) {
@@ -459,16 +453,8 @@ export default function UserPage() {
 
       <PostLoginModal
         isOpen={isPostLoginModalOpen}
-        onCloseAction={() => {
-          localStorage.setItem("postLoginModalDone", "1");
-          localStorage.removeItem("postLoginModal");
-          setIsPostLoginModalOpen(false);
-        }}
-        onFinishAction={() => {
-          localStorage.setItem("postLoginModalDone", "1");
-          localStorage.removeItem("postLoginModal");
-          setIsPostLoginModalOpen(false);
-        }}
+        onCloseAction={() => setIsPostLoginModalOpen(false)}
+        onFinishAction={handlePostLoginFinish}
         usuarioId={usuario.id}
       />
 

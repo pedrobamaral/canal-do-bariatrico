@@ -336,24 +336,24 @@ export default function UserPage() {
     <main className="min-h-screen text-black bg-white pb-16">
       <Navbar />
 
-      <div className="w-full h-70 bg-black relative flex items-end px-16"></div>
+      <div className="w-full h-70 bg-black relative flex items-end px-6 md:px-16"></div>
 
-      <div className="relative w-full max-w-5xl mx-auto">
-        <div className="absolute -top-[104px] left-24 flex flex-col items-start">
+      <div className="relative w-full max-w-5xl mx-auto px-4 pt-24 md:px-0 md:pt-0">
+        <div className="absolute -top-[84px] left-6 flex flex-col items-start text-left md:-top-[104px] md:left-24">
           <img
             src={usuario.foto || "/images/defaultAvatar.jpg"}
             alt="Foto de Perfil"
-            className="w-40 h-40 rounded-full object-cover border-4 border-back"
+            className="w-28 h-28 md:w-40 md:h-40 rounded-full object-cover border-4 border-back"
             onError={(e) => { e.currentTarget.src = "/images/bari_padrao.png"; }}
           />
 
-          <div className="mt-1 font-sans text-left flex flex-col gap-0.5">
-            <h2 className="text-3xl font-semibold ">{usuario.nome}</h2>
-            <p className="flex items-center gap-1">
+          <div className="mt-2 font-sans flex flex-col gap-0.5">
+            <h2 className="text-2xl md:text-3xl font-semibold ">{usuario.nome}</h2>
+            <p className="flex items-center gap-1 text-sm md:text-base">
               <EmailIcon />
               {usuario.email}
             </p>
-            <p className="flex items-center gap-1">
+            <p className="flex items-center gap-1 text-sm md:text-base">
               <PhoneIcon />
               {formatPhoneNumber(usuario.telefone)}
             </p>
@@ -364,7 +364,7 @@ export default function UserPage() {
           <div>
             <button 
               onClick={() => setMostrar(true)}
-              className="absolute top-5 flex right-20 bg-[#6A38F3] border border-[#2563EB] text-white px-20 py-2 rounded-full hover:bg-[#2563EB] hover:text-white transition hover:cursor-pointer font-sans tracking-wider"
+              className="mx-auto mt-6 block w-full max-w-[260px] bg-[#6A38F3] border border-[#2563EB] text-white py-2 rounded-full hover:bg-[#2563EB] hover:text-white transition hover:cursor-pointer font-sans tracking-wider md:mt-0 md:absolute md:top-5 md:right-20 md:w-auto md:px-20"
             >
               Editar Perfil
             </button>
@@ -377,7 +377,7 @@ export default function UserPage() {
 
       {/* PROGRESSO ou TABELA (se admin) */}
       {usuario.admin ? (
-        <div className="max-w-6xl mx-auto p-6 mt-44">
+        <div className="max-w-6xl mx-auto p-6 mt-32 md:mt-44">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quantidade de pacientes ativos: <span className="font-semibold">{patients.filter((p) => !p.admin).length}</span></h3>
           <PatientsTable
             filteredPatients={filteredPatients}
@@ -388,7 +388,7 @@ export default function UserPage() {
           />
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto px-6 mt-48">
+        <div className="max-w-5xl mx-auto px-6 mt-36 md:mt-48">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
           
           {loadingStats ? (

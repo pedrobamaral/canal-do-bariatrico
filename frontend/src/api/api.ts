@@ -183,10 +183,11 @@ export async function getUserAdherenceStats(userId: number): Promise<UserAdheren
   }
 }
 
-export async function createUser(nome: string, email: string, senha: string, telefone?: string) {
+export async function createUser(nome: string, sobrenome: string, email: string, senha: string, telefone?: string) {
   try {
     const response = await api.post('/usuarios', {
       nome,
+      sobrenome,
       email,
       senha,
       telefone,

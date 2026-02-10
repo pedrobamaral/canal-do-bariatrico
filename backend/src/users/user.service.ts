@@ -20,22 +20,23 @@ export class UsuarioService {
 
   try {
     const novoUsuario = await this.prisma.usuario.create({
-      data: {
-        email: createUsuarioDto.email,
-        nome: createUsuarioDto.nome,
-        senha: await bcrypt.hash(createUsuarioDto.senha, 10),
-        admin: createUsuarioDto.admin ?? false,
-        ativo: createUsuarioDto.ativo ?? false,
+        data: {
+          email: createUsuarioDto.email,
+          nome: createUsuarioDto.nome,
+          sobrenome: createUsuarioDto.sobrenome,
+          senha: await bcrypt.hash(createUsuarioDto.senha, 10),
+          admin: createUsuarioDto.admin ?? false,
+          ativo: createUsuarioDto.ativo ?? false,
 
-        telefone: createUsuarioDto.telefone,
-        // Cast to any to avoid build-time mismatch with generated Prisma enum types
-        sexo: createUsuarioDto.sexo as any,
-        peso: createUsuarioDto.peso,
-        altura: createUsuarioDto.altura,
-        nascimento: createUsuarioDto.nascimento,
-        massa_magra: createUsuarioDto.massa_magra,
-        meta: createUsuarioDto.meta,
-      },
+          telefone: createUsuarioDto.telefone,
+          // Cast to any to avoid build-time mismatch with generated Prisma enum types
+          sexo: createUsuarioDto.sexo as any,
+          peso: createUsuarioDto.peso,
+          altura: createUsuarioDto.altura,
+          nascimento: createUsuarioDto.nascimento,
+          massa_magra: createUsuarioDto.massa_magra,
+          meta: createUsuarioDto.meta,
+        } as any,
     });
 
     const { senha, ...result } = novoUsuario;
@@ -50,6 +51,7 @@ export class UsuarioService {
       select: {
         id: true,
         nome: true,
+        sobrenome: true,
         email: true,
         telefone: true,
         foto: true,
@@ -59,7 +61,7 @@ export class UsuarioService {
         admin: true,
         ativo: true,
         dataCriacao: true,
-      },
+      } as any,
     });
   }
 
@@ -70,6 +72,7 @@ export class UsuarioService {
       select: {
         id: true,
         nome: true,
+        sobrenome: true,
         email: true,
         telefone: true,
         foto: true,
@@ -82,7 +85,7 @@ export class UsuarioService {
         admin: true,
         ativo: true,
         dataCriacao: true,
-      },
+      } as any,
     });
 
     if (!usuario) {
@@ -110,6 +113,7 @@ export class UsuarioService {
       const dataToUpdate: any = {};
       
       if (updateUsuarioDto.nome !== undefined) dataToUpdate.nome = updateUsuarioDto.nome;
+      if (updateUsuarioDto.sobrenome !== undefined) dataToUpdate.sobrenome = updateUsuarioDto.sobrenome;
       if (updateUsuarioDto.email !== undefined) dataToUpdate.email = updateUsuarioDto.email;
       if (updateUsuarioDto.senha !== undefined) dataToUpdate.senha = updateUsuarioDto.senha;
       if (updateUsuarioDto.telefone !== undefined) dataToUpdate.telefone = updateUsuarioDto.telefone;
@@ -134,6 +138,7 @@ export class UsuarioService {
         select: {
           id: true,
           nome: true,
+          sobrenome: true,
           email: true,
           telefone: true,
           foto: true,
@@ -146,7 +151,7 @@ export class UsuarioService {
           admin: true,
           ativo: true,
           dataCriacao: true,
-        },
+        } as any,
       });
 
       return usuarioAtualizado; 

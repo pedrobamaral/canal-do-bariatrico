@@ -7,6 +7,7 @@ import PatientsTable, { PatientData } from '@/components/PatientsTable';
 import { getAllUsers, getUserAdherenceStats, UserAdherenceStats } from '@/api/api';
 import { getUserById } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
+import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal";
 import { toast, ToastContainer } from "react-toastify";
 import {
   HiOutlineClipboardList,
@@ -119,6 +120,7 @@ export default function UserPage() {
   const [error, setError] = useState(false);
   const [userStats, setUserStats] = useState<UserAdherenceStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false);
 
   const fetchAllPageData = async () => {
     if (!id) return;
@@ -290,6 +292,30 @@ export default function UserPage() {
     fetchUserStats();
   }, [usuario]);
 
+  // Abre o modal pós-login na página de perfil do próprio usuário
+  useEffect(() => {
+    if (!usuario) return;
+    // só exibir para o dono da página
+    const token = localStorage.getItem("bari_token");
+    if (!token) return;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.sub != usuario.id) return;
+    } catch (e) {
+      return;
+    }
+
+    const shouldShowFlag = localStorage.getItem("postLoginModal") === "1";
+    const alreadyDone = localStorage.getItem("postLoginModalDone") === "1";
+
+    const missingRequired = !usuario.peso || !usuario.altura || !usuario.sexo || !usuario.meta;
+
+    if (shouldShowFlag && !alreadyDone && missingRequired) {
+      setIsPostLoginModalOpen(true);
+    }
+  }, [usuario]);
+
   const getStatusColor = (color: string) => {
     switch (color) {
       case 'red': return 'bg-red-500';
@@ -430,6 +456,21 @@ export default function UserPage() {
         </div>
       )}
 
+
+      <PostLoginModal
+        isOpen={isPostLoginModalOpen}
+        onCloseAction={() => {
+          localStorage.setItem("postLoginModalDone", "1");
+          localStorage.removeItem("postLoginModal");
+          setIsPostLoginModalOpen(false);
+        }}
+        onFinishAction={() => {
+          localStorage.setItem("postLoginModalDone", "1");
+          localStorage.removeItem("postLoginModal");
+          setIsPostLoginModalOpen(false);
+        }}
+        usuarioId={usuario.id}
+      />
 
       <EditUserModal
         mostrar={mostrar}

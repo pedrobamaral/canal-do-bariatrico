@@ -171,7 +171,7 @@ export default function Navbar() {
                   <FaUserMd size={24} className={iconBaseStyle} />
                 </Link>
 
-                <Link href="/" aria-label="Calculadora">
+                <Link href="/calculator" aria-label="Calculadora">
                   <FaCalculator size={22} className={iconBaseStyle} />
                 </Link>
 

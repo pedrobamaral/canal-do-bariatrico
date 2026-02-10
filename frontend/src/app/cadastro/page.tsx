@@ -1,3 +1,4 @@
+// app/cadastro/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -5,6 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { createUser } from "@/api/api";
+
+// ✅ Navbar (aparece SÓ no mobile)
+import Navbar from "@/components/Navbar";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -23,35 +27,40 @@ const EyeSlashIcon: React.FC<IconProps> = ({ className }) => (
 );
 
 /* --- Função de Máscara de Telefone --- */
-const formatPhoneNumber = (value: string) => {
-  // Remove tudo que não é dígito
+const formatPhoneNumber = (value: string, countryCode = "+55") => {
   const numbers = value.replace(/\D/g, "");
+  const codeDigits = countryCode.replace(/\D/g, "");
 
-  // Limita a 11 dígitos (DDD + 9 dígitos)
-  const limited = numbers.slice(0, 11);
-
-  // Aplica a formatação (XX) XXXXX-XXXX
-  if (limited.length > 10) {
-    return limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
-  } else if (limited.length > 6) {
-    return limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-  } else if (limited.length > 2) {
-    return limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
-  } else if (limited.length > 0) {
-    return limited.replace(/^(\d*)/, "($1");
+  let local = numbers;
+  if (codeDigits && numbers.startsWith(codeDigits)) {
+    local = numbers.slice(codeDigits.length);
   }
-  return "";
+
+  const limited = local.slice(-11);
+
+  let maskedLocal = "";
+  if (limited.length > 10) {
+    maskedLocal = limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (limited.length > 6) {
+    maskedLocal = limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (limited.length > 2) {
+    maskedLocal = limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+  } else {
+    maskedLocal = limited.replace(/^(\d*)/, "($1");
+  }
+
+  return `${countryCode} ${maskedLocal}`.trim();
 };
 
 /* Tipos */
 type FormInputProps = {
   label: string;
   id: string;
-  type?: "text" | "email" | "password" | "tel"; 
+  type?: "text" | "email" | "password" | "tel";
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
-  maxLength?: number; // Adicionado para limitar caracteres
+  maxLength?: number;
 };
 
 type SignUpFormData = {
@@ -60,7 +69,7 @@ type SignUpFormData = {
   email: string;
   pais: string;
   codPais: string;
-  telefone: string; 
+  telefone: string;
   password: string;
   confirmPassword: string;
 };
@@ -72,22 +81,22 @@ type PaisInfo = {
 };
 
 const PAISES_CODIGOS: Record<string, PaisInfo> = {
-  "Brasil": { codigo: "+55", bandeira: "🇧🇷" },
+  Brasil: { codigo: "+55", bandeira: "🇧🇷" },
   "Estados Unidos": { codigo: "+1", bandeira: "🇺🇸" },
-  "Canadá": { codigo: "+1", bandeira: "🇨🇦" },
-  "Portugal": { codigo: "+351", bandeira: "🇵🇹" },
-  "Espanha": { codigo: "+34", bandeira: "🇪🇸" },
-  "França": { codigo: "+33", bandeira: "🇫🇷" },
-  "Itália": { codigo: "+39", bandeira: "🇮🇹" },
-  "Alemanha": { codigo: "+49", bandeira: "🇩🇪" },
+  Canadá: { codigo: "+1", bandeira: "🇨🇦" },
+  Portugal: { codigo: "+351", bandeira: "🇵🇹" },
+  Espanha: { codigo: "+34", bandeira: "🇪🇸" },
+  França: { codigo: "+33", bandeira: "🇫🇷" },
+  Itália: { codigo: "+39", bandeira: "🇮🇹" },
+  Alemanha: { codigo: "+49", bandeira: "🇩🇪" },
   "Reino Unido": { codigo: "+44", bandeira: "🇬🇧" },
-  "Austrália": { codigo: "+61", bandeira: "🇦🇺" },
-  "Argentina": { codigo: "+54", bandeira: "🇦🇷" },
-  "Chile": { codigo: "+56", bandeira: "🇨🇱" },
-  "México": { codigo: "+52", bandeira: "🇲🇽" },
-  "Colômbia": { codigo: "+57", bandeira: "🇨🇴" },
-  "Peru": { codigo: "+51", bandeira: "🇵🇪" },
-  "Outro": { codigo: "+55", bandeira: "🌍" },
+  Austrália: { codigo: "+61", bandeira: "🇦🇺" },
+  Argentina: { codigo: "+54", bandeira: "🇦🇷" },
+  Chile: { codigo: "+56", bandeira: "🇨🇱" },
+  México: { codigo: "+52", bandeira: "🇲🇽" },
+  Colômbia: { codigo: "+57", bandeira: "🇨🇴" },
+  Peru: { codigo: "+51", bandeira: "🇵🇪" },
+  Outro: { codigo: "+55", bandeira: "🌍" },
 };
 
 /* Input com toggle de senha */
@@ -98,7 +107,7 @@ const FormInput: React.FC<FormInputProps> = ({
   value,
   onChange,
   required,
-  maxLength
+  maxLength,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -106,7 +115,9 @@ const FormInput: React.FC<FormInputProps> = ({
 
   return (
     <div style={{ marginBottom: "20px" }}>
-      <label htmlFor={id} className="sr-only">{label}</label>
+      <label htmlFor={id} className="sr-only">
+        {label}
+      </label>
       <div style={{ position: "relative" }}>
         <input
           id={id}
@@ -177,22 +188,28 @@ const SignUpForm: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
+
   const [selectedPaisInfo, setSelectedPaisInfo] = useState<PaisInfo>(PAISES_CODIGOS["Brasil"]);
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Manipulador de mudança com lógica especial para telefone
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    
+
     if (id === "pais") {
       const paisInfo = PAISES_CODIGOS[value];
-      setFormData((prev) => ({ ...prev, pais: value, codPais: paisInfo.codigo }));
+      setFormData((prev) => ({
+        ...prev,
+        pais: value,
+        codPais: paisInfo.codigo,
+        telefone: formatPhoneNumber(prev.telefone || "", paisInfo.codigo),
+      }));
       setSelectedPaisInfo(paisInfo);
     } else if (id === "telefone") {
-      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value) }));
+      const country = selectedPaisInfo?.codigo || formData.codPais || "+55";
+      setFormData((prev) => ({ ...prev, [id]: formatPhoneNumber(value, country) }));
     } else {
       setFormData((prev) => ({ ...prev, [id]: value }));
     }
@@ -211,10 +228,14 @@ const SignUpForm: React.FC = () => {
       return;
     }
 
-    // --- VALIDAÇÃO DE TELEFONE ---
-    // Remove símbolos para contar apenas números
     const rawPhone = formData.telefone.replace(/\D/g, "");
-    if (rawPhone.length < 10) {
+    const countryCodeDigits =
+      selectedPaisInfo?.codigo.replace(/\D/g, "") || formData.codPais.replace(/\D/g, "");
+    const localDigits = rawPhone.startsWith(countryCodeDigits)
+      ? rawPhone.slice(countryCodeDigits.length)
+      : rawPhone;
+
+    if (localDigits.length < 10) {
       setError("Por favor, preencha o telefone corretamente: (DD) XXXXX-XXXX");
       return;
     }
@@ -231,23 +252,17 @@ const SignUpForm: React.FC = () => {
 
     setLoading(true);
     try {
-      // Remove símbolos do telefone para enviar apenas números
       const phoneNumbers = formData.telefone.replace(/\D/g, "");
-      // Concatena código do país (sem o +) no início do número
       const countryCode = selectedPaisInfo.codigo.replace(/\D/g, "");
       const phoneWithCountryCode = `${countryCode}${phoneNumbers}`;
       const response = await createUser(formData.name, formData.sobrenome, formData.email, formData.password, phoneWithCountryCode);
 
       if (response && response.status === "sucesso") {
         setSuccess("Cadastro realizado! Redirecionando para o login...");
-        
-        setTimeout(() => {
-          router.push("/login");
-        }, 1000);
+        setTimeout(() => router.push("/login"), 1000);
       } else {
         setError(response?.message || "Erro ao cadastrar usuário. Verifique os dados.");
       }
-
     } catch (error: any) {
       console.error(error);
       setError(error?.message || "Erro desconhecido ao cadastrar usuário.");
@@ -258,6 +273,7 @@ const SignUpForm: React.FC = () => {
 
   return (
     <div
+      className="authCard"
       style={{
         width: "100%",
         maxWidth: "460px",
@@ -271,6 +287,7 @@ const SignUpForm: React.FC = () => {
     >
       <h2
         id="signup-title"
+        className="authTitle"
         style={{
           color: "#fff",
           fontSize: "1.5rem",
@@ -288,10 +305,11 @@ const SignUpForm: React.FC = () => {
         <FormInput id="name" label="Nome" type="text" value={formData.name} onChange={handleChange} required />
         <FormInput id="sobrenome" label="Sobrenome" type="text" value={formData.sobrenome} onChange={handleChange} required />
         <FormInput id="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
-        
-        {/* Input de Telefone com Select de País Integrado */}
+
         <div style={{ marginBottom: "20px" }}>
-          <label htmlFor="telefone" className="sr-only">Telefone</label>
+          <label htmlFor="telefone" className="sr-only">
+            Telefone
+          </label>
           <div style={{ display: "flex", gap: "0" }}>
             <select
               id="pais"
@@ -321,6 +339,7 @@ const SignUpForm: React.FC = () => {
                 </option>
               ))}
             </select>
+
             <input
               id="telefone"
               type="tel"
@@ -344,15 +363,23 @@ const SignUpForm: React.FC = () => {
                 boxSizing: "border-box",
                 overflow: "hidden",
                 transition: "background 0.2s",
+                minWidth: 0,
               }}
               onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
               onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
             />
           </div>
         </div>
-        
+
         <FormInput id="password" label="Senha" type="password" value={formData.password} onChange={handleChange} required />
-        <FormInput id="confirmPassword" label="Confirmar Senha" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+        <FormInput
+          id="confirmPassword"
+          label="Confirmar Senha"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          required
+        />
 
         <button
           type="submit"
@@ -375,41 +402,18 @@ const SignUpForm: React.FC = () => {
           onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#5c2fe0")}
           onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#6F3CF6")}
         >
-          {loading ? "Cadastrando..." : "CADASTRAR"}
+          {loading ? "Cadastrando..." : "CRIAR CONTA"}
         </button>
       </form>
 
-      {error && (
-        <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "0.9rem" }}>
-          {error}
-        </p>
-      )}
+      {error && <p style={{ textAlign: "center", color: "#ff4d4f", marginTop: "16px", fontSize: "0.9rem" }}>{error}</p>}
       {success && (
-        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "0.9rem" }}>
-          {success}
-        </p>
+        <p style={{ textAlign: "center", color: "#4CAF50", marginTop: "16px", fontSize: "0.9rem" }}>{success}</p>
       )}
 
-      <p
-        style={{
-          textAlign: "center",
-          marginTop: "22px",
-          color: "#CACACA",
-          fontSize: "1.02rem",
-          fontFamily: "'Montserrat', 'Arial', sans-serif",
-        }}
-      >
+      <p style={{ textAlign: "center", marginTop: "22px", color: "#CACACA", fontSize: "1.02rem" }}>
         Já possui uma conta?{" "}
-        <Link
-          href="/login"
-          style={{
-            color: "#6F3CF6",
-            textDecoration: "underline",
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-            fontSize: "1.01rem",
-          }}
-        >
+        <Link href="/login" style={{ color: "#6F3CF6", textDecoration: "underline", fontWeight: 700 }}>
           Login
         </Link>
       </p>
@@ -420,56 +424,124 @@ const SignUpForm: React.FC = () => {
 /* Página */
 const SignUpPage: React.FC = () => {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#FFFBEF",
-        padding: "0 2rem",
-      }}
-    >
-      <div
+    <>
+      <div className="mobileOnlyNav">
+        <Navbar />
+      </div>
+
+      <main
+        className="signupMain"
         style={{
+          minHeight: "100vh",
           display: "flex",
-          flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: "46px",
-          maxWidth: "1330px",
-          width: "100%",
+          background: "#FFFBEF",
+          padding: "0 2rem",
         }}
       >
-        <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-end" }}>
-          <SignUpForm />
-        </div>
-
         <div
+          className="signupWrap"
           style={{
-            flex: "0 1 700px",
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative",
-            height: "628px",
-            transform: "translateX(29px)",
+            gap: "46px",
+            maxWidth: "1330px",
+            width: "100%",
           }}
         >
-          <Image
-            src="/images/bari_academia.png"
-            alt="Imagem da Bari na academia"
-            fill
+          <div className="formCol" style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-end" }}>
+            <SignUpForm />
+          </div>
+
+          <div
+            className="imageCol"
             style={{
-              objectFit: "contain",
-              objectPosition: "58% center",
-              transform: "scale(1.15)",
+              flex: "0 1 700px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              height: "628px",
+              transform: "translateX(29px)",
             }}
-            priority
-          />
+          >
+            <Image
+              src="/images/bari_academia.png"
+              alt="Imagem da Bari na academia"
+              fill
+              style={{ objectFit: "contain", objectPosition: "58% center", transform: "scale(1.15)" }}
+              priority
+            />
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <style jsx>{`
+        .mobileOnlyNav {
+          display: none;
+        }
+
+        @media (max-width: 1024px) {
+          .mobileOnlyNav {
+            display: block;
+          }
+
+          .signupMain {
+            padding: 100px 24px 40px 24px !important;
+            align-items: flex-start !important;
+          }
+
+          .signupWrap {
+            flex-direction: column !important;
+            gap: 0 !important;
+            width: 100% !important;
+            max-width: 520px !important;
+            margin: 0 auto !important;
+          }
+
+          .formCol {
+            flex: 1 1 auto !important;
+            width: 100% !important;
+            justify-content: center !important;
+          }
+
+          .imageCol {
+            display: none !important;
+          }
+
+          .authCard {
+            max-width: 420px !important;
+            margin: 0 auto !important;
+          }
+
+          /* ✅ TÍTULO: 1 LINHA (SÓ MOBILE) */
+          .authTitle {
+            white-space: nowrap !important;
+            font-size: 1.15rem !important;
+            letter-spacing: 0.03em !important;
+            line-height: 1.1 !important;
+            margin-bottom: 1.2rem !important;
+            font-weight: 900 !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .authCard {
+            max-width: 360px !important;
+            padding: 44px 28px 34px !important;
+            border-radius: 34px !important;
+          }
+
+          .authTitle {
+            font-size: 1.05rem !important;
+            letter-spacing: 0.025em !important;
+          }
+        }
+      `}</style>
+    </>
   );
 };
 

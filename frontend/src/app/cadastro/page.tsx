@@ -363,7 +363,6 @@ const SignUpForm: React.FC = () => {
                 boxSizing: "border-box",
                 overflow: "hidden",
                 transition: "background 0.2s",
-                minWidth: 0,
               }}
               onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
               onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}

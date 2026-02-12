@@ -5,14 +5,14 @@ import { FaSearch, FaEye } from 'react-icons/fa';
 export type Usuario = {
   id: number;
   nome: string;
-  email?: string;
+  email: string;
   telefone?: string;
   peso?: number;
   altura?: number;
   meta?: number;
   admin?: boolean;
   ativo?: boolean;
-  dataCriacao?: Date | string;
+  dataCriacao?: Date;
   foto?: string;
 };
 

@@ -349,7 +349,7 @@ function mapSelectToTipoCirurgia(v: IntervencaoSelectValue): string {
   return "Outra Intervenção"
 }
 
-export default function Home() {
+export default function Calculator() {
   const [peso, setPeso] = useState(80)
   const [altura, setAltura] = useState(170)
   const [idade, setIdade] = useState(35)

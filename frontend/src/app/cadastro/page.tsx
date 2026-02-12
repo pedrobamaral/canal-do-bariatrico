@@ -49,7 +49,7 @@ const formatPhoneNumber = (value: string, countryCode = "+55") => {
     maskedLocal = limited.replace(/^(\d*)/, "($1");
   }
 
-  return `${countryCode} ${maskedLocal}`.trim();
+  return maskedLocal;
 };
 
 /* Tipos */

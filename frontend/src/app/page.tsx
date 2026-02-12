@@ -1,6 +1,7 @@
 "use client";
 
 import { MdArrowOutward } from "react-icons/md";
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Menu, X, ChevronLeft, ChevronRight, Check, Instagram, Youtube, Mail } from "lucide-react";
@@ -70,11 +71,14 @@ export default function Home() {
     return "text-red-400";
   };
 
-  // Slider
-  const slides = Array.from({ length: 11 }, (_, i) => ({
-    id: i + 1,
-    image: "https://private-us-east-1.manuscdn.com/sessionFile/NMdcTLVfnPvBEzwbd5md7f/sandbox/DCbHCeJtRIyvSK5Noj7zK2-img-2_1770925060000_na1fn_dHJhbnNmb3JtYXRpb24tc2hvd2Nhc2U.png?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvTk1kY1RMVmZuUHZCRXp3YmQ1bWQ3Zi9zYW5kYm94L0RDYkhDZUp0Ukl5dlNLNU5vajd6SzItaW1nLTJfMTc3MDkyNTA2MDAwMF9uYTFmbl9kSEpoYm5ObWIzSnRZWFJwYjI0dGMyaHZkMk5oYzJVLnBuZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=QmMXUJ4Zj5MOrYzshRmr3Ckq-kBbG0~foE0GtV~4Jw6ZXu4SGc~kJAPLUdc6Gup6fxqjFfXh598xRV-mjtqUAO-noHITR37AbBqL5wPFMsoF4cpY6gLZTgmHS2cT4Rugcnwtu5zMdlIXURqJjF0zpfOnB257yOZByA4oD0M9l9Wnyl-eNwNA-ahPv8DxK68OFHWJ0BAcRp~z5PDF000jkoei-~FQPFAPVMZCKIJM47mS9lSXXwMsenK8hldrRT7pTU6IY~6fe9fVElMSweM4pN12cNBbcVr0qUm1XzCFJakkWaP~5AiI4t34CQkUijuP9rijosUFWR3jweUi4wOm2Q__",
-  }));
+  // Slider (local images from public/images)
+  const slides = [
+    { id: 1, image: "/images/foto1.png" },
+    { id: 2, image: "/images/foto3.jpeg" },
+    { id: 3, image: "/images/foto4.jpeg" },
+    { id: 4, image: "/images/foto5.jpeg" },
+    { id: 5, image: "/images/foto6.jpeg" },
+  ];
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -122,10 +126,9 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden">
-                <img src={'/images/newBarieIcon.png'} alt="Barie" className="w-full h-full object-cover" />
-              </div>
+          <div className="flex items-center gap-3">
+            <img src="/images/bari_icon.png" alt="Barie" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+            <img src="/images/Group%20227.svg" alt="Group 227" className="h-6 md:h-8 lg:h-10 object-contain" />
           </div>
 
           {/* Desktop Navigation */}
@@ -146,9 +149,9 @@ export default function Home() {
 
           {/* CTA Button */}
           <div className="flex items-center gap-4">
-            <button className="hidden sm:block px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300">
+            <Link href="/cadastro" className="hidden sm:inline-block px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300">
               CADASTRE-SE
-            </button>
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
@@ -218,18 +221,18 @@ export default function Home() {
             <span className="block text-[#6F3CF6] font-bold mt-2">É estratégia aplicada todos os dias</span>
           </motion.p>
 
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            className="px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
-          >
-            <span className="inline-flex items-center">
+          <Link href="/cadastro" className="inline-block">
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              className="px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50 inline-flex items-center"
+            >
               CADASTRE-SE
               <MdArrowOutward className="inline-block ml-2" />
-            </span>
-          </motion.button>
+            </motion.span>
+          </Link>
         </div>
 
         {/* Scroll Indicator */}
@@ -322,8 +325,8 @@ export default function Home() {
           {/* Slider */}
           <div className="relative">
             <div className="overflow-hidden rounded-lg">
-              <div className="aspect-video">
-                <img src={slides[currentSlide].image} alt={`Transformação ${currentSlide + 1}`} className="w-full h-full object-cover" />
+              <div className="w-full h-64 md:h-80 lg:h-96 bg-[#0A0A0A] p-4 flex items-center justify-center">
+                <img src={slides[currentSlide].image} alt={`Transformação ${currentSlide + 1}`} className="max-h-full max-w-full object-contain" />
               </div>
             </div>
 

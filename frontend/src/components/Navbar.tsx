@@ -107,18 +107,32 @@ export default function Navbar() {
       <div className="h-full w-full flex items-center justify-between pr-8">
         {/* --- LADO ESQUERDO: LOGO --- */}
         <div
-          className="h-full bg-black flex items-center pl-8 pr-8 shrink-0"
+          className="h-full bg-black flex items-center pl-6 pr-8 shrink-0"
           style={{ borderBottomRightRadius: "30px" }}
         >
-          {/* ✅ no mobile diminui a largura só pra não estourar */}
-          <div className="relative h-18 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[520px] min-w-0 mt-1 sm:mt-1 md:mt-3 lg:mt-5">
-            <Image
-              src="/images/newLogo.png"
-              alt="Logo BARIE"
-              fill
-              className="object-contain"
-              priority
-            />
+          {/* group227 à esquerda, bari_icon à direita */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center">
+              <Image
+                src="/images/bari_icon.png"
+                alt="Barie icon"
+                width={48}
+                height={48}
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            <div className="flex items-center" aria-hidden>
+              <Image
+                src="/logo.svg"
+                alt="Group 227"
+                width={400}
+                height={260}
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
         </div>
 

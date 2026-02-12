@@ -30,6 +30,7 @@ export default function Home() {
   const [imc, setImc] = useState<number | null>(null);
   const heroRef = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -67,9 +68,9 @@ export default function Home() {
   const getIMCColor = (value: number) => {
     if (value < 18.5) return "text-blue-400";
     if (value < 25) return "text-green-400";
-    if (value < 30) return "text-yellow-400";
-    return "text-red-400";
-  };
+  if (value < 30) return "text-yellow-400";
+  return "text-red-400";
+};
 
   // Slider (local images from public/images)
   const slides = [
@@ -126,9 +127,10 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <img src="/images/bari_icon.png" alt="Barie" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
-            <img src="/images/Group%20227.svg" alt="Group 227" className="h-6 md:h-8 lg:h-10 object-contain" />
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden">
+                <img src={'/images/newBarieIcon.png'} alt="Barie" className="w-full h-full object-cover" />
+              </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -325,9 +327,9 @@ export default function Home() {
           {/* Slider */}
           <div className="relative">
             <div className="overflow-hidden rounded-lg">
-              <div className="w-full h-64 md:h-80 lg:h-96 bg-[#0A0A0A] p-4 flex items-center justify-center">
-                <img src={slides[currentSlide].image} alt={`Transformação ${currentSlide + 1}`} className="max-h-full max-w-full object-contain" />
-              </div>
+              <div className="w-full h-64 md:h-80 lg:h-96 bg-[#0A0A0A] flex items-center justify-center cursor-zoom-in">
+                  <img src={slides[currentSlide].image} alt={`Transformação ${currentSlide + 1}`} className="max-h-full max-w-full object-contain" />
+                </div>
             </div>
 
             {/* Navigation Buttons */}
@@ -363,6 +365,67 @@ export default function Home() {
           <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
+
+      {/* Lightbox modal for slider images */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            aria-label="Fechar"
+            className="absolute top-6 right-6 text-white text-2xl z-60"
+            onClick={() => setLightboxOpen(false)}
+          >
+            ✕
+          </button>
+
+          <div className="max-w-6xl w-full max-h-[96vh] flex items-center justify-center gap-6">
+            <button
+              className="hidden md:flex items-center justify-center p-4 text-white text-3xl"
+              onClick={(e) => {
+                e.stopPropagation();
+                prevSlide();
+              }}
+              aria-label="Anterior"
+            >
+              ‹
+            </button>
+
+            <div className="flex-1 flex items-center justify-center">
+              <img
+                src={slides[currentSlide].image}
+                alt={`Transformação ${currentSlide + 1}`}
+                className="max-h-[92vh] max-w-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2 items-end">
+              <button
+                className="hidden md:flex items-center justify-center p-4 text-white text-3xl"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextSlide();
+                }}
+                aria-label="Próximo"
+              >
+                ›
+              </button>
+
+              <a
+                href={slides[currentSlide].image}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-white/80 underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Abrir original
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= PLANS SECTION ================= */}
       <motion.section

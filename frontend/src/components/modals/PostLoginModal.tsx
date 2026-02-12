@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { updateData, createOrUpdateMedicacao, createDia0, createCiclo } from "@/api/api";
-import { MedicationModal, MedicationData, MedicationFrequency } from "./MedicationModal";
+import { MedicationModal } from "./MedicationModal";
 
 /* ================== TIPOS ================== */
 
@@ -74,9 +74,7 @@ export const PostLoginModal: React.FC<Props> = ({
   });
 
   /* ===== Medicamento Prescrito ===== */
-  const [medPrescrita, setMedPrescrita] = useState(false);
-  const [freqMedPrescrita, setFreqMedPrescrita] = useState<MedicationFrequency>(null);
-  const [medicationData, setMedicationData] = useState<MedicationData | null>(null);
+  // medication summary and doctor fields removed — we only open the medication modal to collect frequency if needed
 
   const setField =
     (field: keyof PostLoginData) =>
@@ -100,9 +98,6 @@ export const PostLoginModal: React.FC<Props> = ({
       pesoMeta: "",
       tipoIntervencao: "",
     });
-    setMedPrescrita(false);
-    setFreqMedPrescrita(null);
-    setMedicationData(null);
     onCloseAction();
   };
 
@@ -129,16 +124,7 @@ export const PostLoginModal: React.FC<Props> = ({
         ativo: true,
       });
 
-      // 2. Criar medicação se fornecida
-      if (medicationData && medicationData.nome) {
-        await createOrUpdateMedicacao(usuarioId, {
-          nome: medicationData.nome,
-          concentracao: medicationData.concentracao,
-          frequencia: medicationData.frequencia,
-          nomeMedico: medicationData.nomeMedico,
-          instagramMedico: medicationData.instagramMedico,
-        });
-      }
+      // 2. Não mais persistimos nome/instagram do médico nem mostramos resumo
 
       // 3. Criar Dia0
       const dia0Response = await createDia0(usuarioId, {
@@ -156,8 +142,8 @@ export const PostLoginModal: React.FC<Props> = ({
         numCiclo: 1,
         ativoCiclo: true,
         mounjaro: mounjaro,
-        med_prescrita: medPrescrita,
-        freq_med_prescrita: freqMedPrescrita || 0,
+        med_prescrita: false,
+        freq_med_prescrita: 0,
         treino: true,
         dieta: true,
         agua: true,
@@ -236,51 +222,6 @@ export const PostLoginModal: React.FC<Props> = ({
             </>
           )}
 
-          {/* STEP 2 — RESUMO MEDICAMENTO (exibido após MedicationModal) */}
-          {step === 2 && (
-            <div className="text-center space-y-6">
-              <FaPills className={`mx-auto text-4xl transition-colors ${medPrescrita ? "text-[#6A38F3]" : "text-gray-400"}`} />
-              
-              {medPrescrita ? (
-                <>
-                  <p className="text-sm text-gray-600">
-                    ✓ Medicamento prescrito registrado
-                  </p>
-                  {medicationData && (
-                    <div className="text-left bg-white/50 p-4 rounded-xl space-y-1 text-sm text-black">
-                      <p><strong>Medicamento:</strong> {medicationData.nome}</p>
-                      <p><strong>Dosagem:</strong> {medicationData.concentracao}</p>
-                      <p><strong>Frequência:</strong> {medicationData.frequencia}</p>
-                      {medicationData.nomeMedico && (
-                        <p><strong>Médico:</strong> {medicationData.nomeMedico}</p>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-gray-600">
-                  Nenhum medicamento prescrito informado
-                </p>
-              )}
-
-              <div className="flex gap-4">
-                <button
-                  className="flex-1 p-3 rounded-full border border-gray-300 text-gray-600"
-                  onClick={() => setShowMedicationModal(true)}
-                >
-                  Alterar
-                </button>
-
-                <button
-                  className="flex-1 p-3 rounded-full border border-[#6A38F3] text-[#6A38F3]"
-                  onClick={() => setStep(3)}
-                >
-                  Próximo
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* STEP 3 — INTERVENÇÃO */}
           {step === 3 && (
             <>
@@ -322,26 +263,17 @@ export const PostLoginModal: React.FC<Props> = ({
         isOpen={showMedicationModal}
         onClose={() => {
           setShowMedicationModal(false);
-          // Se já passou pelo modal de medicamento, vai para step 2
-          if (step === 1) {
-            setStep(2);
-          }
+          if (step === 1) setStep(3);
         }}
         usuarioId={usuarioId}
         embeddedMode={true}
-        onYesCallback={(data) => {
-          setMedPrescrita(true);
-          setFreqMedPrescrita(data.frequencia);
-          setMedicationData(data);
+        onYesCallback={() => {
           setShowMedicationModal(false);
-          setStep(2);
+          setStep(3);
         }}
         onNoCallback={() => {
-          setMedPrescrita(false);
-          setFreqMedPrescrita(null);
-          setMedicationData(null);
           setShowMedicationModal(false);
-          setStep(2);
+          setStep(3);
         }}
         onBackCallback={() => {
           setShowMedicationModal(false);

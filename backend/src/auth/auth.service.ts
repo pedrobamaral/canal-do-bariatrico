@@ -22,6 +22,7 @@ export class AuthService {
     const novoUsuario = await this.usuarioService.create({
       email: registerDto.email,
       nome: registerDto.nome,
+      sobrenome: registerDto.sobrenome,
       senha: registerDto.senha,
       admin: registerDto.admin ?? false,
       ativo: false,

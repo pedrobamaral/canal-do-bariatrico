@@ -1,10 +1,13 @@
-// app/login/page.tsx (ou o arquivo do seu LoginPage)
+// app/login/page.tsx
 "use client";
 
 import Image from "next/image";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/api/api";
+
+// ✅ Navbar (aparece SÓ no mobile)
+import Navbar from "@/components/Navbar";
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -137,25 +140,27 @@ const LoginForm: React.FC = () => {
       });
 
       if (data.access_token) {
-        // ✅ PADRÃO DO HEADER
         localStorage.setItem("bari_token", data.access_token);
 
-        // user (opcional)
         if (data.user) {
           localStorage.setItem("bari_user", JSON.stringify(data.user));
         }
 
-        // abre o modal pós-login apenas se ainda não foi concluído neste navegador
         if (localStorage.getItem("postLoginModalDone") !== "1") {
           localStorage.setItem("postLoginModal", "1");
         }
 
-        // avisa o header na mesma aba
         window.dispatchEvent(new Event("auth-changed"));
-      }
 
-      router.push("/");
-      router.refresh();
+        // Redireciona para a página do usuário, se disponível
+        const userId = data.user?.id ?? data.user?.sub ?? null;
+        if (userId) {
+          router.push(`/userPage/${userId}`);
+        } else {
+          router.push("/");
+        }
+        router.refresh();
+      }
     } catch (error: any) {
       setError(error.message);
 
@@ -169,6 +174,7 @@ const LoginForm: React.FC = () => {
 
   return (
     <div
+      className="authCard"
       style={{
         width: "100%",
         maxWidth: "530px",
@@ -182,6 +188,7 @@ const LoginForm: React.FC = () => {
     >
       <h2
         id="login-title"
+        className="authTitle"
         style={{
           color: "#fff",
           fontSize: "2.25rem",
@@ -295,56 +302,132 @@ const LoginForm: React.FC = () => {
 /* Página */
 const LoginPage: React.FC = () => {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#FFFBEF",
-        padding: "0 2rem",
-      }}
-    >
-      <div
+    <>
+      {/* ✅ Navbar só no MOBILE (desktop não muda) */}
+      <div className="mobileOnlyNav">
+        <Navbar />
+      </div>
+
+      <main
+        className="loginMain"
         style={{
+          minHeight: "100vh",
           display: "flex",
-          flexDirection: "row-reverse",
           alignItems: "center",
           justifyContent: "center",
-          gap: "46px",
-          maxWidth: "1330px",
-          width: "100%",
+          background: "#FFFBEF",
+          padding: "0 2rem",
         }}
       >
-        <div style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-start" }}>
-          <LoginForm />
-        </div>
-
         <div
+          className="loginWrap"
           style={{
-            flex: "0 1 700px",
             display: "flex",
+            flexDirection: "row-reverse",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative",
-            height: "628px",
-            transform: "translateX(-14px)",
+            gap: "46px",
+            maxWidth: "1330px",
+            width: "100%",
           }}
         >
-          <Image
-            src="/images/bari_padrao.png"
-            alt="Imagem da Bari sorrindo"
-            fill
+          <div className="formCol" style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-start" }}>
+            <LoginForm />
+          </div>
+
+          <div
+            className="imageCol"
             style={{
-              objectFit: "contain",
-              objectPosition: "62% center",
-              transform: "scale(1.28)",
+              flex: "0 1 700px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              height: "628px",
+              transform: "translateX(-14px)",
             }}
-            priority
-          />
+          >
+            <Image
+              src="/images/bari_padrao.png"
+              alt="Imagem da Bari sorrindo"
+              fill
+              style={{
+                objectFit: "contain",
+                objectPosition: "62% center",
+                transform: "scale(1.28)",
+              }}
+              priority
+            />
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      {/* ✅ CSS MOBILE padronizado (desktop intacto) */}
+      <style jsx>{`
+        .mobileOnlyNav {
+          display: none;
+        }
+
+        /* MOBILE/TABLET */
+        @media (max-width: 1024px) {
+          .mobileOnlyNav {
+            display: block;
+          }
+
+          .loginMain {
+            padding: 100px 24px 40px 24px !important;
+            align-items: flex-start !important;
+          }
+
+          .loginWrap {
+            flex-direction: column !important;
+            gap: 0 !important;
+            width: 100% !important;
+            max-width: 520px !important;
+            margin: 0 auto !important;
+          }
+
+          .formCol {
+            flex: 1 1 auto !important;
+            width: 100% !important;
+            justify-content: center !important;
+          }
+
+          .imageCol {
+            display: none !important;
+          }
+
+          .authCard {
+            max-width: 420px !important;
+            margin: 0 auto !important;
+          }
+
+          /* ✅ TÍTULO: 1 LINHA (SÓ MOBILE) */
+          .authTitle {
+            white-space: nowrap !important;
+            font-size: 1.15rem !important;
+            letter-spacing: 0.03em !important;
+            line-height: 1.1 !important;
+            margin-bottom: 1.2rem !important;
+            font-weight: 900 !important;
+          }
+        }
+
+        /* celular menor */
+        @media (max-width: 480px) {
+          .authCard {
+            max-width: 360px !important;
+            padding: 44px 28px 34px !important;
+            border-radius: 34px !important;
+          }
+
+          .authTitle {
+            font-size: 1.05rem !important;
+            letter-spacing: 0.025em !important;
+          }
+        }
+      `}</style>
+    </>
   );
 };
 

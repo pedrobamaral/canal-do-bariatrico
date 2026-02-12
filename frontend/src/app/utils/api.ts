@@ -13,12 +13,6 @@ import axios, { AxiosError } from "axios";
 // ✅ BaseURL via .env do front (com fallback)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-// (se quiser logar, pode manter)
-if (typeof window !== "undefined") {
-  // eslint-disable-next-line no-console
-  console.log("API URL configurada:", API_URL);
-}
-
 const api = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
@@ -55,11 +49,6 @@ export function clearToken() {
 // ✅ Interceptor: anexa Bearer automaticamente em todas as requests
 api.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-console
-      console.log("Fazendo requisição para:", (config.baseURL ?? "") + (config.url ?? ""));
-    }
-
     const token = getToken();
     if (token) {
       config.headers = config.headers ?? {};
@@ -141,12 +130,13 @@ function unwrapData<T = any>(respData: any): T {
 // -------------------- USERS --------------------
 export async function createUser(
   nome: string,
+  sobrenome: string,
   email: string,
   senha: string,
   telefone?: string
 ) {
   try {
-    const response = await api.post("/usuarios", { nome, email, senha, telefone });
+    const response = await api.post("/usuarios", { nome, sobrenome, email, senha, telefone, ativoCiclo: false });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -170,12 +160,6 @@ export async function getUserById(id: number): Promise<Usuario> {
   try {
     const response = await api.get(`/usuarios/${id}`);
 
-    // logs úteis do seu código antigo
-    console.log("=== API - getUserById ===");
-    console.log("response.data:", response.data);
-    console.log("response.data.data:", (response.data as any)?.data);
-    console.log("response.data.data.telefone:", (response.data as any)?.data?.telefone);
-
     return unwrapData<Usuario>(response.data);
   } catch (error: any) {
     console.error("Erro ao buscar usuário:", error);
@@ -197,16 +181,8 @@ export async function getIdUser(id: string) {
 // API 1 (mantido)
 export async function updateData(id: number, data: Partial<Usuario>) {
   try {
-    console.log("=== updateData ===");
-    console.log("Enviando para:", `/usuarios/${id}`);
-    console.log("Tamanho total do payload:", JSON.stringify(data).length, "bytes");
 
     const response = await api.patch(`/usuarios/${id}`, data);
-
-    console.log("Response status:", response.status);
-    console.log("Response data:", JSON.stringify(response.data, null, 2));
-    console.log("Response data.status:", (response.data as any)?.status);
-    console.log("Response data.message:", (response.data as any)?.message);
 
     return unwrapData(response.data);
   } catch (error: any) {

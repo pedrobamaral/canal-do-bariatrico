@@ -3,8 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { IoClose, IoChevronDown } from "react-icons/io5";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { BsInstagram } from "react-icons/bs";
-import { FaPills, FaUserMd } from "react-icons/fa";
+import { FaPills } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { createOrUpdateMedicacao } from "@/api/api";
 
@@ -13,11 +12,7 @@ import { createOrUpdateMedicacao } from "@/api/api";
 export type MedicationFrequency = number | null;
 
 export interface MedicationData {
-  nome: string;
-  concentracao: string;
   frequencia: MedicationFrequency;
-  nomeMedico: string;
-  instagramMedico: string;
 }
 
 interface MedicationModalProps {
@@ -102,7 +97,7 @@ const StepQuestion = ({
     <FaPills className="text-[#6A38F3] text-4xl opacity-80" />
 
     <p className="text-sm text-gray-600 text-center max-w-xs">
-      Você faz uso contínuo de algum medicamento?
+      Você vai tomar algum medicamento manipulado para emagrecer?
     </p>
 
     <div className="flex gap-4 w-full">
@@ -129,16 +124,12 @@ const StepQuestion = ({
 
 const StepMedication = ({ onNext, onValuesChange, onBack }: { 
   onNext: () => void; 
-  onValuesChange: (values: { nome: string; concentracao: string; frequencia: MedicationFrequency }) => void;
+  onValuesChange: (values: { frequencia: MedicationFrequency }) => void;
   onBack?: () => void;
 }) => {
   const [values, setValues] = useState<{
-    nome: string;
-    concentracao: string;
     frequencia: MedicationFrequency;
   }>({
-    nome: "",
-    concentracao: "",
     frequencia: null,
   });
   const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
@@ -150,15 +141,8 @@ const StepMedication = ({ onNext, onValuesChange, onBack }: {
   }, [values, onValuesChange]);
 
   const valid =
-    values.nome.trim() &&
-    values.concentracao.trim() &&
     values.frequencia !== null &&
     values.frequencia > 0;
-
-  const setField =
-    (field: string) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setValues((p) => ({ ...p, [field]: e.target.value }));
 
   const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
@@ -189,20 +173,6 @@ const StepMedication = ({ onNext, onValuesChange, onBack }: {
 
   return (
     <div className="p-8 space-y-4">
-      <Input
-        icon={<FaPills />}
-        placeholder="Nome do medicamento"
-        value={values.nome}
-        onChange={setField("nome")}
-      />
-
-      <Input
-        icon={<FaPills />}
-        placeholder="Concentração / Dosagem"
-        value={values.concentracao}
-        onChange={setField("concentracao")}
-      />
-
       <Select
         icon={<FaPills />}
         value={
@@ -266,92 +236,7 @@ const StepMedication = ({ onNext, onValuesChange, onBack }: {
 };
 
 /* ================== STEP 3 ================== */
-
-const StepDoctor = ({ 
-  onFinish, 
-  usuarioId, 
-  medicationValues,
-  embeddedMode,
-  onYesCallback 
-}: { 
-  onFinish: () => void; 
-  usuarioId?: number;
-  medicationValues: { nome: string; concentracao: string; frequencia: MedicationFrequency };
-  embeddedMode?: boolean;
-  onYesCallback?: (data: MedicationData) => void;
-}) => {
-  const [values, setValues] = useState({
-    nomeMedico: "",
-    instagramMedico: "",
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSave = async () => {
-    // Se estiver em modo embutido, apenas retorna os dados via callback
-    if (embeddedMode && onYesCallback) {
-      const fullData: MedicationData = {
-        nome: medicationValues.nome,
-        concentracao: medicationValues.concentracao,
-        frequencia: medicationValues.frequencia,
-        nomeMedico: values.nomeMedico,
-        instagramMedico: values.instagramMedico,
-      };
-      onYesCallback(fullData);
-      onFinish();
-      return;
-    }
-
-    if (!usuarioId) {
-      toast.error('ID do usuário não informado');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await createOrUpdateMedicacao(usuarioId, {
-        nome: medicationValues.nome,
-        concentracao: medicationValues.concentracao,
-        frequencia: medicationValues.frequencia,
-        nomeMedico: values.nomeMedico,
-        instagramMedico: values.instagramMedico,
-      });
-      toast.success('Medicamento salvo com sucesso!');
-      onFinish();
-    } catch (error: any) {
-      console.error('Erro ao salvar medicamento:', error);
-      toast.error(error.message || 'Erro ao salvar medicamento');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="p-8 space-y-4">
-      <Input 
-        icon={<FaUserMd />} 
-        placeholder="Nome do médico"
-        value={values.nomeMedico}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, nomeMedico: e.target.value }))}
-      />
-
-      <Input
-        icon={<BsInstagram />}
-        placeholder="Instagram do médico"
-        value={values.instagramMedico}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValues(prev => ({ ...prev, instagramMedico: e.target.value }))}
-      />
-
-      <button
-        onClick={handleSave}
-        disabled={loading}
-        className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
-        type="button"
-      >
-        {loading ? 'Salvando...' : 'Salvar medicamento'}
-      </button>
-    </div>
-  );
-};
+// Removed doctor fields: final step now saves only frequency (or returns it to parent in embedded mode)
 
 /* ================== MODAL ================== */
 
@@ -364,14 +249,10 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
   onBackCallback,
   embeddedMode = false,
 }) => {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [medicationValues, setMedicationValues] = useState<{ 
-    nome: string; 
-    concentracao: string; 
     frequencia: MedicationFrequency 
   }>({
-    nome: "",
-    concentracao: "",
     frequencia: null,
   });
 
@@ -379,7 +260,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
     if (!isOpen) {
       const t = setTimeout(() => {
         setStep(1);
-        setMedicationValues({ nome: "", concentracao: "", frequencia: null });
+        setMedicationValues({ frequencia: null });
       }, 250);
       return () => clearTimeout(t);
     }
@@ -387,7 +268,7 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
 
   const handleClose = () => {
     setStep(1);
-    setMedicationValues({ nome: "", concentracao: "", frequencia: null });
+    setMedicationValues({ frequencia: null });
     onClose();
   };
 
@@ -400,12 +281,38 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
 
   const handleFinish = () => {
     setStep(1);
-    setMedicationValues({ nome: "", concentracao: "", frequencia: null });
+    setMedicationValues({ frequencia: null });
     onClose();
   };
 
+  const handleStep2Next = async () => {
+    // If embedded, just return the data to parent
+    if (embeddedMode && onYesCallback) {
+      onYesCallback(medicationValues as MedicationData);
+      handleFinish();
+      return;
+    }
+
+    // Otherwise save directly to backend
+    if (!usuarioId) {
+      toast.error('ID do usuário não informado');
+      return;
+    }
+
+    try {
+      await createOrUpdateMedicacao(usuarioId, {
+        frequencia: medicationValues.frequencia,
+      });
+      toast.success('Medicamento salvo com sucesso!');
+      handleFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar medicamento:', error);
+      toast.error(error.message || 'Erro ao salvar medicamento');
+    }
+  };
+
   const handleMedicationValuesChange = useMemo(
-    () => (values: { nome: string; concentracao: string; frequencia: MedicationFrequency }) => {
+    () => (values: { frequencia: MedicationFrequency }) => {
       setMedicationValues(values);
     },
     []
@@ -433,18 +340,9 @@ export const MedicationModal: React.FC<MedicationModalProps> = ({
 
         {step === 2 && (
           <StepMedication 
-            onNext={() => setStep(3)} 
+            onNext={handleStep2Next} 
             onValuesChange={handleMedicationValuesChange}
             onBack={onBackCallback}
-          />
-        )}
-        {step === 3 && (
-          <StepDoctor 
-            onFinish={handleFinish} 
-            usuarioId={usuarioId}
-            medicationValues={medicationValues}
-            embeddedMode={embeddedMode}
-            onYesCallback={onYesCallback}
           />
         )}
       </div>

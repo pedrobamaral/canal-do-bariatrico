@@ -4,13 +4,16 @@ import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { IoIosBody } from "react-icons/io";
-import { IoPerson } from "react-icons/io5";
+import { IoPerson } from "react-icons/io5"
 
-// Ícones (mantive os seus do protótipo)
-import { FaUserMd, FaCalculator, FaUser } from "react-icons/fa"
-import { IoNutritionSharp, IoLogOutOutline } from "react-icons/io5"
-import { RiUser3Fill } from "react-icons/ri"
+// Ícones
+import { FaUserMd, FaCalculator } from "react-icons/fa"
+import { IoLogOutOutline } from "react-icons/io5"
+
+// ✅ Mobile menu icons
+import { FiMenu, FiX } from "react-icons/fi"
+import { FiEdit2, FiUser } from "react-icons/fi"
+import { MdCalculate } from "react-icons/md"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -23,19 +26,19 @@ const CORES = {
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userId, setUserId] = useState<number | null>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   const pathname = usePathname()
   const router = useRouter()
 
   const checkAuth = () => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("bari_token") : null
-    
+
     if (token) {
       setIsLoggedIn(true)
-      
-      // Decodifica o token para pegar o ID do usuário
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
+        const payload = JSON.parse(atob(token.split(".")[1]))
         setUserId(payload.sub)
       } catch (err) {
         console.error("Erro ao decodificar token:", err)
@@ -50,33 +53,42 @@ export default function Navbar() {
   useEffect(() => {
     checkAuth()
 
-    // Atualiza quando login/logout "avisar" (mesma aba)
     window.addEventListener("auth-changed", checkAuth)
-
-    // Atualiza ao voltar o foco pra aba (extra segurança)
     window.addEventListener("focus", checkAuth)
 
-    // Verifica periodicamente se o token ainda existe
     const interval = setInterval(() => {
-      const token = localStorage.getItem("bari_token");
-      const currentlyLoggedIn = token !== null;
-      
+      const token = localStorage.getItem("bari_token")
+      const currentlyLoggedIn = token !== null
+
       if (isLoggedIn !== currentlyLoggedIn) {
-        checkAuth();
+        checkAuth()
       }
-    }, 1000);
+    }, 1000)
 
     return () => {
       window.removeEventListener("auth-changed", checkAuth)
       window.removeEventListener("focus", checkAuth)
-      clearInterval(interval);
+      clearInterval(interval)
     }
   }, [pathname, isLoggedIn])
+
+  // ✅ fecha drawer ao trocar de rota
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  // ✅ trava scroll quando drawer abre (mobile)
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [mobileOpen])
 
   const handleLogout = () => {
     localStorage.removeItem("bari_token")
     localStorage.removeItem("bari_user")
-    
+
     setIsLoggedIn(false)
     setUserId(null)
 
@@ -90,20 +102,21 @@ export default function Navbar() {
     "text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
 
   return (
-    <header className="fixed top-0 z-50 w-full h-20 bg-black shadow-md font-['Montserrat']">
-      {/* ✅ Container interno pra controlar layout e evitar “espremido” */}
+    <header className="fixed top-0 z-50 w-full h-16 overflow-visible bg-black shadow-md font-['Montserrat']">
+      {/* ✅ Container interno (desktop intacto) */}
       <div className="h-full w-full flex items-center justify-between pr-8">
         {/* --- LADO ESQUERDO: LOGO --- */}
         <div
           className="h-full bg-black flex items-center pl-8 pr-8 shrink-0"
           style={{ borderBottomRightRadius: "30px" }}
         >
-          <div className="relative w-[320px] h-11 min-w-0">
+          {/* ✅ no mobile diminui a largura só pra não estourar */}
+          <div className="relative h-18 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[520px] min-w-0 mt-1 sm:mt-1 md:mt-3 lg:mt-5">
             <Image
-              src="/imagens/logo.png"
+              src="/images/logo.png"
               alt="Logo BARIE"
               fill
-              className="object-contain object-left"
+              className="object-contain"
               priority
             />
           </div>
@@ -111,7 +124,10 @@ export default function Navbar() {
 
         {/* ✅ LADO DIREITO */}
         <div className="flex-1 flex items-center justify-end">
-          <div className="flex items-center gap-6 whitespace-nowrap">
+          {/* ========================= */}
+          {/* ✅ DESKTOP (NÃO MUDA NADA) */}
+          {/* ========================= */}
+          <div className="hidden md:flex items-center gap-6 whitespace-nowrap">
             {/* ✅ DESLOGADO */}
             {!isLoggedIn && (
               <>
@@ -169,23 +185,18 @@ export default function Navbar() {
             {/* ✅ LOGADO */}
             {isLoggedIn && (
               <>
-                <Link href="#" aria-label="Médico">
+                <Link href="/pacientes" aria-label="Médico">
                   <FaUserMd size={24} className={iconBaseStyle} />
                 </Link>
 
-                <Link href="#" aria-label="Dieta">
-                  <IoNutritionSharp size={24} className={iconBaseStyle} />
-                </Link>
-
-                <Link href="#" aria-label="Treino">
-                  <IoIosBody size={27} className={iconBaseStyle} />
-                </Link>
-
-                <Link href="/" aria-label="Calculadora">
+                <Link href="/calculator" aria-label="Calculadora">
                   <FaCalculator size={22} className={iconBaseStyle} />
                 </Link>
 
-                <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
+                <Link
+                  href={userId ? `/userPage/${userId}` : "/userPage"}
+                  aria-label="Meu Perfil"
+                >
                   <IoPerson
                     size={26}
                     className="text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
@@ -198,7 +209,11 @@ export default function Navbar() {
                   type="button"
                   onClick={handleLogout}
                   aria-label="Sair"
-                  style={{ background: "transparent", border: "none", padding: 0 }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                  }}
                 >
                   <IoLogOutOutline
                     size={26}
@@ -208,8 +223,124 @@ export default function Navbar() {
               </>
             )}
           </div>
+
+          {/* ========================= */}
+          {/* ✅ MOBILE (NOVO) */}
+          {/* ========================= */}
+          <div className="flex md:hidden items-center">
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              onClick={() => setMobileOpen(true)}
+              className="p-2"
+            >
+              <FiMenu size={26} className="text-white" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* ✅ Overlay (mobile) */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* ✅ Drawer (mobile) */}
+      <aside
+        className={[
+          "fixed right-0 top-0 z-[70] h-full w-[260px] bg-[#D9D9D9] shadow-xl transition-transform md:hidden",
+          mobileOpen ? "translate-x-0" : "translate-x-full",
+        ].join(" ")}
+      >
+        <div className="flex items-center justify-end p-3">
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            onClick={() => setMobileOpen(false)}
+            className="rounded-md p-2 text-[#6F3CF6]"
+          >
+            <FiX size={22} />
+          </button>
+        </div>
+
+        {/* Menu items (mobile) */}
+        <nav className="flex flex-col gap-4 px-6 pt-2 text-[#6F3CF6]">
+          {!isLoggedIn ? (
+            <>
+              <Link
+                href="/cadastro"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <FiEdit2 size={28} />
+                <span className="font-medium text-lg">Cadastro</span>
+              </Link>
+
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <FiUser size={28} />
+                <span className="font-medium text-lg">Login</span>
+              </Link>
+
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <MdCalculate size={28} />
+                <span className="font-medium text-lg">Calculadora</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href={userId ? `/userPage/${userId}` : "/userPage"}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <FiUser size={28} />
+                <span className="font-medium text-lg">Perfil de Usuário</span>
+              </Link>
+
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <MdCalculate size={28} />
+                <span className="font-medium text-lg">Calculadora</span>
+              </Link>
+
+              <Link
+                href="/pacientes"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3"
+              >
+                <FaUserMd size={28} />
+                <span className="font-medium text-lg">Pacientes</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false)
+                  handleLogout()
+                }}
+                className="mt-2 flex items-center gap-3 text-left"
+              >
+                <IoLogOutOutline size={28} />
+                <span className="font-medium text-lg">Sair</span>
+              </button>
+            </>
+          )}
+        </nav>
+      </aside>
     </header>
   )
 }

@@ -20,27 +20,30 @@ export class UsuarioService {
 
   try {
     const novoUsuario = await this.prisma.usuario.create({
-      data: {
-        email: createUsuarioDto.email,
-        nome: createUsuarioDto.nome,
-        senha: await bcrypt.hash(createUsuarioDto.senha, 10),
-        admin: createUsuarioDto.admin ?? false,
-        ativo: createUsuarioDto.ativo ?? false,
+        data: {
+          email: createUsuarioDto.email,
+          nome: createUsuarioDto.nome,
+          sobrenome: createUsuarioDto.sobrenome,
+          senha: await bcrypt.hash(createUsuarioDto.senha, 10),
+          admin: createUsuarioDto.admin ?? false,
+          ativo: createUsuarioDto.ativo ?? false,
 
-        telefone: createUsuarioDto.telefone,
-        // Cast to any to avoid build-time mismatch with generated Prisma enum types
-        sexo: createUsuarioDto.sexo as any,
-        peso: createUsuarioDto.peso,
-        altura: createUsuarioDto.altura,
-        nascimento: createUsuarioDto.nascimento,
-        massa_magra: createUsuarioDto.massa_magra,
-        meta: createUsuarioDto.meta,
-      },
+          telefone: createUsuarioDto.telefone,
+          // Cast to any to avoid build-time mismatch with generated Prisma enum types
+          sexo: createUsuarioDto.sexo as any,
+          peso: createUsuarioDto.peso,
+          altura: createUsuarioDto.altura,
+          nascimento: createUsuarioDto.nascimento,
+          massa_magra: createUsuarioDto.massa_magra,
+          meta: createUsuarioDto.meta,
+        } as any,
     });
 
     const { senha, ...result } = novoUsuario;
     return result;
   } catch (error) {
+    console.error('=== CREATE USER ERROR ===');
+    console.error(error);
     throw new InternalServerErrorException('Não foi possível criar o usuário.');
   }
 }
@@ -50,9 +53,17 @@ export class UsuarioService {
       select: {
         id: true,
         nome: true,
+        sobrenome: true,
         email: true,
+        telefone: true,
+        foto: true,
+        peso: true,
+        altura: true,
+        meta: true,
+        admin: true,
+        ativo: true,
         dataCriacao: true,
-      },
+      } as any,
     });
   }
 
@@ -63,6 +74,7 @@ export class UsuarioService {
       select: {
         id: true,
         nome: true,
+        sobrenome: true,
         email: true,
         telefone: true,
         foto: true,
@@ -75,16 +87,12 @@ export class UsuarioService {
         admin: true,
         ativo: true,
         dataCriacao: true,
-      },
+      } as any,
     });
 
     if (!usuario) {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
-
-    console.log('=== FINDONE - Usuário retornado ===');
-    console.log('usuario:', usuario);
-    console.log('usuario.telefone:', usuario.telefone);
 
     return usuario;
   }
@@ -107,6 +115,7 @@ export class UsuarioService {
       const dataToUpdate: any = {};
       
       if (updateUsuarioDto.nome !== undefined) dataToUpdate.nome = updateUsuarioDto.nome;
+      if (updateUsuarioDto.sobrenome !== undefined) dataToUpdate.sobrenome = updateUsuarioDto.sobrenome;
       if (updateUsuarioDto.email !== undefined) dataToUpdate.email = updateUsuarioDto.email;
       if (updateUsuarioDto.senha !== undefined) dataToUpdate.senha = updateUsuarioDto.senha;
       if (updateUsuarioDto.telefone !== undefined) dataToUpdate.telefone = updateUsuarioDto.telefone;
@@ -125,15 +134,13 @@ export class UsuarioService {
       if (updateUsuarioDto.admin !== undefined) dataToUpdate.admin = updateUsuarioDto.admin;
       if (updateUsuarioDto.ativo !== undefined) dataToUpdate.ativo = updateUsuarioDto.ativo;
 
-      console.log('=== UPDATE USER - dataToUpdate ===');
-      console.log(JSON.stringify(dataToUpdate, null, 2));
-
       const usuarioAtualizado = await this.prisma.usuario.update({
         where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
         data: dataToUpdate,
         select: {
           id: true,
           nome: true,
+          sobrenome: true,
           email: true,
           telefone: true,
           foto: true,
@@ -146,7 +153,7 @@ export class UsuarioService {
           admin: true,
           ativo: true,
           dataCriacao: true,
-        },
+        } as any,
       });
 
       return usuarioAtualizado; 
@@ -162,5 +169,122 @@ export class UsuarioService {
     return this.prisma.usuario.delete({
       where: { id: typeof id === 'string' ? parseInt(id, 10) : id },
     });
+  }
+
+  /**
+   * Calcula estatísticas de adesão do usuário comparando DiaCiclo (planejado) com Daily (realizado).
+   * Considera APENAS os dias que já passaram (data_dia <= hoje), não o ciclo inteiro.
+   * Retorna porcentagens para água, dieta, treino e bioimpedância.
+   */
+  async getAdherenceStats(userId: number | string) {
+    const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+
+    // Data de hoje (fim do dia para comparação justa)
+    const hoje = new Date();
+    hoje.setHours(23, 59, 59, 999);
+
+    // Busca todos os DiaCiclos do usuário com Daily associado
+    const diaCiclos = await this.prisma.diaCiclo.findMany({
+      where: { idUsuario: id },
+      include: {
+        daily: true,
+      },
+      orderBy: { dia_ciclo: 'asc' },
+    });
+
+    // Filtra apenas os dias que já passaram (data_dia <= hoje)
+    const diasPassados = diaCiclos.filter(dc => {
+      if (!dc.data_dia) return false;
+      return new Date(dc.data_dia) <= hoje;
+    });
+
+    // Inicializa contadores
+    let dietaTotal = 0;
+    let dietaCumprida = 0;
+    let aguaTotal = 0;
+    let aguaCumprida = 0;
+    let treinoTotal = 0;
+    let treinoCumprido = 0;
+    let bioimpedanciaTotal = 0;
+    let bioimpedanciaCumprida = 0;
+
+    for (const dc of diasPassados) {
+      // Dieta: se tem_dieta está marcado no DiaCiclo, conta como esperado
+      if (dc.tem_dieta) {
+        dietaTotal++;
+        // Se o Daily existe e dieta_check é true, conta como cumprido
+        if (dc.daily?.dieta_check === true) {
+          dietaCumprida++;
+        }
+      }
+
+      // Água/Hidratação: se tem_agua está marcado no DiaCiclo
+      if (dc.tem_agua) {
+        aguaTotal++;
+        if (dc.daily?.agua_check === true) {
+          aguaCumprida++;
+        }
+      }
+
+      // Treino: se tem_treino está marcado no DiaCiclo
+      if (dc.tem_treino) {
+        treinoTotal++;
+        if (dc.daily?.treino_check === true) {
+          treinoCumprido++;
+        }
+      }
+
+      // Bioimpedância: se tem_bioimpedancia está marcado no DiaCiclo
+      if (dc.tem_bioimpedancia) {
+        bioimpedanciaTotal++;
+        if (dc.daily?.bioimpedancia_check === true) {
+          bioimpedanciaCumprida++;
+        }
+      }
+    }
+
+    // Calcula porcentagens (evita divisão por zero)
+    const dietaPct = dietaTotal > 0 ? Math.round((dietaCumprida / dietaTotal) * 100) : null;
+    const aguaPct = aguaTotal > 0 ? Math.round((aguaCumprida / aguaTotal) * 100) : null;
+    const treinoPct = treinoTotal > 0 ? Math.round((treinoCumprido / treinoTotal) * 100) : null;
+    const bioimpedanciaPct = bioimpedanciaTotal > 0 ? Math.round((bioimpedanciaCumprida / bioimpedanciaTotal) * 100) : null;
+
+    // Determina cor do status baseado na porcentagem
+    const getStatusColor = (pct: number | null): string => {
+      if (pct === null) return 'gray'; // sem dados
+      if (pct >= 80) return 'green';
+      if (pct >= 50) return 'yellow';
+      return 'red';
+    };
+
+    return {
+      dieta: {
+        total: dietaTotal,
+        cumprida: dietaCumprida,
+        porcentagem: dietaPct,
+        status: getStatusColor(dietaPct),
+      },
+      hidratacao: {
+        total: aguaTotal,
+        cumprida: aguaCumprida,
+        porcentagem: aguaPct,
+        status: getStatusColor(aguaPct),
+      },
+      treino: {
+        total: treinoTotal,
+        cumprida: treinoCumprido,
+        porcentagem: treinoPct,
+        status: getStatusColor(treinoPct),
+      },
+      bioimpedancia: {
+        total: bioimpedanciaTotal,
+        cumprida: bioimpedanciaCumprida,
+        porcentagem: bioimpedanciaPct,
+        status: getStatusColor(bioimpedanciaPct),
+      },
+      // Dados agregados: dias que já passaram vs dias com resposta
+      totalDiaCiclos: diasPassados.length,
+      diasComDaily: diasPassados.filter(dc => dc.daily !== null).length,
+    };
   }
 }

@@ -40,12 +40,20 @@ export class UsuarioController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get(':id/stats')
+  async getAdherenceStats(@Param('id') id: string) {
+    try {
+      const result = await this.usuarioService.getAdherenceStats(id);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto,) {
     try {
-      console.log('=== CONTROLLER UPDATE ===');
-      console.log('ID:', id);
-      console.log('DTO recebido:', JSON.stringify(updateUsuarioDto, null, 2));
       const result = await this.usuarioService.update(+id, updateUsuarioDto);
       return { status: 'sucesso', data: result };
     } catch (error) {

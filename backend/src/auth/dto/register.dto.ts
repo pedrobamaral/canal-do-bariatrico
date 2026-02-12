@@ -14,6 +14,10 @@ export class RegisterDto {
   @IsNotEmpty()
   nome: string;
 
+  @IsString()
+  @IsNotEmpty()
+  sobrenome: string;
+
   @IsBoolean()
   @IsOptional()
   admin?: boolean; 

@@ -13,22 +13,23 @@ datasource db {
   // Connection URL for Prisma client generation and runtime.
   // If you are migrating to Prisma v7+ you can move this to prisma.config.ts,
   // but keep it here while the project still uses the schema-based datasource.
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model Usuario {
-  id          Int        @id @default(autoincrement())
-  email       String     @unique @db.VarChar(100)
-  senha       String     @db.VarChar(100)
-  nome        String     @db.VarChar(100)
-  telefone    String?    @db.VarChar(25)
-  foto        String?    @db.LongText
-  admin       Boolean    @default(false)
-  dataCriacao DateTime   @default(now())
+  id          Int      @id @default(autoincrement())
+  email       String   @unique @db.VarChar(100)
+  senha       String   @db.VarChar(100)
+  nome        String   @db.VarChar(100)
+  sobrenome   String   @db.VarChar(100)
+  telefone    String?  @db.VarChar(25)
+  foto        String?  @db.LongText
+  admin       Boolean  @default(false)
+  dataCriacao DateTime @default(now())
 
   //Ecommerce
-  endereco    Endereco[]
-  carrinho    Carrinho?
+  endereco Endereco[]
+  carrinho Carrinho?
 
   // Projeto Vidale
   ativo       Boolean?     @default(false)

@@ -24,6 +24,7 @@ export class AuthService {
       nome: registerDto.nome,
       sobrenome: registerDto.sobrenome,
       senha: registerDto.senha,
+      telefone: registerDto.telefone,
       admin: registerDto.admin ?? false,
       ativo: false,
     });

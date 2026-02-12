@@ -19,24 +19,28 @@ export class UsuarioService {
   }
 
   try {
-    const novoUsuario = await this.prisma.usuario.create({
-        data: {
-          email: createUsuarioDto.email,
-          nome: createUsuarioDto.nome,
-          sobrenome: createUsuarioDto.sobrenome,
-          senha: await bcrypt.hash(createUsuarioDto.senha, 10),
-          admin: createUsuarioDto.admin ?? false,
-          ativo: createUsuarioDto.ativo ?? false,
+    // Construir dados dinamicamente - evita enviar undefined
+    const data: any = {
+      email: createUsuarioDto.email,
+      nome: createUsuarioDto.nome,
+      sobrenome: createUsuarioDto.sobrenome,
+      senha: await bcrypt.hash(createUsuarioDto.senha, 10),
+      admin: createUsuarioDto.admin ?? false,
+      ativo: createUsuarioDto.ativo ?? false,
+    };
 
-          telefone: createUsuarioDto.telefone,
-          // Cast to any to avoid build-time mismatch with generated Prisma enum types
-          sexo: createUsuarioDto.sexo as any,
-          peso: createUsuarioDto.peso,
-          altura: createUsuarioDto.altura,
-          nascimento: createUsuarioDto.nascimento,
-          massa_magra: createUsuarioDto.massa_magra,
-          meta: createUsuarioDto.meta,
-        } as any,
+    // Campos opcionais - só adicionar se tiverem valor
+    if (createUsuarioDto.telefone !== undefined) data.telefone = createUsuarioDto.telefone;
+    if (createUsuarioDto.sexo !== undefined) data.sexo = createUsuarioDto.sexo;
+    if (createUsuarioDto.peso !== undefined) data.peso = createUsuarioDto.peso;
+    if (createUsuarioDto.altura !== undefined) data.altura = createUsuarioDto.altura;
+    if (createUsuarioDto.nascimento !== undefined) data.nascimento = createUsuarioDto.nascimento;
+    if (createUsuarioDto.massa_magra !== undefined) data.massa_magra = createUsuarioDto.massa_magra;
+    if (createUsuarioDto.meta !== undefined) data.meta = createUsuarioDto.meta;
+    if (createUsuarioDto.foto !== undefined) data.foto = createUsuarioDto.foto;
+
+    const novoUsuario = await this.prisma.usuario.create({
+      data,
     });
 
     const { senha, ...result } = novoUsuario;

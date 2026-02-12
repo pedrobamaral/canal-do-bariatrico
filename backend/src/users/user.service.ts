@@ -42,6 +42,8 @@ export class UsuarioService {
     const { senha, ...result } = novoUsuario;
     return result;
   } catch (error) {
+    console.error('=== CREATE USER ERROR ===');
+    console.error(error);
     throw new InternalServerErrorException('Não foi possível criar o usuário.');
   }
 }

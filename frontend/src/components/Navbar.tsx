@@ -113,7 +113,7 @@ export default function Navbar() {
           {/* ✅ no mobile diminui a largura só pra não estourar */}
           <div className="relative h-18 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[520px] min-w-0 mt-1 sm:mt-1 md:mt-3 lg:mt-5">
             <Image
-              src="/images/logo.png"
+              src="/images/newLogo.png"
               alt="Logo BARIE"
               fill
               className="object-contain"

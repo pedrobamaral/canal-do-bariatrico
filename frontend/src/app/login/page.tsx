@@ -151,10 +151,16 @@ const LoginForm: React.FC = () => {
         }
 
         window.dispatchEvent(new Event("auth-changed"));
-      }
 
-      router.push("/");
-      router.refresh();
+        // Redireciona para a página do usuário, se disponível
+        const userId = data.user?.id ?? data.user?.sub ?? null;
+        if (userId) {
+          router.push(`/userPage/${userId}`);
+        } else {
+          router.push("/");
+        }
+        router.refresh();
+      }
     } catch (error: any) {
       setError(error.message);
 

@@ -27,6 +27,14 @@ model Usuario {
   admin       Boolean  @default(false)
   dataCriacao DateTime @default(now())
 
+  // Fotos comparativas (antes/depois)
+  foto_costas_antes  String? @db.LongText
+  foto_costas_depois String? @db.LongText
+  foto_frente_antes  String? @db.LongText
+  foto_frente_depois String? @db.LongText
+  foto_lado_antes    String? @db.LongText
+  foto_lado_depois   String? @db.LongText
+
   //Ecommerce
   endereco Endereco[]
   carrinho Carrinho?

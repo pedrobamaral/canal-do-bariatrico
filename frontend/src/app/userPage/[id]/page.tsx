@@ -1,475 +1,531 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import PatientsTable, { PatientData } from '@/components/PatientsTable';
-import { getAllUsers, getUserAdherenceStats, UserAdherenceStats } from '@/api/api';
-import { getUserById } from "@/api/api";
+import { motion } from "framer-motion";
+import { getUserById, getUserAdherenceStats, UserAdherenceStats, getUserFotos, saveUserFotos } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal";
 import { toast, ToastContainer } from "react-toastify";
+
 import {
   HiOutlineClipboardList,
   HiOutlineLightningBolt,
-  HiOutlineScale,
 } from "react-icons/hi";
 import { IoWaterOutline } from "react-icons/io5";
-
-// Migração de token antigo para novo no root layout
-// Este efeito seria normalmente no layout.tsx, mas colocamos aqui por segurança
-const migrateTokenIfNeeded = () => {
-  if (typeof window !== 'undefined') {
-    const authToken = localStorage.getItem('authToken');
-    const bariToken = localStorage.getItem('bari_token');
-    
-    if (authToken && !bariToken) {
-      localStorage.setItem('bari_token', authToken);
-      localStorage.removeItem('authToken');
-    }
-  }
-};
+import { FaPills, FaPenAlt, FaCamera, FaArrowRight, FaTrash, FaImages, FaTimes } from "react-icons/fa";
 
 type Usuario = {
   id: number;
   nome: string;
   email: string;
   telefone?: string;
-  sexo?: string;
+  foto?: string;
   peso?: number;
   altura?: number;
-  Nascimento?: Date;
-  massa_magra?: number;
+  sexo?: string;
   meta?: number;
   admin?: boolean;
-  ativo?: boolean;
-  dataCriacao?: Date;
-  foto?: string;
 };
 
-const formatPhoneNumber = (value?: string | null, countryCode = "+55") => {
-  if (!value) return "Telefone não informado";
-
-  // Remove tudo que não é dígito
-  const numbers = value.replace(/\D/g, "");
-  const codeDigits = countryCode.replace(/\D/g, "");
-
-  // Se o backend já enviou o código do país, remova-o temporariamente para formatar o número local
-  let local = numbers;
-  if (codeDigits && numbers.startsWith(codeDigits)) {
-    local = numbers.slice(codeDigits.length);
-  }
-
-  // Garantir os últimos 11 dígitos do número local (DDD + 9 dígitos)
-  const limited = local.slice(-11);
-
-  if (limited.length === 0) return "Telefone não informado";
-
-  // Aplica a formatação (XX) XXXXX-XXXX
-  let maskedLocal = "";
-  if (limited.length > 10) {
-    maskedLocal = limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
-  } else if (limited.length > 6) {
-    maskedLocal = limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-  } else if (limited.length > 2) {
-    maskedLocal = limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
-  } else {
-    maskedLocal = limited.replace(/^(\d*)/, "($1");
-  }
-
-  return `${countryCode} ${maskedLocal}`.trim();
-};
-
-const EmailIcon = () => (
-  <svg className="h-3 w-4 translate-y-0.5" viewBox="0 0 21 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2.04074 16.3259C1.47954 16.3259 0.999283 16.1263 0.599978 15.727C0.200673 15.3277 0.000680247 14.8471 0 14.2852V2.04074C0 1.47954 0.199993 0.999283 0.599978 0.599978C0.999963 0.200673 1.48022 0.000680247 2.04074 0H18.3667C18.9279 0 19.4085 0.199992 19.8084 0.599978C20.2084 0.999963 20.4081 1.48022 20.4074 2.04074V14.2852C20.4074 14.8464 20.2078 15.327 19.8084 15.727C19.4091 16.127 18.9285 16.3266 18.3667 16.3259H2.04074ZM10.2037 9.18333L18.3667 4.08148V2.04074L10.2037 7.14259L2.04074 2.04074V4.08148L10.2037 9.18333Z" 
-      fill="currentColor"
-      fillOpacity="0.6"
-    />
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg className="h-3 w-4 translate-y-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" 
-      fill="currentColor"
-      fillOpacity="0.6"
-    />
-  </svg>
-);
-
-// Configuração das 4 métricas de progresso
-const progressConfig = [
+const baseProgressConfig = [
   { key: 'hidratacao' as const, label: "Hidratação", icon: IoWaterOutline },
-  { key: 'dieta' as const, label: "Dieta", icon: HiOutlineClipboardList },
   { key: 'treino' as const, label: "Treino", icon: HiOutlineLightningBolt },
-  { key: 'bioimpedancia' as const, label: "Bioimpedância", icon: HiOutlineScale },
+  { key: 'dieta' as const, label: "Dieta", icon: HiOutlineClipboardList },
 ];
+
+const mounjaroCard = { key: 'mounjaro' as const, label: "Caneta Emagrecedora", icon: FaPenAlt };
+const manipuladoCard = { key: 'manipulado' as const, label: "Manipulado", icon: FaPills };
+
+/* ═══ FOTOS COMPARATIVAS ═══ */
+type FotoAngulo = 'costas' | 'frente' | 'lado';
+type FotoMomento = 'antes' | 'depois';
+type FotoKey = `${FotoAngulo}_${FotoMomento}`;
+
+const ANGULOS: { key: FotoAngulo; label: string }[] = [
+  { key: 'costas', label: 'Costas' },
+  { key: 'frente', label: 'Frente' },
+  { key: 'lado', label: 'Lado' },
+];
+
+/* Silhuetas SVG inline para cada ângulo */
+const Silhouette: React.FC<{ angulo: FotoAngulo; className?: string }> = ({ angulo, className }) => {
+  const common = "opacity-30";
+  if (angulo === 'costas') {
+    return (
+      <svg viewBox="0 0 80 120" className={`${common} ${className}`} fill="currentColor">
+        <ellipse cx="40" cy="16" rx="12" ry="14" />
+        <rect x="28" y="30" width="24" height="4" rx="2" />
+        <path d="M24 34 C20 36, 16 50, 18 64 L22 64 L24 42 Z" />
+        <path d="M56 34 C60 36, 64 50, 62 64 L58 64 L56 42 Z" />
+        <path d="M28 34 L28 80 C28 84, 30 86, 32 88 L32 110 L38 110 L38 86 L42 86 L42 110 L48 110 L48 88 C50 86, 52 84, 52 80 L52 34 Z" />
+      </svg>
+    );
+  }
+  if (angulo === 'frente') {
+    return (
+      <svg viewBox="0 0 80 120" className={`${common} ${className}`} fill="currentColor">
+        <ellipse cx="40" cy="16" rx="12" ry="14" />
+        <rect x="28" y="30" width="24" height="4" rx="2" />
+        <path d="M24 34 C20 36, 14 48, 16 62 L22 62 L26 42 Z" />
+        <path d="M56 34 C60 36, 66 48, 64 62 L58 62 L54 42 Z" />
+        <path d="M28 34 L28 78 C28 82, 30 84, 32 86 L32 110 L38 110 L38 84 L42 84 L42 110 L48 110 L48 86 C50 84, 52 82, 52 78 L52 34 Z" />
+      </svg>
+    );
+  }
+  // lado
+  return (
+    <svg viewBox="0 0 80 120" className={`${common} ${className}`} fill="currentColor">
+      <ellipse cx="40" cy="16" rx="11" ry="14" />
+      <path d="M36 30 L44 30 L48 34 L48 80 C48 84, 46 86, 44 88 L44 110 L38 110 L38 86 L36 86 L36 110 L30 110 L30 88 C28 86, 26 84, 26 80 L26 34 Z" />
+      <path d="M48 36 C54 38, 58 48, 56 60 L50 58 L48 40 Z" />
+    </svg>
+  );
+};
+
+/* Comprime imagem via canvas. Redimensiona se necessário e ajusta qualidade JPEG. */
+function compressImage(file: File, maxWidth = 1200, maxSizeMB = 1): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+
+        // Redimensiona mantendo proporção
+        if (width > maxWidth) {
+          height = Math.round(height * (maxWidth / width));
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Tenta qualidades decrescentes até ficar abaixo do limite
+        let quality = 0.85;
+        let result = canvas.toDataURL('image/jpeg', quality);
+
+        while (result.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.1) {
+          quality -= 0.1;
+          result = canvas.toDataURL('image/jpeg', quality);
+        }
+
+        resolve(result);
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Componente de slot de foto */
+const PhotoSlot: React.FC<{
+  angulo: FotoAngulo;
+  momento: FotoMomento;
+  foto: string | null;
+  onUpload: (base64: string) => void;
+  onRemove: () => void;
+}> = ({ angulo, momento, foto, onUpload, onRemove }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 20MB)");
+      return;
+    }
+    try {
+      const compressed = await compressImage(file, 1200, 1);
+      onUpload(compressed);
+    } catch {
+      toast.error("Erro ao processar imagem");
+    }
+    e.target.value = "";
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        onClick={() => !foto && inputRef.current?.click()}
+        className={`
+          relative w-[120px] h-[140px] rounded-xl flex flex-col items-center justify-center
+          transition-all duration-200 group overflow-hidden
+          ${foto
+            ? "border border-[#8B5CF6]/40"
+            : "border-2 border-dashed border-white/20 hover:border-[#8B5CF6]/50 cursor-pointer"
+          }
+        `}
+        style={{ background: "rgba(255,255,255,0.04)" }}
+      >
+        {foto ? (
+          <>
+            <img src={foto} alt={`${angulo} ${momento}`} className="w-full h-full object-cover rounded-xl" />
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(); }}
+              className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <FaTrash className="w-2.5 h-2.5 text-white" />
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="relative w-14 h-14 flex items-center justify-center">
+              <Silhouette angulo={angulo} className="w-full h-full text-white" />
+              <FaCamera className="absolute bottom-0 right-0 w-4 h-4 text-white/50" />
+            </div>
+            <span className="text-[10px] text-white/40 mt-1">Envie sua foto</span>
+          </>
+        )}
+      </div>
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+};
 
 export default function UserPage() {
   const { id } = useParams();
   const router = useRouter();
 
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [patients, setPatients] = useState<PatientData[]>([]);
-  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
-  const [loadingPatients, setLoadingPatients] = useState(false);
-  const [Dono, setDono] = useState(false);
-  const [mostrar, setMostrar] = useState(false);
-  const [error, setError] = useState(false);
   const [userStats, setUserStats] = useState<UserAdherenceStats | null>(null);
-  const [loadingStats, setLoadingStats] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [mostrar, setMostrar] = useState(false);
   const [isPostLoginModalOpen, setIsPostLoginModalOpen] = useState(false);
+  const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
 
-  const fetchAllPageData = async () => {
-    if (!id) return;
+  /* ── Fotos comparativas (persistidas no banco de dados) ── */
+  const [fotos, setFotos] = useState<Record<FotoKey, string | null>>({
+    costas_antes: null, costas_depois: null,
+    frente_antes: null, frente_depois: null,
+    lado_antes: null, lado_depois: null,
+  });
 
-    try {
-      const userData = await getUserById(Number(id));
-      setUsuario(userData);
-      setError(false);
-
-      const token = localStorage.getItem("bari_token");
-      if (token && userData) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          setDono(payload.sub == userData.id);
-        } catch (err) {
-          console.error("Token Inválido");
-          setDono(false);
-        }
-      }
-    } catch (err: any) {
-      console.error("Erro ao buscar dados:", err);
-      setError(true);
-      setUsuario(null);
-      
-      const token = localStorage.getItem("bari_token");
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          if (payload.sub == Number(id)) {
-            localStorage.removeItem('bari_token');
-            toast.error('Sua sessão expirou. Faça login novamente.');
-            setTimeout(() => router.push('/login'), 2000);
-          }
-        } catch (e) {
-          console.error('Erro ao verificar token:', e);
-        }
-      }
+  const updateFoto = useCallback(async (key: FotoKey, value: string | null) => {
+    setFotos(prev => ({ ...prev, [key]: value }));
+    const userId = Number(id);
+    const ok = await saveUserFotos(userId, { [key]: value });
+    if (!ok) {
+      toast.error("Erro ao salvar foto");
+      // Reverte em caso de falha
+      setFotos(prev => ({ ...prev, [key]: prev[key] }));
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    migrateTokenIfNeeded();
-    
-    // Verificar autenticação antes de qualquer coisa
     const token = localStorage.getItem("bari_token");
     if (!token) {
-      toast.error('Você precisa estar logado para acessar esta página.');
-      router.push('/login');
+      router.push("/login");
       return;
     }
-    
-    if (!id) return;
-    
-    const fetchInitialData = async () => {
-      setLoading(true);
-      
-      try {
-        const userData = await getUserById(Number(id));
-        
-        setUsuario(userData);
-        setError(false);
 
-        const token = localStorage.getItem("bari_token");
-        if (token && userData) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            setDono(payload.sub == userData.id);
-          } catch (err) {
-            console.error("Token Inválido");
-            setDono(false);
-          }
+    const fetchData = async () => {
+      try {
+        const user = await getUserById(Number(id));
+        setUsuario(user);
+
+        if (!user.admin) {
+          const stats = await getUserAdherenceStats(user.id);
+          setUserStats(stats);
+
+          const fotosData = await getUserFotos(user.id);
+          if (fotosData) setFotos(fotosData as Record<FotoKey, string | null>);
         }
-      } catch (err: any) {
-        console.error("Erro ao buscar dados:", err);
-        setError(true);
-        setUsuario(null);
-        
-        const token = localStorage.getItem("bari_token");
-        if (token) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            if (payload.sub == Number(id)) {
-              localStorage.removeItem('bari_token');
-              toast.error('Sua sessão expirou. Faça login novamente.');
-              setTimeout(() => router.push('/login'), 2000);
-            }
-          } catch (e) {
-            console.error('Erro ao verificar token:', e);
-          }
-        }
+
+        if (user.peso && user.altura && user.sexo && user.meta) return;
+        setIsPostLoginModalOpen(true);
+      } catch {
+        toast.error("Erro ao carregar usuário");
       } finally {
         setLoading(false);
       }
     };
-    
-    fetchInitialData();
+
+    fetchData();
   }, [id, router]);
 
-  // Se for admin, buscar pacientes para exibir a tabela dentro da userPage
-  useEffect(() => {
-    const fetchPatients = async () => {
-      if (!usuario || !usuario.admin) return;
-      setLoadingPatients(true);
-      try {
-        const data = await getAllUsers();
-        
-        // Busca estatísticas de adesão para cada paciente em paralelo
-        const patientsWithStats = await Promise.all(
-          data.map(async (user: any) => {
-            try {
-              const stats = await getUserAdherenceStats(user.id);
-              return {
-                ...user,
-                dietaStatus: stats?.dieta.status || 'gray',
-                hidratacaoStatus: stats?.hidratacao.status || 'gray',
-                treinoStatus: stats?.treino.status || 'gray',
-                bioimpedanciaStatus: stats?.bioimpedancia.status || 'gray',
-                checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
-                adesao: stats && stats.dieta.porcentagem !== null 
-                  ? `${Math.round((
-                      (stats.dieta.porcentagem || 0) + 
-                      (stats.hidratacao.porcentagem || 0) + 
-                      (stats.treino.porcentagem || 0) +
-                      (stats.bioimpedancia.porcentagem || 0)
-                    ) / 4)}%` 
-                  : 'Sem dados',
-              };
-            } catch (error) {
-              return {
-                ...user,
-                dietaStatus: 'gray' as const,
-                hidratacaoStatus: 'gray' as const,
-                treinoStatus: 'gray' as const,
-                bioimpedanciaStatus: 'gray' as const,
-                checkins: '0/0',
-                adesao: 'Sem dados',
-              };
-            }
-          })
-        );
-        
-        setPatients(patientsWithStats);
-        setFilteredPatients(patientsWithStats);
-      } catch (e) {
-        console.error('Erro ao buscar pacientes:', e);
-      } finally {
-        setLoadingPatients(false);
-      }
-    };
-
-    fetchPatients();
-  }, [usuario]);
-
-  // Se NÃO for admin, buscar stats do próprio usuário para exibir as barras de progresso
-  useEffect(() => {
-    const fetchUserStats = async () => {
-      if (!usuario || usuario.admin) return;
-      setLoadingStats(true);
-      try {
-        const stats = await getUserAdherenceStats(usuario.id);
-        setUserStats(stats);
-      } catch (e) {
-        console.error('Erro ao buscar stats do usuário:', e);
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-
-    fetchUserStats();
-  }, [usuario]);
-
-  // Abre o modal pós-login na página de perfil do próprio usuário se faltar dados obrigatórios
-  useEffect(() => {
-    if (!usuario || !Dono) return;
-    
-    // Verifica se os campos obrigatórios estão preenchidos
-    const hasRequiredData = usuario.peso && usuario.altura && usuario.sexo && usuario.meta;
-    
-    if (!hasRequiredData) {
-      setIsPostLoginModalOpen(true);
-    }
-  }, [usuario, Dono]);
-
-  const handlePostLoginFinish = (data: PostLoginData) => {
-    setIsPostLoginModalOpen(false);
-    // Recarrega os dados do usuário após salvar
-    fetchAllPageData();
-  };
-
-  const getStatusColor = (color: string) => {
-    switch (color) {
-      case 'red': return 'bg-red-500';
-      case 'yellow': return 'bg-yellow-400';
-      case 'green': return 'bg-green-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  const formatDate = (date?: Date | string) => {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleDateString('pt-BR');
-  };
-
-  const handlePatientClick = (patient: PatientData) => {
-    // navegar para a página do paciente ao clicar
-    router.push(`/userPage/${patient.id}`);
-  };
-
-
-  if (loading) return (
-    <main className="min-h-screen flex items-center justify-center bg-white">
-      <p className="text-center text-2xl text-[#6A38F3] font-sans font-bold">Carregando usuário...</p>
-    </main>
-  );
-  
-  if (error || !usuario) return (
-    <main className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center">
-        <p className="text-2xl text-red-500 font-sans font-bold mb-4">Usuário não encontrado</p>
-        <button 
-          onClick={() => router.push('/')} 
-          className="px-6 py-2 bg-[#6A38F3] text-white rounded-full hover:bg-[#5c2fe0] transition"
-        >
-          Voltar para Home
-        </button>
+  if (loading || !usuario) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        Carregando...
       </div>
-    </main>
-  );
-  // Não fazemos return aqui — iremos mostrar a tabela dentro da mesma página
+    );
+  }
 
   return (
-    <main className="min-h-screen text-black bg-white pb-16">
+    <main className="min-h-screen relative text-white">
+      {/* BACKGROUND */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/fundoAcad.jpeg')" }}
+      />
+        <div className="absolute inset-0 backdrop-blur-sm" />
+
       <Navbar />
 
-      <div className="w-full h-70 bg-black relative flex items-end px-6 md:px-16"></div>
-
-      <div className="relative w-full max-w-5xl mx-auto px-4 pt-24 md:px-0 md:pt-0">
-        <div className="absolute -top-[84px] left-6 flex flex-col items-start text-left md:-top-[104px] md:left-24">
-          <img
-            src={usuario.foto || "/images/defaultAvatar.jpg"}
-            alt="Foto de Perfil"
-            className="w-28 h-28 md:w-40 md:h-40 rounded-full object-cover border-4 border-back"
-            onError={(e) => { e.currentTarget.src = "/images/bari_padrao.png"; }}
+      {/* CARD CENTRAL */}
+      <div className="relative z-10 flex justify-center pt-28 pb-24">
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          {/* Purple glow */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -42%)',
+              width: '520px',
+              height: '320px',
+              borderRadius: '22px',
+              filter: 'blur(80px)',
+              background: 'radial-gradient(circle at center, rgba(138,92,246,0.45), rgba(111,60,246,0.12) 40%, transparent 70%)',
+              zIndex: 0,
+            }}
           />
 
-          <div className="mt-2 font-sans flex flex-col gap-0.5">
-            <h2 className="text-2xl md:text-3xl font-semibold ">{usuario.nome}</h2>
-            <p className="flex items-center gap-1 text-sm md:text-base">
-              <EmailIcon />
-              {usuario.email}
-            </p>
-            <p className="flex items-center gap-1 text-sm md:text-base">
-              <PhoneIcon />
-              {formatPhoneNumber(usuario.telefone)}
-            </p>
-          </div>
-        </div>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full max-w-md rounded-2xl p-6"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              zIndex: 1,
+              position: 'relative'
+            }}
+          >
+          {/* PERFIL */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <img
+              src={usuario.foto || "/images/defaultAvatar.jpg"}
+              className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6]"
+              style={{ marginTop: '-70px' }}
+            />
 
-        {Dono && (
-          <div>
-            <button 
+            <h2 className="text-xl font-semibold">{usuario.nome}</h2>
+
+            <p className="text-sm text-white/70">{usuario.email}</p>
+
+            <button
               onClick={() => setMostrar(true)}
-              className="mx-auto mt-6 block w-full max-w-[260px] bg-[#6A38F3] border border-[#2563EB] text-white py-2 rounded-full hover:bg-[#2563EB] hover:text-white transition hover:cursor-pointer font-sans tracking-wider md:mt-0 md:absolute md:top-5 md:right-20 md:w-auto md:px-20"
+              className="
+                mt-3 px-6 py-2 rounded-full
+                bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]
+                shadow-[0_0_20px_rgba(138,92,246,0.6)]
+                hover:scale-105 transition
+              "
             >
-              Editar Perfil
+              Atualizar meus dados
             </button>
           </div>
-        )}
+
+          {/* PROGRESSO */}
+          {!usuario.admin && userStats && (
+            <>
+              <h3 className="mt-8 mb-4 text-lg font-semibold text-white/90">
+                Seu Progresso
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[...baseProgressConfig, ...(userStats.temMounjaro ? [mounjaroCard] : []), ...(userStats.temManipulado ? [manipuladoCard] : [])].map(({ key, label, icon: Icon }, index) => {
+                  const metric = userStats[key];
+                  const percent = metric?.porcentagem ?? 0;
+
+                  return (
+                    <motion.div
+                      key={key}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.15 }}
+                      whileHover={{ scale: 1.03 }}
+                      className="
+                        rounded-xl
+                        bg-white/5
+                        border border-white/10
+                        p-4
+                        hover:bg-white/10
+                        transition
+                      "
+                    >
+                      <div className="flex items-center gap-2 text-[#8B5CF6] font-medium">
+                        <Icon className="w-5 h-5" />
+                        {label}
+                      </div>
+
+                      <p className="mt-2 text-sm text-white/70">
+                        Você ainda não registrou hoje
+                      </p>
+
+                      <span className="text-xs text-[#8B5CF6]">
+                        Vamos começar?
+                      </span>
+
+                      <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          transition={{ duration: 0.8 }}
+                          className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]"
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {/* Card de Fotos */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  whileHover={{ scale: 1.03 }}
+                  onClick={() => setIsFotoModalOpen(true)}
+                  className="
+                    rounded-xl
+                    bg-white/5
+                    border border-white/10
+                    p-4
+                    hover:bg-white/10
+                    transition
+                    cursor-pointer
+                  "
+                >
+                  <div className="flex items-center gap-2 text-[#8B5CF6] font-medium">
+                    <FaImages className="w-5 h-5" />
+                    Suas Fotos
+                  </div>
+
+                  <p className="mt-2 text-sm text-white/70">
+                    Compare seu antes e depois
+                  </p>
+
+                  <span className="text-xs text-[#8B5CF6]">
+                    Toque para abrir
+                  </span>
+
+                  <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.round((Object.values(fotos).filter(Boolean).length / 6) * 100)}%` }}
+                      transition={{ duration: 0.8 }}
+                      className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]"
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </motion.div>
+        </div>
       </div>
 
-      {/* Espaçador para reservar área do perfil (evita sobreposição com a tabela) */}
-      <div className="h-1" />
-
-      {/* PROGRESSO ou TABELA (se admin) */}
-      {usuario.admin ? (
-        <div className="max-w-6xl mx-auto p-6 mt-32 md:mt-44">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quantidade de pacientes ativos: <span className="font-semibold">{patients.filter((p) => !p.admin).length}</span></h3>
-          <PatientsTable
-            filteredPatients={filteredPatients}
-            loading={loadingPatients}
-            onPatientClick={handlePatientClick}
-            formatDate={formatDate}
-            getStatusColor={getStatusColor}
+      {/* ═══ MODAL SUAS FOTOS ═══ */}
+      {isFotoModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsFotoModalOpen(false)}
+        >
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
-        </div>
-      ) : (
-        <div className="max-w-5xl mx-auto px-6 mt-36 md:mt-48">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Seu Progresso</h3>
-          
-          {loadingStats ? (
-            <p className="text-center text-gray-500">Carregando estatísticas...</p>
-          ) : userStats ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {progressConfig.map(({ key, label, icon: Icon }) => {
-                const metric = userStats[key];
-                const value = metric?.porcentagem ?? 0;
-                
-                return (
-                  <div key={key}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 text-[#6A38F3] font-semibold">
-                        <Icon className="w-5 h-5" />
-                        <span>{label}</span>
-                      </div>
-                      <span className="text-sm font-medium text-gray-600">
-                        {metric?.porcentagem !== null ? `${value}%` : 'Sem dados'}
-                        <span className="text-xs text-gray-400 ml-1">
-                          ({metric?.cumprida ?? 0}/{metric?.total ?? 0})
-                        </span>
-                      </span>
+
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 sm:p-8"
+            style={{
+              background: 'rgba(20,15,35,0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              boxShadow: '0 8px 60px rgba(0,0,0,0.5)',
+            }}
+          >
+            {/* Botão fechar */}
+            <button
+              onClick={() => setIsFotoModalOpen(false)}
+              className="absolute top-4 right-4 text-white/50 hover:text-white transition"
+            >
+              <FaTimes className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-semibold text-center text-white/90 mb-6">
+              Suas Fotos
+            </h3>
+
+            <div className="space-y-6">
+              {ANGULOS.map(({ key: angulo, label }) => (
+                <div key={angulo}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 shrink-0 text-sm font-semibold text-white/70 text-right">
+                      {label}
                     </div>
 
-                    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] rounded-full transition-all duration-500"
-                        style={{ width: `${value}%` }}
-                      />
+                    <div className="flex-1 flex items-center justify-center gap-2 sm:gap-4">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-xs font-bold text-[#8B5CF6]">Antes</span>
+                        <PhotoSlot
+                          angulo={angulo}
+                          momento="antes"
+                          foto={fotos[`${angulo}_antes`]}
+                          onUpload={(b64) => updateFoto(`${angulo}_antes`, b64)}
+                          onRemove={() => updateFoto(`${angulo}_antes`, null)}
+                        />
+                      </div>
+
+                      <FaArrowRight className="text-white/30 w-4 h-4 mt-5 shrink-0" />
+
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-xs font-bold text-[#8B5CF6]">Depois</span>
+                        <PhotoSlot
+                          angulo={angulo}
+                          momento="depois"
+                          foto={fotos[`${angulo}_depois`]}
+                          onUpload={(b64) => updateFoto(`${angulo}_depois`, b64)}
+                          onRemove={() => updateFoto(`${angulo}_depois`, null)}
+                        />
+                      </div>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
-          ) : (
-            <p className="text-center text-gray-500">Nenhum dado de progresso disponível ainda.</p>
-          )}
+          </motion.div>
         </div>
       )}
-
-
-      <PostLoginModal
-        isOpen={isPostLoginModalOpen}
-        onCloseAction={() => setIsPostLoginModalOpen(false)}
-        onFinishAction={handlePostLoginFinish}
-        usuarioId={usuario.id}
-      />
 
       <EditUserModal
         mostrar={mostrar}
         fechar={() => setMostrar(false)}
-        foto={usuario.foto}
         usuarioId={usuario.id}
         nome={usuario.nome}
         email={usuario.email}
         telefone={usuario.telefone}
-        onSuccess={() => fetchAllPageData()}
-      />      
-      
-      <ToastContainer/>
+        foto={usuario.foto}
+        onSuccess={() => window.location.reload()}
+      />
+
+      <PostLoginModal
+        isOpen={isPostLoginModalOpen}
+        onCloseAction={() => setIsPostLoginModalOpen(false)}
+        onFinishAction={() => window.location.reload()}
+        usuarioId={usuario.id}
+      />
+
+      <ToastContainer />
     </main>
   );
 }

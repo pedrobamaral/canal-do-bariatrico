@@ -20,9 +20,16 @@ export class CicloService {
       },
     });
 
-    // Se já existe um ciclo ativo, retorna ele
+    // Se já existe um ciclo ativo, atualiza o campo mounjaro e retorna
     if (cicloAtivo) {
-      return cicloAtivo;
+      return this.prisma.ciclo.update({
+        where: { id: cicloAtivo.id },
+        data: {
+          mounjaro: dto.mounjaro ?? cicloAtivo.mounjaro,
+          med_prescrita: dto.med_prescrita ?? cicloAtivo.med_prescrita,
+          freq_med_prescrita: dto.freq_med_prescrita ?? cicloAtivo.freq_med_prescrita,
+        },
+      });
     }
 
     return this.prisma.ciclo.create({

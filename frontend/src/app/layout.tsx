@@ -13,11 +13,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Canal da Barie",
-  description: "Canal da Barie",
+  title: "Barie",
+  description: "Seu emagrecimento organizado dia após dia",
   icons: {
-    icon: "/images/bari_icon.png",
-    shortcut: "/images/bari_icon.png",
+    icon: "/images/newBarieIcon.png",
+    shortcut: "/images/newBarieIcon.png",
+    apple: "/images/newBarieIcon.png",
+  },
+  openGraph: {
+    title: "Barie",
+    description: "Seu emagrecimento organizado dia após dia",
+    siteName: "Barie",
+    type: "website",
+    images: [
+      {
+        url: "/images/newBarieIcon.png",
+        width: 1576,
+        height: 1064,
+        alt: "Barie - emagrecimento organizado",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Barie",
+    description: "Seu emagrecimento organizado dia após dia",
+    images: ["/images/newBarieIcon.png"],
   },
 };
 

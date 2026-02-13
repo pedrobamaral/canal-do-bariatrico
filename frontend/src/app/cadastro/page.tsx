@@ -435,10 +435,29 @@ const SignUpPage: React.FC = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#FFFBEF",
           padding: "0 2rem",
+          position: "relative",
         }}
       >
+        {/* Background Image */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+          }}
+        >
+          <Image
+            src="/images/fundoAcadBranca.jpeg"
+            alt="Background"
+            fill
+            style={{ objectFit: "cover", objectPosition: "center" }}
+            priority
+          />
+        </div>
         <div
           className="signupWrap"
           style={{
@@ -449,6 +468,8 @@ const SignUpPage: React.FC = () => {
             gap: "46px",
             maxWidth: "1330px",
             width: "100%",
+            position: "relative",
+            zIndex: 1,
           }}
         >
           <div className="formCol" style={{ flex: "0 1 530px", display: "flex", justifyContent: "flex-end" }}>

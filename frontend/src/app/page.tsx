@@ -188,14 +188,20 @@ export default function Home() {
       {/* ================= HERO SECTION ================= */}
       <section
         className="relative w-full h-screen flex items-center justify-center overflow-hidden pt-20"
-        style={{
-          backgroundImage: "url('/images/heroBarie.jpeg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/60" />
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/cinematicBarie.MP4" type="video/mp4" />
+        </video>
+
+        {/* Dark Overlay with gradient fade */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
 
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
@@ -445,7 +451,7 @@ export default function Home() {
                 <span className="text-sm font-bold text-[#6F3CF6] uppercase tracking-widest">Acompanhamento</span>
               </div>
 
-              <h3 className="text-4xl md:text-5xl font-bold text-white">Seu Progresso Organizado em um Só Lugar</h3>
+              <h3 className="text-4xl md:text-5xl font-bold text-white">Sistema de Acompanhamento Inteligente</h3>
 
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (

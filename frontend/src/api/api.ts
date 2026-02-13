@@ -159,7 +159,9 @@ export interface UserAdherenceStats {
   hidratacao: AdherenceMetric;
   treino: AdherenceMetric;
   mounjaro: AdherenceMetric;
+  manipulado: AdherenceMetric;
   temMounjaro: boolean;
+  temManipulado: boolean;
   totalDiaCiclos: number;
   diasComDaily: number;
 }
@@ -181,6 +183,40 @@ export async function getUserAdherenceStats(userId: number): Promise<UserAdheren
   } catch (error: any) {
     console.error('Erro ao buscar estatísticas de adesão:', error);
     return null;
+  }
+}
+
+// ==================== FOTOS COMPARATIVAS ====================
+
+export type FotosComparativas = {
+  costas_antes: string | null;
+  costas_depois: string | null;
+  frente_antes: string | null;
+  frente_depois: string | null;
+  lado_antes: string | null;
+  lado_depois: string | null;
+};
+
+export async function getUserFotos(userId: number): Promise<FotosComparativas | null> {
+  try {
+    const response = await api.get(`/usuarios/${userId}/fotos`);
+    if (response.data.status === 'sucesso') {
+      return response.data.data;
+    }
+    return null;
+  } catch (error: any) {
+    console.error('Erro ao buscar fotos:', error);
+    return null;
+  }
+}
+
+export async function saveUserFotos(userId: number, fotos: Partial<FotosComparativas>): Promise<boolean> {
+  try {
+    const response = await api.patch(`/usuarios/${userId}/fotos`, fotos);
+    return response.data.status === 'sucesso';
+  } catch (error: any) {
+    console.error('Erro ao salvar fotos:', error);
+    return false;
   }
 }
 

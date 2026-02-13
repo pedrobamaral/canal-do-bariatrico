@@ -1,4 +1,3 @@
-// app/page.tsx (ou o arquivo da sua Home)
 "use client"
 
 import React, { useEffect, useState } from "react"

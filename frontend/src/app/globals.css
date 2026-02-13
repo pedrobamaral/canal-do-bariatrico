@@ -1,3 +1,4 @@
+@import url('https://fonts.cdnfonts.com/css/bebas-neue');
 @import "tailwindcss";
 
 :root{
@@ -108,4 +109,9 @@ input[type="range"]::-moz-range-thumb {
 
 .animate-fadeIn {
   animation: fadeIn 0.15s ease-out forwards;
+}
+
+/* Bebas Neue display font for hero headings */
+.font-bebas {
+  font-family: 'Bebas Neue', Arial, Helvetica, sans-serif;
 }

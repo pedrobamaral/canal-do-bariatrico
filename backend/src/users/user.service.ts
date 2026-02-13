@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException, ConflictException, InternalServerErrorException,} from '@nestjs/common'; 
+﻿import {Injectable, NotFoundException, ConflictException, InternalServerErrorException,} from '@nestjs/common'; 
 import { PrismaService } from '../database/prisma.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -174,7 +174,7 @@ export class UsuarioService {
   /**
    * Calcula estatísticas de adesão do usuário comparando DiaCiclo (planejado) com Daily (realizado).
    * Considera APENAS os dias que já passaram (data_dia <= hoje), não o ciclo inteiro.
-   * Retorna porcentagens para água, dieta, treino e bioimpedância.
+   * Retorna porcentagens para água, dieta, treino e mounjaro.
    */
   async getAdherenceStats(userId: number | string) {
     const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
@@ -182,6 +182,14 @@ export class UsuarioService {
     // Data de hoje (fim do dia para comparação justa)
     const hoje = new Date();
     hoje.setHours(23, 59, 59, 999);
+
+    // Verifica se o usuário tem mounjaro e/ou med_prescrita ativo em algum ciclo
+    const cicloAtivo = await this.prisma.ciclo.findFirst({
+      where: { idUsuario: id, ativoCiclo: true },
+      select: { mounjaro: true, med_prescrita: true },
+    });
+    const temMounjaro = cicloAtivo?.mounjaro === true;
+    const temManipulado = cicloAtivo?.med_prescrita === true;
 
     // Busca todos os DiaCiclos do usuário com Daily associado
     const diaCiclos = await this.prisma.diaCiclo.findMany({
@@ -205,8 +213,10 @@ export class UsuarioService {
     let aguaCumprida = 0;
     let treinoTotal = 0;
     let treinoCumprido = 0;
-    let bioimpedanciaTotal = 0;
-    let bioimpedanciaCumprida = 0;
+    let mounjaroTotal = 0;
+    let mounjaroCumprido = 0;
+    let manipuladoTotal = 0;
+    let manipuladoCumprido = 0;
 
     for (const dc of diasPassados) {
       // Dieta: se tem_dieta está marcado no DiaCiclo, conta como esperado
@@ -234,11 +244,19 @@ export class UsuarioService {
         }
       }
 
-      // Bioimpedância: se tem_bioimpedancia está marcado no DiaCiclo
-      if (dc.tem_bioimpedancia) {
-        bioimpedanciaTotal++;
-        if (dc.daily?.bioimpedancia_check === true) {
-          bioimpedanciaCumprida++;
+      // Mounjaro: se tem_mounjaro está marcado no DiaCiclo
+      if (dc.tem_mounjaro) {
+        mounjaroTotal++;
+        if (dc.daily?.mounjaro_check === true) {
+          mounjaroCumprido++;
+        }
+      }
+
+      // Manipulado (med prescrita): se tem_med_prescrita está marcado no DiaCiclo
+      if (dc.tem_med_prescrita) {
+        manipuladoTotal++;
+        if (dc.daily?.med_prescrita_check === true) {
+          manipuladoCumprido++;
         }
       }
     }
@@ -247,7 +265,8 @@ export class UsuarioService {
     const dietaPct = dietaTotal > 0 ? Math.round((dietaCumprida / dietaTotal) * 100) : null;
     const aguaPct = aguaTotal > 0 ? Math.round((aguaCumprida / aguaTotal) * 100) : null;
     const treinoPct = treinoTotal > 0 ? Math.round((treinoCumprido / treinoTotal) * 100) : null;
-    const bioimpedanciaPct = bioimpedanciaTotal > 0 ? Math.round((bioimpedanciaCumprida / bioimpedanciaTotal) * 100) : null;
+    const mounjaroPct = mounjaroTotal > 0 ? Math.round((mounjaroCumprido / mounjaroTotal) * 100) : null;
+    const manipuladoPct = manipuladoTotal > 0 ? Math.round((manipuladoCumprido / manipuladoTotal) * 100) : null;
 
     // Determina cor do status baseado na porcentagem
     const getStatusColor = (pct: number | null): string => {
@@ -276,15 +295,83 @@ export class UsuarioService {
         porcentagem: treinoPct,
         status: getStatusColor(treinoPct),
       },
-      bioimpedancia: {
-        total: bioimpedanciaTotal,
-        cumprida: bioimpedanciaCumprida,
-        porcentagem: bioimpedanciaPct,
-        status: getStatusColor(bioimpedanciaPct),
+      mounjaro: {
+        total: mounjaroTotal,
+        cumprida: mounjaroCumprido,
+        porcentagem: mounjaroPct,
+        status: getStatusColor(mounjaroPct),
       },
+      manipulado: {
+        total: manipuladoTotal,
+        cumprida: manipuladoCumprido,
+        porcentagem: manipuladoPct,
+        status: getStatusColor(manipuladoPct),
+      },
+      // Flags indicando quais features o usuário usa
+      temMounjaro,
+      temManipulado,
       // Dados agregados: dias que já passaram vs dias com resposta
       totalDiaCiclos: diasPassados.length,
       diasComDaily: diasPassados.filter(dc => dc.daily !== null).length,
     };
+  }
+
+  /**
+   * Busca as fotos comparativas (antes/depois) do usuário.
+   */
+  async getFotos(userId: number | string) {
+    const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id },
+      select: {
+        foto_costas_antes: true,
+        foto_costas_depois: true,
+        foto_frente_antes: true,
+        foto_frente_depois: true,
+        foto_lado_antes: true,
+        foto_lado_depois: true,
+      } as any,
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
+    }
+
+    return {
+      costas_antes: (usuario as any).foto_costas_antes ?? null,
+      costas_depois: (usuario as any).foto_costas_depois ?? null,
+      frente_antes: (usuario as any).foto_frente_antes ?? null,
+      frente_depois: (usuario as any).foto_frente_depois ?? null,
+      lado_antes: (usuario as any).foto_lado_antes ?? null,
+      lado_depois: (usuario as any).foto_lado_depois ?? null,
+    };
+  }
+
+  /**
+   * Salva as fotos comparativas (antes/depois) do usuário.
+   */
+  async saveFotos(userId: number | string, fotos: Record<string, string | null>) {
+    const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+    await this.findOne(id);
+
+    const dataToUpdate: any = {};
+    const allowedKeys = [
+      'costas_antes', 'costas_depois',
+      'frente_antes', 'frente_depois',
+      'lado_antes', 'lado_depois',
+    ];
+
+    for (const key of allowedKeys) {
+      if (key in fotos) {
+        dataToUpdate[`foto_${key}`] = fotos[key] ?? null;
+      }
+    }
+
+    await this.prisma.usuario.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+
+    return { message: 'Fotos salvas com sucesso.' };
   }
 }

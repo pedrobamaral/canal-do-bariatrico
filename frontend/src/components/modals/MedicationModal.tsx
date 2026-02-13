@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { IoClose, IoChevronDown } from "react-icons/io5";
-import { HiOutlineArrowRight } from "react-icons/hi";
 import { FaPills } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { createOrUpdateMedicacao } from "@/api/api";

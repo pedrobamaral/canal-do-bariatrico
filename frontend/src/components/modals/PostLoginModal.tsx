@@ -62,6 +62,8 @@ export const PostLoginModal: React.FC<Props> = ({
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [showMedicationModal, setShowMedicationModal] = useState(false);
+  const [medPrescrita, setMedPrescrita] = useState<boolean>(false);
+  const [freqMedPrescrita, setFreqMedPrescrita] = useState<number>(0);
 
   /* ===== Medidas ===== */
   const [values, setValues] = useState<Partial<PostLoginData>>({
@@ -142,17 +144,17 @@ export const PostLoginModal: React.FC<Props> = ({
         numCiclo: 1,
         ativoCiclo: true,
         mounjaro: mounjaro,
-        med_prescrita: false,
-        freq_med_prescrita: 0,
+        med_prescrita: medPrescrita,
+        freq_med_prescrita: freqMedPrescrita || 0,
         treino: true,
         dieta: true,
         agua: true,
-        bioimpedancia: true,
         consulta: true,
       });
 
       toast.success("Dados salvos com sucesso!");
       handleClose();
+      onFinishAction?.(values as PostLoginData);
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar dados");
     } finally {
@@ -234,7 +236,7 @@ export const PostLoginModal: React.FC<Props> = ({
 
               <Select icon={<FaStethoscope />} value={values.tipoIntervencao || ""} onChange={setField("tipoIntervencao")}>
                 <option value="" disabled>Tipo de intervenção</option>
-                <option value="mounjaro">Mounjaro</option>
+                <option value="mounjaro">Caneta Emagrecedora</option>
                 <option value="apenas_dieta_treino">Apenas dieta e treino</option>
               </Select>
 
@@ -267,18 +269,23 @@ export const PostLoginModal: React.FC<Props> = ({
         }}
         usuarioId={usuarioId}
         embeddedMode={true}
-        onYesCallback={() => {
-          setShowMedicationModal(false);
-          setStep(3);
-        }}
-        onNoCallback={() => {
-          setShowMedicationModal(false);
-          setStep(3);
-        }}
-        onBackCallback={() => {
-          setShowMedicationModal(false);
-          setStep(1);
-        }}
+          onYesCallback={(data) => {
+            // MedicationModal returns { frequencia }
+            setMedPrescrita(true);
+            setFreqMedPrescrita(data.frequencia ?? 0);
+            setShowMedicationModal(false);
+            setStep(3);
+          }}
+          onNoCallback={() => {
+            setMedPrescrita(false);
+            setFreqMedPrescrita(0);
+            setShowMedicationModal(false);
+            setStep(3);
+          }}
+          onBackCallback={() => {
+            setShowMedicationModal(false);
+            setStep(1);
+          }}
       />
     </div>
   );

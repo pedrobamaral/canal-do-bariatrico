@@ -51,6 +51,28 @@ export class UsuarioController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get(':id/fotos')
+  async getFotos(@Param('id') id: string) {
+    try {
+      const result = await this.usuarioService.getFotos(id);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/fotos')
+  async saveFotos(@Param('id') id: string, @Body() fotos: Record<string, string | null>) {
+    try {
+      const result = await this.usuarioService.saveFotos(id, fotos);
+      return { status: 'sucesso', data: result };
+    } catch (error) {
+      return { status: 'erro', message: error.message };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto,) {
     try {

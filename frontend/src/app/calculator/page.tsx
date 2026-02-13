@@ -513,21 +513,6 @@ export default function Calculator() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-
-              {/* CTA */}
-              <button
-                onClick={handleConseguiResultados}
-                className="
-                  mt-6 w-full py-4 rounded-full font-bold text-lg text-white
-                  transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]
-                "
-                style={{
-                  background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
-                  boxShadow: `0 0 30px ${THEME.primarySoft}`,
-                }}
-              >
-                Conseguir Resultados
-              </button>
             </div>
           </motion.div>
         </div>

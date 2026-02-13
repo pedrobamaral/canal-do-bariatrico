@@ -100,7 +100,7 @@ export default function Navbar() {
   }
 
   const iconBaseStyle =
-    "text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
+    "text-white hover:text-[#6D28D9] transition-colors cursor-pointer"
 
   return (
     <header className="fixed top-0 z-50 w-full h-12 overflow-visible bg-transparent shadow-md font-['Montserrat']">
@@ -207,7 +207,7 @@ export default function Navbar() {
                 >
                   <IoPerson
                     size={26}
-                    className="text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
+                    className="text-white hover:text-[#6D28D9] transition-colors cursor-pointer"
                   />
                 </Link>
 

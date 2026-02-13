@@ -142,7 +142,7 @@ export const PostLoginModal: React.FC<Props> = ({
       const mounjaro = values.tipoIntervencao === "mounjaro";
       await createCiclo(usuarioId, dia0Id, {
         numCiclo: 1,
-        ativoCiclo: true,
+        ativoCiclo: false,
         mounjaro: mounjaro,
         med_prescrita: medPrescrita,
         freq_med_prescrita: freqMedPrescrita || 0,

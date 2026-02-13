@@ -95,17 +95,12 @@ export default function Home() {
   ];
 
   const benefits = [
-    "Planilhas de treino novas a cada 5 semanas",
-    "Vídeos para auxiliar a execução",
-    "Esclarecimento de dúvidas",
-    "Assinatura recorrente",
-    "Cancele quando quiser",
-    "Garantia de 7 dias",
+    "Suas informações ficam organizadas no seu perfil. Check ins, treino, alimentação, medicação e evolução de peso.",
+    "Nada se perde.",
+    "Você e o profissional enxergam o que funciona e o que precisa ajustar.",
+    "O acompanhamento deixa de ser memória e tentativa. E passa a ser contínuo, estruturado e baseado em dados reais.",
+    "Tratamento sério precisa de registro. Não de achismo.",
   ];
-
-  const femaleImageUrl = "https://private-us-east-1.manuscdn.com/sessionFile/NMdcTLVfnPvBEzwbd5md7f/sandbox/DCbHCeJtRIyvSK5Noj7zK2-img-3_1770925076000_na1fn_ZmVtYWxlLWZpdG5lc3Mtc2VjdGlvbg.png?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvTk1kY1RMVmZuUHZCRXp3YmQ1bWQ3Zi9zYW5kYm94L0RDYkhDZUp0Ukl5dlNLNU5vajd6SzItaW1nLTNfMTc3MDkyNTA3NjAwMF9uYTFmbl9abVZ0WVd4bExXWnBkRzVsYzNNdGMyVmpkR2x2YmcucG5nP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=WMHDQdmYJqiJaTXgQGodLOy6XG7kp6LP55YERFeq-hPYBpfdY1UTodQldbHYZ6xJ0ZZOuVqjw86vdszC4x1P1yv-TDPdztiW7UhH4mlktyiysREgrQPmK8sxMFtm-4Ija5CAWjm5bk3vA2vbUELsuoRw8kEsXB1--6hbDU9-iPuEolaU7WHOu-DzUTRGO1YPi3sTIWAtov~hxS9bOA18apD6Sg~me-dNGLuzw5bf7cMrvM6KcOmJaesYTGJQMpy-xzKu~7RvYPewlkxmqkqa4ENpXFQDd9RMGZqKKoMtPop5zj6yRLbNG9JGzfHTbtVr7yvF8ZD9nKrN3emvylc07A__";
-
-  const maleImageUrl = "https://private-us-east-1.manuscdn.com/sessionFile/NMdcTLVfnPvBEzwbd5md7f/sandbox/DCbHCeJtRIyvSK5Noj7zK2-img-4_1770925080000_na1fn_bWFsZS1maXRuZXNzLXNlY3Rpb24.png?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvTk1kY1RMVmZuUHZCRXp3YmQ1bWQ3Zi9zYW5kYm94L0RDYkhDZUp0Ukl5dlNLNU5vajd6SzItaW1nLTRfMTc3MDkyNTA4MDAwMF9uYTFmbl9iV0ZzWlMxbWFYUnVaWE56TFhObFkzUnBiMjQucG5nP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=kUCUE4mEaK1fhtF1tD6Ih-HUS2qIWF-ThctpJQfE9nJIGea97bwQK8BwDyKHQUq6lPoj63xDiZauxUf-We1x5ETJ6Zq1gO6BchRalQEpyK8OnZe39wO58GAbIpEpcJTAyvp~nzAbJ8UTlhWRtQcIzZeHMiY~O54SR64AV4gyjyFEX9dBLsPooav8K-7t08EqKYbviJ2TJrci2gQSzwWCCV5w8iOLuaAudaNmL9YglHcA5Y0lWi48Bwnghv~2GSSBwPPTtR4qeFlVV2lLj7KhOKCt6iIWprvxpfCIXetXI5oxT3V3E12BiN2HwghDSbQji18~-BZkOxpFz0ZxtweBIA__";
 
   const methodologyPoints = [
     "Check in diário em menos de um minuto. Você registra água, treino, medicação e sono. Simples e personalizado.",
@@ -127,11 +122,11 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 cursor-pointer">
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden">
                 <img src={'/images/newBarieIcon.png'} alt="Barie" className="w-full h-full object-cover" />
               </div>
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
@@ -360,9 +355,6 @@ export default function Home() {
               ))}
             </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
 
@@ -437,65 +429,32 @@ export default function Home() {
         id="planos"
       >
         <div className="max-w-7xl mx-auto px-4">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Escolha seu plano</h2>
-            <p className="text-gray-300 text-lg">
-              Em casa ou na academia, dê o primeiro passo em direção a uma{" "}
-              <span className="text-[#6F3CF6] font-bold">vida mais saudável e feliz hoje mesmo!</span>
-            </p>
-          </div>
 
-          {/* Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            {/* Female Plan */}
-            <div className="group">
-              <div className="relative overflow-hidden rounded-lg mb-6">
-                <img src={femaleImageUrl} alt="Plano Feminino" className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-[#FF006E] flex items-center justify-center font-bold text-white">♀</div>
+          {/* Plan — image on LEFT, content on RIGHT */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Left Image */}
+            <div className="relative flex justify-center">
+              <div className="max-w-xs md:max-w-sm rounded-lg overflow-hidden border-2 border-[#6F3CF6]">
+                <img src="/images/acompanhamento.jpeg" alt="Plataforma de Treinos Online" className="w-full h-auto object-contain" />
               </div>
-
-              <h3 className="text-xl font-bold text-white mb-2 uppercase">Plataforma de Treinos Online para Mulheres</h3>
-
-              <p className="text-sm font-semibold text-gray-400 mb-6 uppercase">Plano Mensal e Trimestral</p>
-
-              <ul className="space-y-3 mb-8">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <Check size={20} className="text-[#FF006E]" />
-                    <span className="text-sm text-gray-300">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button className="w-full px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#FF006E] text-white hover:shadow-lg hover:shadow-[#FF006E]/50">
-                SAIBA MAIS →
-              </button>
             </div>
 
-            {/* Male Plan */}
-            <div className="group">
-              <div className="relative overflow-hidden rounded-lg mb-6">
-                <img src={maleImageUrl} alt="Plano Masculino" className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-[#0066FF] flex items-center justify-center font-bold text-white">♂</div>
+            {/* Right Content */}
+            <div className="space-y-6">
+              <div className="inline-block">
+                <span className="text-sm font-bold text-[#6F3CF6] uppercase tracking-widest">Acompanhamento</span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2 uppercase">Plataforma de Treinos Online para Homens</h3>
+              <h3 className="text-4xl md:text-5xl font-bold text-white">Seu Progresso Organizado em um Só Lugar</h3>
 
-              <p className="text-sm font-semibold text-gray-400 mb-6 uppercase">Plano Mensal e Trimestral</p>
-
-              <ul className="space-y-3 mb-8">
+              <div className="space-y-4">
                 {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <Check size={20} className="text-[#0066FF]" />
-                    <span className="text-sm text-gray-300">{benefit}</span>
-                  </li>
+                  <div key={index} className="flex gap-4">
+                    <div className="w-2 h-2 bg-[#6F3CF6] rounded-full mt-2 flex-shrink-0" />
+                    <p className="text-gray-300 leading-relaxed">{benefit}</p>
+                  </div>
                 ))}
-              </ul>
-
-              <button className="w-full px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#0066FF] text-white hover:shadow-lg hover:shadow-[#0066FF]/50">
-                SAIBA MAIS →
-              </button>
+              </div>
             </div>
           </div>
 

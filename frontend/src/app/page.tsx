@@ -1,17 +1,11 @@
 "use client";
 
 import { MdArrowOutward } from "react-icons/md";
+import { FaTiktok } from "react-icons/fa";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Menu, X, ChevronLeft, ChevronRight, Check, Instagram, Youtube, Mail } from "lucide-react";
-
-/**
- * Barie - Home Page (Single File)
- * Design: Minimalismo Corporativo Moderno com Acentos Energéticos
- * Cores: Preto (#0A0A0A), Branco (#FFFFFF), Verde Neon (#6F3CF6)
- * Tipografia: Montserrat Bold para títulos, Inter para corpo
- */
 
 const sectionAnim = {
   hidden: { opacity: 0, y: 60 },
@@ -76,9 +70,6 @@ export default function Home() {
   const slides = [
     { id: 1, image: "/images/foto1.png" },
     { id: 2, image: "/images/foto3.jpeg" },
-    { id: 3, image: "/images/foto4.jpeg" },
-    { id: 4, image: "/images/foto5.jpeg" },
-    { id: 5, image: "/images/foto6.jpeg" },
   ];
 
   const nextSlide = () => {
@@ -90,8 +81,8 @@ export default function Home() {
   };
 
   const navItems = [
-    { label: "PLANOS", href: "#planos" },
-    { label: "AFILIADOS", href: "#" },
+    { label: "ÁREA DO PROFISSIONAL", href: "#" },
+    { label: "JÁ SOU ALUNO", href: "#" },
   ];
 
   const benefits = [
@@ -146,6 +137,12 @@ export default function Home() {
 
           {/* CTA Button */}
           <div className="flex items-center gap-4">
+            <Link href="/login" className="hidden sm:inline-block">
+              <span className="inline-block px-4 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300">
+                ENTRAR
+              </span>
+            </Link>
+
             <Link href="/cadastro" className="hidden sm:inline-block px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300">
               CADASTRE-SE
             </Link>
@@ -177,6 +174,10 @@ export default function Home() {
                   </span>
                 </a>
               ))}
+              <a href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full px-6 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all text-center">
+                ENTRAR
+              </a>
+
               <button className="w-full px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all">
                 CANAL DA BARIE
               </button>
@@ -292,15 +293,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* Animated text divider */}
-          <div className="mt-20 text-center">
-            <p className="text-2xl font-bold text-[#6F3CF6]/50 tracking-widest overflow-hidden">
-              <span className="inline-block animate-pulse">
-                Barie - Barie - Barie - Barie - Barie
-              </span>
-            </p>
-          </div>
         </div>
       </motion.section>
 
@@ -315,13 +307,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">MUDANÇAS REAIS VIVIDAS POR</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">RESULTADO NÃO É SORTE.</h2>
             <p className="text-3xl md:text-4xl font-bold">
-              <span className="text-[#6F3CF6]">MAIS DE 150 MIL ALUNOS!</span>
+              <span className="text-[#6F3CF6]">É SISTEMA ORGANIZADO.</span>
             </p>
             <p className="text-gray-300 mt-6 text-lg">
-              Está esperando o que para mudar de rotina e{" "}
-              <span className="text-[#6F3CF6] font-bold">liberar todo o seu potencial?</span>
+              Treino possível dentro da sua rotina. Estratégia alimentar inteligente. Ajuste médico quando necessário.
             </p>
           </div>
 
@@ -485,7 +476,7 @@ export default function Home() {
             </span>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">ASSUMA O CONTROLE</h2>
             <p className="text-3xl md:text-4xl font-bold">
-              <span className="text-[#6F3CF6]">DE SUA SAÚDE!</span>
+              <span className="text-[#6F3CF6]">DA SUA SAÚDE!</span>
             </p>
           </div>
 
@@ -581,28 +572,36 @@ export default function Home() {
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
-                backgroundImage: "linear-gradient(135deg, rgba(10, 10, 10, 0.7) 0%, rgba(0, 255, 136, 0.1) 100%)",
+                backgroundImage:
+                  "linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.98) 100%), url('/images/barieFitClub.jpeg')",
+                backgroundBlendMode: "multiply",
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
               }}
             />
 
             {/* Content */}
             <div className="relative z-10 py-20 md:py-32 px-8 md:px-16 text-center">
               <span className="inline-block px-4 py-2 bg-[#1A1A1A] rounded-full text-[#6F3CF6] font-bold text-sm uppercase mb-6">
-                Consultoria Personalizada
+                CHECK IN DIÁRIO COM MÉTOD
               </span>
 
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">SEU TREINO, DO SEU JEITO!</h2>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">MENOS MOTIVAÇÃO. MAIS SISTEMA.</h2>
 
               <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-8">
-                Você terá um plano de treino adaptado às suas necessidades, rotina e nível de condicionamento físico.
+                Treino adaptado à sua rotina real. Organização alimentar inteligente. Ajuste clínico quando indicado. Sem milagre. Com método.
               </p>
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
-              >
-                COMEÇAR AGORA →
-              </motion.button>
+              <Link href="/cadastro" className="inline-block">
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
+                  className="inline-block px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
+                >
+                  MEU PROJETO DE SAÚDE
+                  <MdArrowOutward className="inline-block ml-2" />
+                </motion.span>
+              </Link>
             </div>
           </div>
 
@@ -619,10 +618,7 @@ export default function Home() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-[#6F3CF6] rounded-full flex items-center justify-center">
-                  <span className="text-[#0A0A0A] font-bold text-lg">CB</span>
-                </div>
-                <span className="text-xl font-bold text-[#6F3CF6]">Barie</span>
+                <span className="text-xl font-bold text-white">Barie</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Transformando vidas através de treinos personalizados e metodologia comprovada.
@@ -656,19 +652,34 @@ export default function Home() {
               <h3 className="font-bold text-white uppercase text-sm">Siga-nos</h3>
               <div className="flex gap-4">
                 <a
-                  href="#"
+                  href="https://www.instagram.com/eusoubarie/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
                   className="w-10 h-10 bg-[#0A0A0A] rounded-full flex items-center justify-center text-[#6F3CF6] hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300"
                 >
                   <Instagram size={20} />
                 </a>
                 <a
-                  href="#"
+                  href="https://youtube.com/@canaldabarie?si=PFE3ytUhaCaW9dWZ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Youtube"
                   className="w-10 h-10 bg-[#0A0A0A] rounded-full flex items-center justify-center text-[#6F3CF6] hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300"
                 >
                   <Youtube size={20} />
                 </a>
                 <a
-                  href="mailto:suporte@saomiguelito.com"
+                  href="https://www.tiktok.com/@eusoubarie"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="TikTok"
+                  className="w-10 h-10 bg-[#0A0A0A] rounded-full flex items-center justify-center text-[#6F3CF6] hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300"
+                >
+                  <FaTiktok size={20} />
+                </a>
+                <a
+                  href="canaldabari@gmail.com"
                   className="w-10 h-10 bg-[#0A0A0A] rounded-full flex items-center justify-center text-[#6F3CF6] hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300"
                 >
                   <Mail size={20} />
@@ -701,9 +712,6 @@ export default function Home() {
 
           {/* Support Info */}
           <div className="mt-8 pt-8 border-t border-[#333333] text-center text-sm text-gray-400 space-y-2">
-            <p>
-              <span className="font-semibold">Aviso Importante:</span> O acompanhamento médico é imprescindível para a segurança do(a) comprador(a).
-            </p>
             <p>
             </p>
           </div>

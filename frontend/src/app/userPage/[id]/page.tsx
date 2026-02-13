@@ -29,12 +29,13 @@ type Usuario = {
   admin?: boolean;
 };
 
-const progressConfig = [
+const baseProgressConfig = [
   { key: 'hidratacao' as const, label: "Hidratação", icon: IoWaterOutline },
   { key: 'treino' as const, label: "Treino", icon: HiOutlineLightningBolt },
   { key: 'dieta' as const, label: "Dieta", icon: HiOutlineClipboardList },
-  { key: 'bioimpedancia' as const, label: "Bioimpedância", icon: HiOutlineScale },
 ];
+
+const mounjaroCard = { key: 'mounjaro' as const, label: "Caneta Emagrecedora", icon: HiOutlineScale };
 
 export default function UserPage() {
   const { id } = useParams();
@@ -160,7 +161,7 @@ export default function UserPage() {
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {progressConfig.map(({ key, label, icon: Icon }, index) => {
+                {[...baseProgressConfig, ...(userStats.temMounjaro ? [mounjaroCard] : [])].map(({ key, label, icon: Icon }, index) => {
                   const metric = userStats[key];
                   const percent = metric?.porcentagem ?? 0;
 

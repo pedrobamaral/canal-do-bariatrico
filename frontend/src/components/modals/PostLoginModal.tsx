@@ -149,12 +149,12 @@ export const PostLoginModal: React.FC<Props> = ({
         treino: true,
         dieta: true,
         agua: true,
-        bioimpedancia: true,
         consulta: true,
       });
 
       toast.success("Dados salvos com sucesso!");
       handleClose();
+      onFinishAction?.(values as PostLoginData);
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar dados");
     } finally {
@@ -236,7 +236,7 @@ export const PostLoginModal: React.FC<Props> = ({
 
               <Select icon={<FaStethoscope />} value={values.tipoIntervencao || ""} onChange={setField("tipoIntervencao")}>
                 <option value="" disabled>Tipo de intervenção</option>
-                <option value="mounjaro">Mounjaro</option>
+                <option value="mounjaro">Caneta Emagrecedora</option>
                 <option value="apenas_dieta_treino">Apenas dieta e treino</option>
               </Select>
 

@@ -20,7 +20,6 @@ export type PatientData = Usuario & {
   dietaStatus?: 'red' | 'yellow' | 'green' | 'gray';
   hidratacaoStatus?: 'red' | 'yellow' | 'green' | 'gray';
   treinoStatus?: 'red' | 'yellow' | 'green' | 'gray';
-  bioimpedanciaStatus?: 'red' | 'yellow' | 'green' | 'gray';
   checkins?: string;
   adesao?: string;
 };
@@ -118,7 +117,6 @@ const PatientsTable: React.FC<Props> = ({ filteredPatients, loading, onPatientCl
                 <th className="py-4 md:py-6 px-2 md:px-4">Hidrat.</th>
                 <th className="py-4 md:py-6 px-2 md:px-4">Dieta</th>
                 <th className="py-4 md:py-6 px-2 md:px-4">Treino</th>
-                <th className="py-4 md:py-6 px-2 md:px-4">Bioimp.</th>
                 <th className="py-4 md:py-6 px-2 md:px-4 hidden md:table-cell">Check-ins</th>
                 <th className="py-4 md:py-6 px-2 md:px-4">Ações</th>
               </tr>
@@ -145,9 +143,6 @@ const PatientsTable: React.FC<Props> = ({ filteredPatients, loading, onPatientCl
                   </td>
                   <td className="py-3 md:py-4 px-2 md:px-4">
                     <div className={`w-3 h-3 rounded-full mx-auto ${getStatusColor(patient.treinoStatus || 'gray')}`} />
-                  </td>
-                  <td className="py-3 md:py-4 px-2 md:px-4">
-                    <div className={`w-3 h-3 rounded-full mx-auto ${getStatusColor(patient.bioimpedanciaStatus || 'gray')}`} />
                   </td>
 
                   <td className="py-3 md:py-4 px-2 md:px-4 text-center hidden md:table-cell">{patient.checkins}</td>

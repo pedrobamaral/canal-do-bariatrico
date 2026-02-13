@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,7 @@ interface PatientData extends Usuario {
   dietaStatus?: 'red' | 'yellow' | 'green' | 'gray';
   hidratacaoStatus?: 'red' | 'yellow' | 'green' | 'gray';
   treinoStatus?: 'red' | 'yellow' | 'green' | 'gray';
-  bioimpedanciaStatus?: 'red' | 'yellow' | 'green' | 'gray';
+  mounjaroStatus?: 'red' | 'yellow' | 'green' | 'gray';
   checkins?: string;
   adesao?: string;
 }
@@ -132,8 +132,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               <span className="text-xs text-gray-400">Treino</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.bioimpedanciaStatus || 'gray')}`} />
-              <span className="text-xs text-gray-400">Bioimp.</span>
+              <div className={`w-4 h-4 rounded-full ${getStatusColor(patient.mounjaroStatus || 'gray')}`} />
+              <span className="text-xs text-gray-400">Mounjaro</span>
             </div>
           </div>
 
@@ -230,14 +230,14 @@ const DashboardPacientes = () => {
               dietaStatus: stats?.dieta.status || 'gray',
               hidratacaoStatus: stats?.hidratacao.status || 'gray',
               treinoStatus: stats?.treino.status || 'gray',
-              bioimpedanciaStatus: stats?.bioimpedancia.status || 'gray',
+              mounjaroStatus: stats?.mounjaro.status || 'gray',
               checkins: stats ? `${stats.diasComDaily}/${stats.totalDiaCiclos}` : '0/0',
               adesao: stats && stats.dieta.porcentagem !== null 
                 ? `${Math.round((
                     (stats.dieta.porcentagem || 0) + 
                     (stats.hidratacao.porcentagem || 0) + 
                     (stats.treino.porcentagem || 0) +
-                    (stats.bioimpedancia.porcentagem || 0)
+                    (stats.mounjaro.porcentagem || 0)
                   ) / 4)}%` 
                 : 'Sem dados',
               // Guardar stats completas para uso no modal
@@ -250,7 +250,7 @@ const DashboardPacientes = () => {
               dietaStatus: 'gray' as const,
               hidratacaoStatus: 'gray' as const,
               treinoStatus: 'gray' as const,
-              bioimpedanciaStatus: 'gray' as const,
+              mounjaroStatus: 'gray' as const,
               checkins: '0/0',
               adesao: 'Sem dados',
             };

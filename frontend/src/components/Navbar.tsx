@@ -18,6 +18,7 @@ import { MdCalculate } from "react-icons/md"
 const CORES = {
   roxoPrincipal: "#6F3CF6",
   roxoHover: "#5c2fe0",
+  roxoClaro: "#C9B5FF",
   pretoPrincipal: "#19191A",
   azulHover: "#62B4FF",
   vermelhoHover: "#FF3B5C",
@@ -102,42 +103,35 @@ export default function Navbar() {
     "text-white hover:text-[#62B4FF] transition-colors cursor-pointer"
 
   return (
-    <header className="fixed top-0 z-50 w-full h-16 overflow-visible bg-black shadow-md font-['Montserrat']">
+    <header className="fixed top-0 z-50 w-full h-12 overflow-visible bg-transparent shadow-md font-['Montserrat']">
       {/* ✅ Container interno (desktop intacto) */}
-      <div className="h-full w-full flex items-center justify-between pr-8">
+      <div className="h-full w-full flex items-center justify-between pr-4">
         {/* --- LADO ESQUERDO: LOGO --- */}
-        <div
-          className="h-full bg-black flex items-center pl-6 pr-8 shrink-0"
-          style={{ borderBottomRightRadius: "30px" }}
-        >
-          {/* group227 à esquerda, bari_icon à direita */}
+        <div className="h-full flex items-center pl-4 pr-4 shrink-0" style={{ borderBottomRightRadius: "30px" }}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center">
               <Image
-                src="/images/bari_icon.png"
-                alt="Barie icon"
-                width={48}
-                height={48}
-                className="object-contain"
+                src="/images/newBarieIcon.png"
+                alt="New Barie Icon"
+                width={72}
+                height={72}
+                className="w-14 h-14 md:w-18 md:h-18 object-contain"
                 priority
               />
             </div>
 
-            <div className="flex items-center" aria-hidden>
-              <Image
-                src="/logo.svg"
-                alt="Group 227"
-                width={400}
-                height={260}
-                className="object-contain"
-                priority
-              />
+            <div className="flex items-center ml-3 min-w-0">
+              <p className="hidden sm:flex items-center gap-2 text-sm font-semibold leading-tight">
+                <span className="text-white">Seu Progresso.</span>
+                <span style={{ color: CORES.roxoClaro }}>Sem bagunça.</span>
+                <span style={{ color: CORES.roxoPrincipal }}>Sem achismo.</span>
+              </p>
             </div>
           </div>
         </div>
 
         {/* ✅ LADO DIREITO */}
-        <div className="flex-1 flex items-center justify-end">
+          <div className="flex-1 flex items-center justify-end">
           {/* ========================= */}
           {/* ✅ DESKTOP (NÃO MUDA NADA) */}
           {/* ========================= */}
@@ -248,7 +242,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(true)}
               className="p-2"
             >
-              <FiMenu size={26} className="text-white" />
+              <FiMenu size={22} className="text-white" />
             </button>
           </div>
         </div>

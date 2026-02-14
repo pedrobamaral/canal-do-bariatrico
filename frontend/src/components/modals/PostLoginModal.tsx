@@ -19,6 +19,8 @@ import {
 import { toast } from "react-toastify";
 import { updateData, createOrUpdateMedicacao, createDia0, createCiclo } from "@/api/api";
 import { MedicationModal } from "./MedicationModal";
+import { postFinishedPostLoginModal } from "@/api/webhook";
+import { Usuario } from "@/app/userPage/[id]/page";
 
 /* ================== TIPOS ================== */
 
@@ -41,6 +43,7 @@ interface Props {
   onFinishAction?: (data: PostLoginData) => void;
   onFillAdditionalInfoAction?: () => void;
   usuarioId?: number;
+  usuario?: Usuario;
 }
 
 /* ================== ESTILOS ================== */
@@ -58,6 +61,7 @@ export const PostLoginModal: React.FC<Props> = ({
   onFinishAction,
   onFillAdditionalInfoAction,
   usuarioId,
+  usuario
 }) => {
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
@@ -150,6 +154,13 @@ export const PostLoginModal: React.FC<Props> = ({
         dieta: true,
         agua: true,
         consulta: true,
+      });
+
+      await postFinishedPostLoginModal({
+        nome: usuario?.nome || '',
+        idUsuario: usuarioId || -1, 
+        telefone: usuario?.telefone || '',
+        meta: Number(values.pesoMeta)
       });
 
       toast.success("Dados salvos com sucesso!");

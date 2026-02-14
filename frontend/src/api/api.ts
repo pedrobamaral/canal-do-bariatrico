@@ -386,7 +386,7 @@ export async function createCiclo(usuarioId: number, dia0Id: number, data?: any)
       idUsuario: usuarioId,
       dia0Id: dia0Id,
       numCiclo: 1,
-      ativoCiclo: true,
+      ativoCiclo: false,
       mounjaro: data?.mounjaro || false,
       treino: true,
       dieta: true,

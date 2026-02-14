@@ -16,7 +16,7 @@ import {
 import { IoWaterOutline } from "react-icons/io5";
 import { FaPills, FaPenAlt, FaCamera, FaArrowRight, FaTrash, FaImages, FaTimes } from "react-icons/fa";
 
-type Usuario = {
+export type Usuario = {
   id: number;
   nome: string;
   email: string;
@@ -523,6 +523,7 @@ export default function UserPage() {
         onCloseAction={() => setIsPostLoginModalOpen(false)}
         onFinishAction={() => window.location.reload()}
         usuarioId={usuario.id}
+        usuario={usuario}
       />
 
       <ToastContainer />

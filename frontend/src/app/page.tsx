@@ -69,7 +69,8 @@ export default function Home() {
   // Slider (local images from public/images)
   const slides = [
     { id: 1, image: "/images/foto1.png" },
-    { id: 2, image: "/images/foto3.jpeg" },
+    { id: 2, image: "/images/foto2.png" },
+    { id: 3, image: "/images/foto3.png" },
   ];
 
   const nextSlide = () => {

@@ -115,3 +115,46 @@ input[type="range"]::-moz-range-thumb {
 .font-bebas {
   font-family: 'Bebas Neue', Arial, Helvetica, sans-serif;
 }
+
+/* ===== Responsividade global ===== */
+/* Ensure images and svgs scale */
+img, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Responsive container utility used across pages */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Tables should scroll on small screens */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Smaller base font on very small screens for better layout */
+@media (max-width: 420px) {
+  html { font-size: 14px; }
+}
+
+@media (max-width: 640px) {
+  :root { --radius: 12px; }
+  body { font-size: 15px; }
+}
+
+/* Utility: stack columns into single column on small screens */
+.stack-mobile {
+  display: flex;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .stack-mobile { flex-direction: column; }
+}

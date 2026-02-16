@@ -55,6 +55,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.svg" sizes="any" />
+        <link rel="icon" href="/images/newBarieIcon.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/images/newBarieIcon.png" type="image/png" sizes="16x16" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/images/newBarieIcon.png" sizes="180x180" />
+        <meta name="msapplication-TileColor" content="#ff3d81" />
+        <meta name="theme-color" content="#ff3d81" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

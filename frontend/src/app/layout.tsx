@@ -13,12 +13,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Use NEXT_PUBLIC_METADATA_BASE to set absolute base for Open Graph / Twitter images
+  // Fallback to http://localhost:3001 when the env var is not set (dev).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_METADATA_BASE ?? "http://localhost:3001"),
   title: "Barie",
   description: "Seu emagrecimento organizado dia após dia",
   icons: {
-    icon: "/images/newBarieIcon.png",
-    shortcut: "/images/newBarieIcon.png",
-    apple: "/images/newBarieIcon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/images/newBarieIcon.png", sizes: "192x192" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   openGraph: {
     title: "Barie",

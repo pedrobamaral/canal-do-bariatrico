@@ -30,15 +30,10 @@ export interface finishedPostModal{
 export async function postFinishedPostLoginModal(data: finishedPostModal): Promise<any> {
   try {
     const response = await webhookN8nMain.post('/', data);
-
     
-    if (response.data.status === 'sucesso') {
-      return response.data.data;
-    }
-    
-    throw new Error(response.data.message || 'Erro ao comunicar com webhook:');
+    return response.data.data;
   } catch (error: any) {
     console.error('Erro ao comunicar com webhook:', error);
-    throw error;
+    throw new Error('Erro ao realizar o cadastro e comunicar com o chatbot!');
   }
 }

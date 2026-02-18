@@ -111,7 +111,7 @@ export const PostLoginModal: React.FC<Props> = ({
 
   const handleFinish = async () => {
     if (!usuarioId || !values.sexo || !values.dataNascimento) {
-      toast.error("Dados obrigatórios não preenchidos");
+      toast.error("Dados obrigatórios não preenchidos", { autoClose: 3000 });
       return;
     }
 
@@ -163,11 +163,15 @@ export const PostLoginModal: React.FC<Props> = ({
         meta: Number(values.pesoMeta)
       });
 
-      toast.success("Dados salvos com sucesso!");
-      handleClose();
-      onFinishAction?.(values as PostLoginData);
+      toast.success("Dados salvos com sucesso!", {
+        autoClose: 3000,
+        onClose: () => {
+          handleClose();
+          onFinishAction?.(values as PostLoginData);
+        }
+      });
     } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar dados");
+      toast.error(err.message || "Erro ao salvar dados", { autoClose: 3000 });
     } finally {
       setLoading(false);
     }

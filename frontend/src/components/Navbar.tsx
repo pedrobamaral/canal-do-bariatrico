@@ -101,105 +101,88 @@ export default function Navbar() {
     "text-white hover:text-[#6D28D9] transition-colors cursor-pointer"
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 w-full h-16 overflow-x-hidden bg-transparent shadow-md font-['Montserrat']">
-      {/* ✅ Container interno (desktop intacto) */}
-      <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-6">
-        {/* --- LADO ESQUERDO: LOGO --- */}
+    <>
+      <header className="fixed left-0 right-0 top-0 z-[9999] w-full h-16 overflow-x-hidden bg-[#0A0A0A]/50 backdrop-blur-sm shadow-md font-['Montserrat']">
+        <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-6">
           <div className="h-full flex items-center pl-4 pr-4 shrink-0" style={{ borderBottomRightRadius: "30px" }}>
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center">
-              <Image
-                src="/images/newBarieIcon.png"
-                alt="New Barie Icon"
-                width={72}
-                height={72}
-                className="w-14 h-14 md:w-18 md:h-18 object-contain"
-                priority
-              />
-            </div>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center">
+                <Image
+                  src="/images/newBarieIcon.png"
+                  alt="New Barie Icon"
+                  width={72}
+                  height={72}
+                  className="w-14 h-14 md:w-18 md:h-18 object-contain"
+                  priority
+                />
+              </div>
 
-            <div className="flex items-center ml-3 min-w-0">
-              <p className="hidden sm:flex items-center gap-2 text-sm font-semibold leading-tight">
-                <span className="text-white">Seu Progresso.</span>
-                <span style={{ color: CORES.roxoClaro }}>Sem bagunça.</span>
-                <span style={{ color: CORES.roxoPrincipal }}>Sem achismo.</span>
-              </p>
+              <div className="flex items-center ml-3 min-w-0">
+                <p className="hidden sm:flex items-center gap-2 text-sm font-semibold leading-tight">
+                  <span className="text-white">Seu Progresso.</span>
+                  <span style={{ color: CORES.roxoClaro }}>Sem bagunça.</span>
+                  <span style={{ color: CORES.roxoPrincipal }}>Sem achismo.</span>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* ✅ LADO DIREITO */}
           <div className="flex-1 flex items-center justify-end min-w-0">
-          {/* ========================= */}
-          {/* ✅ DESKTOP (NÃO MUDA NADA) */}
-          {/* ========================= */}
-          <div className="hidden md:flex items-center gap-6 whitespace-nowrap">
-            {/* ✅ DESLOGADO */}
+            <div className="hidden md:flex items-center gap-6 whitespace-nowrap">
+              <Link href="/shop" aria-label="Shop">
+                <FaShoppingBag size={22} className={iconBaseStyle} />
+              </Link>
 
-            {/* ✅ LOGADO (Navbar assume usuário autenticado) */}
-              <>
+              <Link href="/calculator" aria-label="Calculadora">
+                <FaCalculator size={22} className={iconBaseStyle} />
+              </Link>
 
-                <Link href="/shop" aria-label="Shop">
-                  <FaShoppingBag size={22} className={iconBaseStyle} />
+              <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
+                <IoPerson size={26} className="text-white hover:text-[#6D28D9] transition-colors cursor-pointer" />
+              </Link>
+
+              {isAdmin && (
+                <Link href="/pacientes" aria-label="Médico">
+                  <FaUserMd size={24} className={iconBaseStyle} />
                 </Link>
+              )}
 
-                <Link href="/calculator" aria-label="Calculadora">
-                  <FaCalculator size={22} className={iconBaseStyle} />
-                </Link>
+              <div className="h-6 w-px bg-gray-700 mx-2" />
 
-                <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
-                  <IoPerson size={26} className="text-white hover:text-[#6D28D9] transition-colors cursor-pointer" />
-                </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Sair"
+                style={{ background: "transparent", border: "none", padding: 0 }}
+              >
+                <IoLogOutOutline size={26} className="text-white hover:text-red-400 transition-colors cursor-pointer" />
+              </button>
+            </div>
 
-                {isAdmin && (
-                  <Link href="/pacientes" aria-label="Médico">
-                    <FaUserMd size={24} className={iconBaseStyle} />
-                  </Link>
-                )}
-
-                <div className="h-6 w-px bg-gray-700 mx-2" />
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  aria-label="Sair"
-                  style={{ background: "transparent", border: "none", padding: 0 }}
-                >
-                  <IoLogOutOutline size={26} className="text-white hover:text-red-400 transition-colors cursor-pointer" />
-                </button>
-              </>
-          </div>
-
-          {/* ========================= */}
-          {/* ✅ MOBILE (NOVO) */}
-          {/* ========================= */}
-          <div className="flex md:hidden items-center">
-            <button
-              type="button"
-              aria-label="Abrir menu"
-              onClick={() => setMobileOpen(true)}
-              className="p-2"
-            >
-              <FiMenu size={22} className="text-white" />
-            </button>
+            <div className="flex md:hidden items-center">
+              <button
+                type="button"
+                aria-label="Abrir menu"
+                onClick={() => setMobileOpen(true)}
+                className="p-2 z-[10001] absolute right-4 top-4"
+              >
+                <FiMenu size={22} className="text-white" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ✅ Overlay (mobile) */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[60] bg-[#0A0A0A]/80 md:hidden" onClick={() => setMobileOpen(false)} />
-      )}
+      {mobileOpen && <div className="fixed inset-0 z-[10002] bg-[#0A0A0A]/80 md:hidden" />}
 
       {mobileOpen && (
-        <aside className="fixed inset-0 z-[70] md:hidden bg-[#0A0A0A] text-white p-6 overflow-auto">
+        <aside className="fixed inset-0 z-[10003] md:hidden bg-[#0A0A0A] text-white p-6 overflow-auto">
           <div className="flex items-center justify-end">
             <button type="button" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} className="rounded-md p-2 text-white">
               <FiX size={22} />
             </button>
           </div>
 
-          {/* Menu items (mobile) - always for logged users */}
           <nav className="flex flex-col gap-4 px-2 pt-6 text-white">
             <Link href={userId ? `/userPage/${userId}` : "/userPage"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
               <IoPerson size={28} className="text-white" />
@@ -237,6 +220,6 @@ export default function Navbar() {
           </nav>
         </aside>
       )}
-    </header>
+    </>
   )
 }

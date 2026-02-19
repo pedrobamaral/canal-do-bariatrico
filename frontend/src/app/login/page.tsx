@@ -5,7 +5,6 @@ import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/api/api";
 
-import Navbar from "@/components/Navbar";
 
 type IconProps = { className?: string };
 
@@ -311,10 +310,7 @@ const LoginForm: React.FC = () => {
 const LoginPage: React.FC = () => {
   return (
     <>
-      {/* ✅ Navbar só no MOBILE (desktop não muda) */}
-      <div className="mobileOnlyNav">
-        <Navbar />
-      </div>
+      {/* navbar removed for login page */}
 
       <main
         className="loginMain"

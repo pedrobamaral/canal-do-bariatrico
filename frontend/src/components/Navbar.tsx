@@ -12,8 +12,6 @@ import { IoPerson } from "react-icons/io5"
 
 // ✅ Mobile menu icons
 import { FiMenu, FiX } from "react-icons/fi"
-import { FiEdit2, FiUser } from "react-icons/fi"
-import { MdCalculate } from "react-icons/md"
 
 const CORES = {
   roxoPrincipal: "#6F3CF6",
@@ -103,11 +101,11 @@ export default function Navbar() {
     "text-white hover:text-[#6D28D9] transition-colors cursor-pointer"
 
   return (
-    <header className="fixed top-0 z-50 w-full h-12 overflow-visible bg-transparent shadow-md font-['Montserrat']">
+    <header className="fixed left-0 right-0 top-0 z-50 w-full h-16 overflow-x-hidden bg-transparent shadow-md font-['Montserrat']">
       {/* ✅ Container interno (desktop intacto) */}
-      <div className="h-full w-full flex items-center justify-between pr-4">
+      <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-6">
         {/* --- LADO ESQUERDO: LOGO --- */}
-        <div className="h-full flex items-center pl-4 pr-4 shrink-0" style={{ borderBottomRightRadius: "30px" }}>
+          <div className="h-full flex items-center pl-4 pr-4 shrink-0" style={{ borderBottomRightRadius: "30px" }}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center">
               <Image
@@ -131,7 +129,7 @@ export default function Navbar() {
         </div>
 
         {/* ✅ LADO DIREITO */}
-          <div className="flex-1 flex items-center justify-end">
+          <div className="flex-1 flex items-center justify-end min-w-0">
           {/* ========================= */}
           {/* ✅ DESKTOP (NÃO MUDA NADA) */}
           {/* ========================= */}
@@ -190,53 +188,55 @@ export default function Navbar() {
 
       {/* ✅ Overlay (mobile) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/40 md:hidden" onClick={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 z-[60] bg-[#0A0A0A]/80 md:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      <aside
-        className={[
-          "fixed right-0 top-0 z-[70] h-full w-[260px] bg-[#D9D9D9] shadow-xl transition-transform md:hidden",
-          mobileOpen ? "translate-x-0" : "translate-x-full",
-        ].join(" ")}
-      >
-        <div className="flex items-center justify-end p-3">
-          <button type="button" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} className="rounded-md p-2 text-[#6F3CF6]">
-            <FiX size={22} />
-          </button>
-        </div>
+      {mobileOpen && (
+        <aside className="fixed inset-0 z-[70] md:hidden bg-[#0A0A0A] text-white p-6 overflow-auto">
+          <div className="flex items-center justify-end">
+            <button type="button" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} className="rounded-md p-2 text-white">
+              <FiX size={22} />
+            </button>
+          </div>
 
-        {/* Menu items (mobile) - always for logged users */}
-        <nav className="flex flex-col gap-4 px-6 pt-2 text-[#6F3CF6]">
-          <Link href={userId ? `/userPage/${userId}` : "/userPage"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-            <FiUser size={28} />
-            <span className="font-medium text-lg">Perfil de Usuário</span>
-          </Link>
-
-          <Link href="/calculator" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-            <MdCalculate size={28} />
-            <span className="font-medium text-lg">Calculadora</span>
-          </Link>
-
-          {isAdmin && (
-            <Link href="/pacientes" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-              <FaUserMd size={28} />
-              <span className="font-medium text-lg">Pacientes</span>
+          {/* Menu items (mobile) - always for logged users */}
+          <nav className="flex flex-col gap-4 px-2 pt-6 text-white">
+            <Link href={userId ? `/userPage/${userId}` : "/userPage"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
+              <IoPerson size={28} className="text-white" />
+              <span className="font-medium text-lg">Perfil de Usuário</span>
             </Link>
-          )}
 
-          <button
-            type="button"
-            onClick={() => {
-              setMobileOpen(false)
-              handleLogout()
-            }}
-            className="mt-2 flex items-center gap-3 text-left"
-          >
-            <IoLogOutOutline size={28} />
-            <span className="font-medium text-lg">Sair</span>
-          </button>
-        </nav>
-      </aside>
+            <Link href="/calculator" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
+              <FaCalculator size={28} className="text-white" />
+              <span className="font-medium text-lg">Calculadora</span>
+            </Link>
+
+            <Link href="/shop" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
+              <FaShoppingBag size={28} className="text-white" />
+              <span className="font-medium text-lg">Shop</span>
+            </Link>
+
+            {isAdmin && (
+              <Link href="/pacientes" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
+                <FaUserMd size={28} className="text-white" />
+                <span className="font-medium text-lg">Pacientes</span>
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false)
+                handleLogout()
+              }}
+              className="mt-2 flex items-center gap-3 text-left"
+            >
+              <IoLogOutOutline size={28} className="text-white" />
+              <span className="font-medium text-lg">Sair</span>
+            </button>
+          </nav>
+        </aside>
+      )}
     </header>
   )
 }

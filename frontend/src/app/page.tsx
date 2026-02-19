@@ -81,10 +81,6 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  const navItems = [
-    { label: "JÁ SOU ALUNO", href: "#" },
-  ];
-
   const benefits = [
     "Suas informações ficam organizadas no seu perfil. Check ins, treino, alimentação, medicação e evolução de peso.",
     "Nada se perde.",
@@ -119,37 +115,15 @@ export default function Home() {
               </div>
           </a>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-sm font-semibold text-white hover:text-[#6F3CF6] group transition-colors duration-300 relative"
-              >
-                <span className="inline-block relative">
-                  {item.label}
-                  <span className="absolute left-0 -bottom-1 h-[2px] bg-[#6F3CF6] w-0 group-hover:w-full transition-all duration-300" />
-                </span>
-              </a>
-            ))}
-          </nav>
-
           {/* CTA Button */}
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden sm:inline-block">
-              <span className="inline-block px-4 py-2 text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300">
-                ENTRAR
-              </span>
-            </Link>
-
-            <Link href="/cadastro" className="hidden sm:inline-block px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300">
-              CADASTRE-SE
+            <Link href="/login" className="hidden sm:inline-block px-6 py-2 border-2 border-white text-white font-bold rounded-lg hover:bg-white transition-all duration-300 group">
+              <span className="text-white group-hover:text-black">JÁ SOU ALUNO</span>
             </Link>
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-[#6F3CF6]"
+              className="md:hidden text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -157,32 +131,54 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation (full-screen drawer) */}
         {mobileMenuOpen && (
-          <nav className="md:hidden bg-[#ffff] border-t border-[#333333]">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm font-semibold text-white hover:text-[#6F3CF6] group transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span className="inline-block relative">
-                    {item.label}
-                    <span className="absolute left-0 -bottom-1 h-[2px] bg-[#6F3CF6] w-0 group-hover:w-full transition-all duration-300" />
-                  </span>
-                </a>
-              ))}
-              <a href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full px-6 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all text-center">
-                ENTRAR
-              </a>
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="absolute inset-0 bg-black/80" onClick={() => setMobileMenuOpen(false)} />
 
-              <button className="w-full px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all">
-                CANAL DA BARIE
+            <aside className="relative z-60 h-full w-full bg-[#0A0A0A] text-white p-6 overflow-auto">
+              <button
+                aria-label="Fechar menu"
+                onClick={() => setMobileMenuOpen(false)}
+                className="absolute right-4 top-4 rounded-md p-2 border-2 border-[#6F3CF6] text-white"
+              >
+                <X size={20} />
               </button>
-            </div>
-          </nav>
+
+              <nav className="mt-12 max-w-lg mx-auto">
+                <a href="/cadastro" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">CADASTRO</a>
+                <a href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">ENTRAR</a>
+                <a href="#" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">PARCEIROS</a>
+
+                <div className="flex justify-center gap-4 mt-8">
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Instagram size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Youtube size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <FaTiktok size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Mail size={18} />
+                  </button>
+                </div>
+
+                <div className="flex justify-center mt-10">
+                  <img src="/images/newBarieIcon.png" alt="Barie" className="w-28 h-28 object-contain" />
+                </div>
+
+                <div className="mt-12">
+                  <div className="flex items-center gap-2">
+                    <img src="/images/flags/gb.png" alt="EN" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                    <img src="/images/flags/br.png" alt="BR" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                    <img src="/images/flags/es.png" alt="ES" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                  </div>
+                </div>
+              </nav>
+            </aside>
+          </div>
         )}
       </header>
 
@@ -592,7 +588,12 @@ export default function Home() {
                 Treino adaptado à sua rotina real. Organização alimentar inteligente. Ajuste clínico quando indicado. Sem milagre. Com método.
               </p>
 
-              <Link href="/cadastro" className="inline-block">
+              <a
+                href="https://hotmart.com/pt-br"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
                 <motion.span
                   whileHover={{ scale: 1.05 }}
                   className="inline-flex items-center gap-3 px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
@@ -600,7 +601,7 @@ export default function Home() {
                   <span>MEU PROJETO DE SAÚDE</span>
                   <MdArrowOutward className="shrink-0" />
                 </motion.span>
-              </Link>
+              </a>
             </div>
           </div>
         </div>

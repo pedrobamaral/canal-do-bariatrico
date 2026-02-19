@@ -157,7 +157,7 @@ const PhotoSlot: React.FC<{
         data-driver={`photo-${angulo}-${momento}`}
         onClick={() => !foto && inputRef.current?.click()}
         className={`
-          relative w-[120px] h-[140px] rounded-xl flex flex-col items-center justify-center
+          relative w-28 h-36 md:w-[120px] md:h-[140px] rounded-xl flex flex-col items-center justify-center
           transition-all duration-200 group overflow-hidden
           ${foto
             ? "border border-[#8B5CF6]/40"
@@ -365,21 +365,13 @@ export default function UserPage() {
       <Navbar />
 
       {/* CARD CENTRAL */}
-      <div className="relative z-10 flex justify-center pt-28 pb-24">
+      <div className="relative z-10 flex justify-center pt-20 md:pt-28 pb-12 md:pb-24 px-4">
         <div style={{ position: 'relative', display: 'inline-block' }}>
           {/* Purple glow */}
           <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[42%] w-[90vw] max-w-[520px] h-[40vw] max-h-[320px] rounded-[22px] filter blur-2xl z-0"
             style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -42%)',
-              width: '520px',
-              height: '320px',
-              borderRadius: '22px',
-              filter: 'blur(80px)',
               background: 'radial-gradient(circle at center, rgba(138,92,246,0.45), rgba(111,60,246,0.12) 40%, transparent 70%)',
-              zIndex: 0,
             }}
           />
 
@@ -387,7 +379,7 @@ export default function UserPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-md rounded-2xl p-6"
+            className="w-full max-w-md rounded-2xl p-4 sm:p-6"
             style={{
               background: 'rgba(255,255,255,0.06)',
               backdropFilter: 'blur(10px)',
@@ -401,8 +393,7 @@ export default function UserPage() {
           <div className="flex flex-col items-center text-center gap-2">
             <img
               src={usuario.foto || "/images/defaultAvatar.jpg"}
-              className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6]"
-              style={{ marginTop: '-70px' }}
+              className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6] -mt-16 md:-mt-20"
             />
 
             <h2 className="text-xl font-semibold">{usuario.nome}</h2>

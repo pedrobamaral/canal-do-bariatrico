@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { createUser } from "@/api/api";
 
-// ✅ Navbar (aparece SÓ no mobile)
-import Navbar from "@/components/Navbar";
+// Navbar removed for signup page
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -439,9 +438,7 @@ const SignUpForm: React.FC = () => {
 const SignUpPage: React.FC = () => {
   return (
     <>
-      <div className="mobileOnlyNav">
-        <Navbar />
-      </div>
+      {/* navbar removed for signup page */}
 
       <main
         className="signupMain"

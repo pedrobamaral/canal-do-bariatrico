@@ -286,7 +286,7 @@ export default function Home() {
             </div>
           </div>
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -348,7 +348,7 @@ export default function Home() {
             </div>
           </div>
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -453,7 +453,7 @@ export default function Home() {
           </div>
 
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -552,7 +552,7 @@ export default function Home() {
           </div>
 
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 

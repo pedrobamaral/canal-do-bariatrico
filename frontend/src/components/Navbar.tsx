@@ -140,11 +140,6 @@ export default function Navbar() {
 
             {/* ✅ LOGADO (Navbar assume usuário autenticado) */}
               <>
-                {isAdmin && (
-                  <Link href="/pacientes" aria-label="Médico">
-                    <FaUserMd size={24} className={iconBaseStyle} />
-                  </Link>
-                )}
 
                 <Link href="/shop" aria-label="Shop">
                   <FaShoppingBag size={22} className={iconBaseStyle} />
@@ -157,6 +152,12 @@ export default function Navbar() {
                 <Link href={userId ? `/userPage/${userId}` : "/userPage"} aria-label="Meu Perfil">
                   <IoPerson size={26} className="text-white hover:text-[#6D28D9] transition-colors cursor-pointer" />
                 </Link>
+
+                {isAdmin && (
+                  <Link href="/pacientes" aria-label="Médico">
+                    <FaUserMd size={24} className={iconBaseStyle} />
+                  </Link>
+                )}
 
                 <div className="h-6 w-px bg-gray-700 mx-2" />
 

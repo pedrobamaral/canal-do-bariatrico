@@ -11,9 +11,7 @@ import {
   AreaChart,
 } from "recharts"
 import { motion } from "framer-motion"
-
 import Navbar from "@/components/Navbar"
-import { HealthSurveyModal } from "@/components/others/HealthSurveyModal"
 
 /* =========================
    TEMA MODERNO (DARK/GLASS)
@@ -517,13 +515,6 @@ export default function Calculator() {
           </motion.div>
         </div>
       </section>
-
-      {/* Modal */}
-      <HealthSurveyModal
-        isOpen={isHealthModalOpen}
-        onClose={() => setIsHealthModalOpen(false)}
-        usuarioId={usuarioId}
-      />
 
       {/* ═══ CSS Global para componentes ═══ */}
       <style dangerouslySetInnerHTML={{ __html: `

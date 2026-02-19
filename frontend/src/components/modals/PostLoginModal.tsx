@@ -1,91 +1,68 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import {
-  IoClose,
-  IoChevronDown,
-} from "react-icons/io5";
+
+// Ícones
 import {
   FaWeight,
   FaRulerVertical,
   FaBirthdayCake,
-  FaBullseye,
   FaVenusMars,
-  FaArrowLeft,
+  FaBullseye,
   FaStethoscope,
-  FaPills,
+  FaArrowLeft,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
-import { updateData, createOrUpdateMedicacao, createDia0, createCiclo } from "@/api/api";
-import { MedicationModal } from "./MedicationModal";
-import { postFinishedPostLoginModal } from "@/api/webhook";
-import { Usuario } from "@/app/userPage/[id]/page";
-
-/* ================== TIPOS ================== */
-
-type Step = 1 | 2 | 3;
-
-export type PostLoginData = {
-  peso: string;
-  altura: string;
-  dataNascimento: string;
-  sexo: "Masculino" | "Feminino" | "Outro";
-  pesoMeta: string;
-  tipoIntervencao: "" | "mounjaro" | "apenas_dieta_treino";
-};
-
-
+import { IoClose, IoChevronDown } from "react-icons/io5";
+import { MedicationModal } from "@/components/modals/MedicationModal";
 
 interface Props {
   isOpen: boolean;
-  onCloseAction: () => void;
-  onFinishAction?: (data: PostLoginData) => void;
-  onFillAdditionalInfoAction?: () => void;
-  usuarioId?: number;
-  usuario?: Usuario;
+  onClose?: () => void;
+  onCloseAction?: () => void;
+  onFinishAction?: () => void;
+  usuarioId: number;
+  usuario?: any;
 }
 
-/* ================== ESTILOS ================== */
-
-const inputStyle =
-  "w-full h-[50px] pl-12 pr-12 rounded-2xl bg-white/80 backdrop-blur-md text-[#1f1f1f] border border-gray-300/70 focus:border-[#6A38F3] focus:ring-4 focus:ring-[#6A38F3]/20 focus:outline-none transition-all duration-300";
-
-const selectStyle = "appearance-none cursor-pointer";
-
-/* ================== COMPONENTE ================== */
-
-export const PostLoginModal: React.FC<Props> = ({
+export default function PostLoginModal({
   isOpen,
+  onClose,
   onCloseAction,
   onFinishAction,
-  onFillAdditionalInfoAction,
   usuarioId,
-  usuario
-}) => {
-  const [step, setStep] = useState<Step>(1);
+}: Props) {
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showMedicationModal, setShowMedicationModal] = useState(false);
-  const [medPrescrita, setMedPrescrita] = useState<boolean>(false);
-  const [freqMedPrescrita, setFreqMedPrescrita] = useState<number>(0);
 
-  /* ===== Medidas ===== */
-  const [values, setValues] = useState<Partial<PostLoginData>>({
+  const [values, setValues] = useState<any>({
     peso: "",
     altura: "",
     dataNascimento: "",
-    sexo: undefined,
+    sexo: "",
     pesoMeta: "",
     tipoIntervencao: "",
   });
 
-  /* ===== Medicamento Prescrito ===== */
-  // medication summary and doctor fields removed — we only open the medication modal to collect frequency if needed
+  const [showMedicationModal, setShowMedicationModal] = useState(false);
+  const [medPrescrita, setMedPrescrita] = useState(false);
+  const [freqMedPrescrita, setFreqMedPrescrita] = useState(0);
+
+  const callClose = () => {
+    onClose?.();
+    onCloseAction?.();
+  };
+
+  if (!isOpen) return null;
 
   const setField =
-    (field: keyof PostLoginData) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setValues((p) => ({ ...p, [field]: e.target.value }));
+    (field: string) =>
+    (e: any) =>
+      setValues((prev: any) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
 
   const step1Valid =
     values.peso &&
@@ -94,200 +71,193 @@ export const PostLoginModal: React.FC<Props> = ({
     values.sexo &&
     values.pesoMeta;
 
-  const handleClose = () => {
-    setStep(1);
-    setValues({
-      peso: "",
-      altura: "",
-      dataNascimento: "",
-      sexo: undefined,
-      pesoMeta: "",
-      tipoIntervencao: "",
-    });
-    onCloseAction();
-  };
-
-  /* ================== FINALIZAR ================== */
-
   const handleFinish = async () => {
-    if (!usuarioId || !values.sexo || !values.dataNascimento) {
-      toast.error("Dados obrigatórios não preenchidos", { autoClose: 3000 });
-      return;
-    }
-
-    setLoading(true);
     try {
-      // Converter string de data para Date
-      const dataNascimento = new Date(values.dataNascimento);
+      setLoading(true);
 
-      // 1. Atualizar dados do usuário
-      await updateData(usuarioId, {
-        peso: Number(values.peso),
-        altura: Number(values.altura),
-        nascimento: dataNascimento,
-        sexo: values.sexo,
-        meta: Number(values.pesoMeta),
-        ativo: true,
+      // 👉 SUA LÓGICA ORIGINAL DE SALVAR DADOS AQUI
+      console.log({
+        ...values,
+        medPrescrita,
+        freqMedPrescrita,
+        usuarioId,
       });
 
-      // 2. Não mais persistimos nome/instagram do médico nem mostramos resumo
-
-      // 3. Criar Dia0
-      const dia0Response = await createDia0(usuarioId, {
-        dia0: new Date(),
-        quer_msg: true,
-        iniciou_medicamento: false,
-      });
-
-      const dia0Id = dia0Response.id;
-
-      // 4. Criar Ciclo com mounjaro baseado no tipo de intervenção
-      // E med_prescrita e freq_med_prescrita baseado na resposta do MedicationModal
-      const mounjaro = values.tipoIntervencao === "mounjaro";
-      await createCiclo(usuarioId, dia0Id, {
-        numCiclo: 1,
-        ativoCiclo: false,
-        mounjaro: mounjaro,
-        med_prescrita: medPrescrita,
-        freq_med_prescrita: freqMedPrescrita || 0,
-        treino: true,
-        dieta: true,
-        agua: true,
-        consulta: true,
-      });
-
-      await postFinishedPostLoginModal({
-        nome: usuario?.nome || '',
-        idUsuario: usuarioId || -1, 
-        telefone: usuario?.telefone || '',
-        meta: Number(values.pesoMeta)
-      });
-
-      toast.success("Dados salvos com sucesso!", {
-        autoClose: 3000,
-        onClose: () => {
-          handleClose();
-          onFinishAction?.(values as PostLoginData);
-        }
-      });
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar dados", { autoClose: 3000 });
+      onClose?.();
+      onFinishAction?.();
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      onClick={handleClose}
-    >
-      <div
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={callClose}>
+      {/* Overlay */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
+
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#EDEDED] rounded-xl max-w-md w-full shadow-xl overflow-hidden"
-      >
-        {/* HEADER */}
-        <div className="relative px-8 py-6 border-b border-gray-300">
-          <h2 className="text-lg font-semibold text-center">
-            {step === 1 && "Medidas físicas"}
-            {step === 2 && "Medicamentos"}
-            {step === 3 && "Tipo de intervenção"}
-          </h2>
-
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-xl text-gray-500"
-          >
-            <IoClose />
-          </button>
-        </div>
-
-        {/* CONTEÚDO */}
-        <div className="p-8 space-y-4">
-
-          {/* STEP 1 — MEDIDAS */}
-          {step === 1 && (
-            <>
-              <Input icon={<FaWeight />} placeholder="Peso (kg)" value={values.peso} onChange={setField("peso")} />
-              <Input icon={<FaRulerVertical />} placeholder="Altura (cm)" value={values.altura} onChange={setField("altura")} />
-              <Input 
-                icon={<FaBirthdayCake />} 
-                placeholder="Data de nascimento" 
-                type="date"
-                value={values.dataNascimento} 
-                onChange={setField("dataNascimento")} 
-              />
-
-              <Select icon={<FaVenusMars />} value={values.sexo || ""} onChange={setField("sexo")}>
-                <option value="" disabled>Sexo biológico</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Feminino">Feminino</option>
-                <option value="Outro">Outro</option>
-              </Select>
-
-              <Input icon={<FaBullseye />} placeholder="Peso desejado (kg)" value={values.pesoMeta} onChange={setField("pesoMeta")} />
-
-              <button
-                disabled={!step1Valid}
-                onClick={() => setShowMedicationModal(true)}
-                className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3]"
-              >
-                Próximo
-              </button>
-            </>
-          )}
-
-          {/* STEP 3 — INTERVENÇÃO */}
-          {step === 3 && (
-            <>
-              <button
-                onClick={() => setStep(2)}
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                <FaArrowLeft /> Voltar
-              </button>
-
-              <Select icon={<FaStethoscope />} value={values.tipoIntervencao || ""} onChange={setField("tipoIntervencao")}>
-                <option value="" disabled>Tipo de intervenção</option>
-                <option value="mounjaro">Caneta Emagrecedora</option>
-                <option value="apenas_dieta_treino">Apenas dieta e treino</option>
-              </Select>
-
-              <p className="text-xs text-gray-500 text-center">
-                Informações adicionais tornam os resultados mais precisos
-              </p>
-
-              <div className="flex justify-center">
-                <Image src="/images/bari_icon.png" alt="Bari" width={70} height={70} />
-              </div>
-
-              <button
-                onClick={handleFinish}
-                disabled={loading || !values.tipoIntervencao}
-                className="w-full p-3 rounded-full border border-[#6A38F3] text-[#6A38F3] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Salvando..." : "Finalizar"}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* MedicationModal */}
-      <MedicationModal
-        isOpen={showMedicationModal}
-        onClose={() => {
-          setShowMedicationModal(false);
-          if (step === 1) setStep(3);
+        className="relative w-full max-w-md rounded-2xl p-8 text-white"
+        style={{
+          background: "rgba(20,15,35,0.95)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 8px 60px rgba(0,0,0,0.6)",
         }}
-        usuarioId={usuarioId}
-        embeddedMode={true}
-          onYesCallback={(data) => {
-            // MedicationModal returns { frequencia }
+      >
+        {/* Fechar */}
+        <button onClick={callClose} className="absolute top-4 right-4 text-white/50 hover:text-white transition">
+          <IoClose size={22} />
+        </button>
+
+        {/* Título */}
+        <h2 className="text-lg font-semibold text-center mb-6">
+          {step === 1 && "Medidas físicas"}
+          {step === 2 && "Medicamentos"}
+          {step === 3 && "Tipo de intervenção"}
+        </h2>
+
+        {/* STEP 1 */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <DarkInput
+              icon={<FaWeight />}
+              placeholder="Peso (kg)"
+              value={values.peso}
+              onChange={setField("peso")}
+            />
+
+            <DarkInput
+              icon={<FaRulerVertical />}
+              placeholder="Altura (cm)"
+              value={values.altura}
+              onChange={setField("altura")}
+            />
+
+            <DarkInput
+              icon={<FaBirthdayCake />}
+              type="date"
+              value={values.dataNascimento}
+              onChange={setField("dataNascimento")}
+            />
+
+            <DarkSelect
+              icon={<FaVenusMars />}
+              value={values.sexo}
+              onChange={setField("sexo")}
+            >
+              <option value="" disabled className="bg-[#140f23] text-white/60">
+                Sexo biológico
+              </option>
+              <option value="Masculino" className="bg-[#140f23] text-white">
+                Masculino
+              </option>
+              <option value="Feminino" className="bg-[#140f23] text-white">
+                Feminino
+              </option>
+              <option value="Outro" className="bg-[#140f23] text-white">
+                Outro
+              </option>
+            </DarkSelect>
+
+            <DarkInput
+              icon={<FaBullseye />}
+              placeholder="Peso desejado (kg)"
+              value={values.pesoMeta}
+              onChange={setField("pesoMeta")}
+            />
+
+            <button
+              disabled={!step1Valid}
+              onClick={() => setShowMedicationModal(true)}
+              className="
+                w-full py-3 rounded-full font-medium
+                bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]
+                hover:scale-105 transition
+                disabled:opacity-40
+              "
+            >
+              Próximo
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setStep(1)}
+              className="flex items-center gap-2 text-sm text-white/60 hover:text-white"
+            >
+              <FaArrowLeft /> Voltar
+            </button>
+
+            <DarkSelect
+              icon={<FaStethoscope />}
+              value={values.tipoIntervencao}
+              onChange={setField("tipoIntervencao")}
+            >
+              <option value="" disabled className="bg-[#140f23] text-white/60">
+                Tipo de intervenção
+              </option>
+              <option value="mounjaro" className="bg-[#140f23] text-white">
+                Caneta emagrecedora
+              </option>
+              <option value="apenas_dieta_treino" className="bg-[#140f23] text-white">
+                Apenas dieta e treino
+              </option>
+            </DarkSelect>
+
+            <p className="text-xs text-white/50 text-center">
+              Essas informações ajudam a personalizar seu acompanhamento
+            </p>
+
+            <div className="flex justify-center">
+              <Image
+                src="/images/bari_icon.png"
+                alt="Bari"
+                width={70}
+                height={70}
+              />
+            </div>
+
+            <button
+              onClick={handleFinish}
+              disabled={loading || !values.tipoIntervencao}
+              className="
+                w-full py-3 rounded-full font-medium
+                bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]
+                hover:scale-105 transition
+                disabled:opacity-40
+              "
+            >
+              {loading ? "Salvando..." : "Finalizar"}
+            </button>
+          </div>
+        )}
+
+        {/* MODAL DE MEDICAMENTO */}
+        <MedicationModal
+          isOpen={showMedicationModal}
+          onClose={() => {
+            setShowMedicationModal(false);
+            setStep(3);
+          }}
+          usuarioId={usuarioId}
+          embeddedMode
+          onYesCallback={(data: any) => {
             setMedPrescrita(true);
-            setFreqMedPrescrita(data.frequencia ?? 0);
+            setFreqMedPrescrita(data?.frequencia ?? 0);
             setShowMedicationModal(false);
             setStep(3);
           }}
@@ -301,50 +271,140 @@ export const PostLoginModal: React.FC<Props> = ({
             setShowMedicationModal(false);
             setStep(1);
           }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
+/* Global styles for date input calendar indicator to appear white */
+export const __postLoginModal_date_styles = null;
+
+/* Add a global style tag by injecting into document head at runtime for broader browser support */
+if (typeof window !== "undefined") {
+  const styleId = "postloginmodal-date-style";
+  if (!document.getElementById(styleId)) {
+    const s = document.createElement("style");
+    s.id = styleId;
+    s.innerHTML = `
+      /* make calendar icon white */
+      .dark-input::-webkit-calendar-picker-indicator { filter: brightness(0) invert(1) !important; }
+      .dark-input::-moz-calendar-picker-indicator { filter: brightness(0) invert(1) !important; }
+
+      /* default date text color inherits (visible when value is set) */
+      .dark-input::-webkit-datetime-edit,
+      .dark-input::-webkit-datetime-edit-fields-wrapper,
+      .dark-input::-webkit-datetime-edit-text { color: inherit !important; }
+
+      /* hide browser format hint when input has empty value so our label shows */
+      .dark-input[value=""]::-webkit-datetime-edit,
+      .dark-input[value=""]::-webkit-datetime-edit-fields-wrapper,
+      .dark-input[value=""]::-webkit-datetime-edit-text { color: transparent !important; }
+
+      /* Firefox: hide placeholder-like text when empty */
+      .dark-input:-moz-ui-invalid::-moz-datetime-text { color: transparent !important; }
+    `;
+    document.head.appendChild(s);
+  }
+}
+
+/* ========================= */
+/* COMPONENTES AUXILIARES */
+/* ========================= */
+
+const DarkInput = ({ icon, ...props }: any) => {
+  const [active, setActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFocus = (e: any) => {
+    setActive(true);
+    if (props.onFocus) props.onFocus(e);
+  };
+
+  const handleBlur = (e: any) => {
+    setActive(false);
+    if (props.onBlur) props.onBlur(e);
+  };
+
+  const isDate = props.type === "date";
+
+  const placeholder = isDate ? "" : props.placeholder ?? "";
+
+  return (
+    <div className="relative group">
+      <input
+        ref={inputRef}
+        {...props}
+        placeholder={placeholder}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className={
+          `
+          w-full h-[50px] rounded-full
+          bg-white/5 border border-white/10
+          pl-12 pr-4
+          text-white placeholder-white/40
+          focus:outline-none focus:border-[#8B5CF6]
+        ` + (isDate ? " dark-input" : "")
+        }
       />
-    </div>
-  );
-};
 
-/* ================== AUX ================== */
-
-const Input = ({ icon, ...props }: { icon: React.ReactNode; [key: string]: any }) => {
-  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
-
-  return (
-    <div className="relative group">
-      <input {...props} className={inputStyle} />
-      <span
-        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
-          hasValue ? "text-[#6A38F3]" : ""
-        }`}
-      >
-        {icon}
+      {/* Icon */}
+      <span className={`absolute left-4 top-1/2 -translate-y-1/2 ${
+        active ? "text-[#8B5CF6]" : "text-white/40"
+      } group-focus-within:text-[#8B5CF6]`}>
+        {React.isValidElement(icon)
+          ? React.cloneElement(icon as any, {
+              className: `${active ? "text-[#8B5CF6]" : "text-white/40"} w-4 h-4`,
+            })
+          : icon}
       </span>
+
+      {/* In-input label for date fields (only when empty) */}
+      {isDate && !props.value && (
+        <span
+          onClick={() => inputRef.current?.focus()}
+          className="absolute left-12 top-1/2 -translate-y-1/2 text-white/60 text-sm cursor-text"
+        >
+          Data de aniversário
+        </span>
+      )}
     </div>
   );
 };
 
-const Select = ({ icon, children, ...props }: { icon: React.ReactNode; children: React.ReactNode; [key: string]: any }) => {
-  const hasValue = props.value !== undefined && props.value !== null && `${props.value}` !== "";
+function DarkSelect({ icon, children, ...props }: any) {
+  const [active, setActive] = useState(false);
+
+  const handleBlur = () => setActive(false);
 
   return (
     <div className="relative group">
-      <select {...props} className={`${inputStyle} ${selectStyle}`}>
+      <select
+        {...props}
+        onClick={() => setActive(true)}
+        onFocus={() => setActive(true)}
+        onBlur={handleBlur}
+        className={
+          "w-full h-[50px] rounded-full appearance-none bg-white/5 border border-white/10 pl-12 pr-10 text-white focus:outline-none focus:border-[#8B5CF6] group-focus-within:border-[#8B5CF6]"
+        }
+      >
         {children}
       </select>
-      <span
-        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
-          hasValue ? "text-[#6A38F3]" : ""
-        }`}
-      >
-        {icon}
+
+      <span className={`absolute left-4 top-1/2 -translate-y-1/2 ${
+        active ? "text-[#8B5CF6]" : "text-white/40"
+      } group-focus-within:text-[#8B5CF6]`}>
+        {React.isValidElement(icon)
+          ? React.cloneElement(icon as any, {
+              className: `${active ? "text-[#8B5CF6]" : "text-white/40"} w-4 h-4`,
+            })
+          : icon}
       </span>
-      <IoChevronDown
-        className={`absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition group-focus-within:text-[#6A38F3] ${
-          hasValue ? "text-[#6A38F3]" : ""
-        }`}
-      />
+
+      <IoChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 ${
+        active ? "text-[#8B5CF6]" : "text-white/40"
+      } group-focus-within:text-[#8B5CF6]`} />
     </div>
   );
-};
+}

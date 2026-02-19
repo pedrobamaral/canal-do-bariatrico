@@ -6,13 +6,14 @@ import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { getUserById, getUserAdherenceStats, UserAdherenceStats, getUserFotos, saveUserFotos } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
-import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal";
+import PostLoginModal from "@/components/modals/PostLoginModal";
 import { toast, ToastContainer } from "react-toastify";
 
 import {
   HiOutlineClipboardList,
   HiOutlineLightningBolt,
 } from "react-icons/hi";
+
 import { IoWaterOutline } from "react-icons/io5";
 import { FaPills, FaPenAlt, FaCamera, FaArrowRight, FaTrash, FaImages, FaTimes } from "react-icons/fa";
 
@@ -153,9 +154,10 @@ const PhotoSlot: React.FC<{
   return (
     <div className="flex flex-col items-center gap-1">
       <div
+        data-driver={`photo-${angulo}-${momento}`}
         onClick={() => !foto && inputRef.current?.click()}
         className={`
-          relative w-[120px] h-[140px] rounded-xl flex flex-col items-center justify-center
+          relative w-28 h-36 md:w-[120px] md:h-[140px] rounded-xl flex flex-col items-center justify-center
           transition-all duration-200 group overflow-hidden
           ${foto
             ? "border border-[#8B5CF6]/40"
@@ -250,6 +252,99 @@ export default function UserPage() {
     fetchData();
   }, [id, router]);
 
+  // start photos tour (runs after post-login modal completes)
+  const startPhotosTour = async () => {
+    if (typeof window === 'undefined') return;
+    const seen = localStorage.getItem('bari_photos_tour_shown');
+    if (seen) return;
+
+    // don't open the modal yet — highlight the fotos card first
+    setTimeout(async () => {
+      console.log('startPhotosTour: initializing tour');
+      try {
+        // inject driver.js stylesheet from CDN if not present and wait for it to load
+        const cssId = 'driverjs-cdn-css';
+        let link: HTMLLinkElement | null = null;
+        if (typeof document !== 'undefined' && !document.getElementById(cssId)) {
+          link = document.createElement('link');
+          link.id = cssId;
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/driver.js/dist/driver.min.css';
+          document.head.appendChild(link);
+
+          // wait for stylesheet to load (or timeout)
+          await new Promise<void>((resolve) => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            link!.onload = finish;
+            link!.onerror = finish;
+            // safety timeout
+            setTimeout(finish, 700);
+          });
+        }
+
+        const mod = await import('driver.js');
+        console.log('startPhotosTour: driver.js loaded');
+        const DriverCtor: any = mod.default || mod;
+        const driver: any = new DriverCtor({
+          opacity: 0.7,
+          closeBtnText: 'Fechar',
+          nextBtnText: 'Próximo',
+          prevBtnText: 'Anterior',
+        });
+
+        driver.defineSteps([
+          {
+            element: '[data-driver="fotos-card"]',
+            popover: {
+              title: 'Suas Fotos',
+              description: 'Aqui você pode enviar suas fotos de antes e depois para acompanhar a evolução.',
+              position: 'bottom'
+            }
+          },
+          {
+            element: '[data-driver="photo-costas-antes"]',
+            popover: {
+              title: 'Envie a foto - Costas (Antes)',
+              description: 'Clique ou toque aqui para enviar sua foto do ângulo Costas (Antes).',
+              position: 'right'
+            }
+          },
+          {
+            element: '[data-driver="photo-frente-antes"]',
+            popover: {
+              title: 'Envie a foto - Frente (Antes)',
+              description: 'Faça o upload da foto frontal.',
+              position: 'right'
+            }
+          },
+          {
+            element: '[data-driver="photo-lado-antes"]',
+            popover: {
+              title: 'Envie a foto - Lado (Antes)',
+              description: 'Por fim, envie a foto do lado.',
+              position: 'right'
+            }
+          }
+        ]);
+
+        localStorage.setItem('bari_photos_tour_shown', '1');
+        // start highlighting the fotos card first
+        driver.start();
+        console.log('startPhotosTour: driver started');
+
+        // when user moves to next step, open the photos modal so subsequent steps are visible
+        try { driver.on('next', () => setIsFotoModalOpen(true)); } catch {}
+
+        try { driver.on('stop', () => setIsFotoModalOpen(false)); } catch {}
+        try { driver.on('reset', () => setIsFotoModalOpen(false)); } catch {}
+        try { driver.on('complete', () => setIsFotoModalOpen(false)); } catch {}
+      } catch (err) {
+        console.error('Driver tour failed', err);
+      }
+    }, 400);
+  };
+
   if (loading || !usuario) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -270,21 +365,13 @@ export default function UserPage() {
       <Navbar />
 
       {/* CARD CENTRAL */}
-      <div className="relative z-10 flex justify-center pt-28 pb-24">
+      <div className="relative z-10 flex justify-center pt-20 md:pt-28 pb-12 md:pb-24 px-4">
         <div style={{ position: 'relative', display: 'inline-block' }}>
           {/* Purple glow */}
           <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[42%] w-[90vw] max-w-[520px] h-[40vw] max-h-[320px] rounded-[22px] filter blur-2xl z-0"
             style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -42%)',
-              width: '520px',
-              height: '320px',
-              borderRadius: '22px',
-              filter: 'blur(80px)',
               background: 'radial-gradient(circle at center, rgba(138,92,246,0.45), rgba(111,60,246,0.12) 40%, transparent 70%)',
-              zIndex: 0,
             }}
           />
 
@@ -292,7 +379,7 @@ export default function UserPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-md rounded-2xl p-6"
+            className="w-full max-w-md rounded-2xl p-4 sm:p-6"
             style={{
               background: 'rgba(255,255,255,0.06)',
               backdropFilter: 'blur(10px)',
@@ -306,8 +393,7 @@ export default function UserPage() {
           <div className="flex flex-col items-center text-center gap-2">
             <img
               src={usuario.foto || "/images/defaultAvatar.jpg"}
-              className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6]"
-              style={{ marginTop: '-70px' }}
+              className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6] -mt-16 md:-mt-20"
             />
 
             <h2 className="text-xl font-semibold">{usuario.nome}</h2>
@@ -335,6 +421,46 @@ export default function UserPage() {
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0 }}
+                  whileHover={{ scale: 1.03 }}
+                  onClick={() => setIsFotoModalOpen(true)}
+                  data-driver="fotos-card"
+                  className="
+                    rounded-xl
+                    bg-white/5
+                    border border-white/10
+                    p-4
+                    hover:bg-white/10
+                    transition
+                    cursor-pointer
+                  "
+                >
+                  <div className="flex items-center gap-2 text-[#8B5CF6] font-medium">
+                    <FaImages className="w-5 h-5" />
+                    Suas Fotos
+                  </div>
+
+                  <p className="mt-2 text-sm text-white/70">
+                    Compare seu antes e depois
+                  </p>
+
+                  <span className="text-xs text-[#8B5CF6]">
+                    Toque para abrir
+                  </span>
+
+                  <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.round((Object.values(fotos).filter(Boolean).length / 6) * 100)}%` }}
+                      transition={{ duration: 0.8 }}
+                      className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]"
+                    />
+                  </div>
+                </motion.div>
+
                 {[...baseProgressConfig, ...(userStats.temMounjaro ? [mounjaroCard] : []), ...(userStats.temManipulado ? [manipuladoCard] : [])].map(({ key, label, icon: Icon }, index) => {
                   const metric = userStats[key];
                   const percent = metric?.porcentagem ?? 0;
@@ -344,7 +470,7 @@ export default function UserPage() {
                       key={key}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.15 }}
+                      transition={{ delay: (index + 1) * 0.15 }}
                       whileHover={{ scale: 1.03 }}
                       className="
                         rounded-xl
@@ -379,46 +505,6 @@ export default function UserPage() {
                     </motion.div>
                   );
                 })}
-
-                {/* Card de Fotos */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.03 }}
-                  onClick={() => setIsFotoModalOpen(true)}
-                  className="
-                    rounded-xl
-                    bg-white/5
-                    border border-white/10
-                    p-4
-                    hover:bg-white/10
-                    transition
-                    cursor-pointer
-                  "
-                >
-                  <div className="flex items-center gap-2 text-[#8B5CF6] font-medium">
-                    <FaImages className="w-5 h-5" />
-                    Suas Fotos
-                  </div>
-
-                  <p className="mt-2 text-sm text-white/70">
-                    Compare seu antes e depois
-                  </p>
-
-                  <span className="text-xs text-[#8B5CF6]">
-                    Toque para abrir
-                  </span>
-
-                  <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.round((Object.values(fotos).filter(Boolean).length / 6) * 100)}%` }}
-                      transition={{ duration: 0.8 }}
-                      className="h-full bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6]"
-                    />
-                  </div>
-                </motion.div>
               </div>
             </>
           )}
@@ -521,7 +607,11 @@ export default function UserPage() {
       <PostLoginModal
         isOpen={isPostLoginModalOpen}
         onCloseAction={() => setIsPostLoginModalOpen(false)}
-        onFinishAction={() => window.location.reload()}
+        onFinishAction={() => {
+          setIsPostLoginModalOpen(false);
+          // start the photos tour after the user completes post-login
+          startPhotosTour();
+        }}
         usuarioId={usuario.id}
         usuario={usuario}
       />

@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { createUser } from "@/api/api";
 
-// ✅ Navbar (aparece SÓ no mobile)
-import Navbar from "@/components/Navbar";
+// Navbar removed for signup page
 
 /* Ícones inline */
 type IconProps = { className?: string };
@@ -110,6 +109,7 @@ const FormInput: React.FC<FormInputProps> = ({
   maxLength,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState(false);
   const isPassword = type === "password";
   const inputType = isPassword && showPassword ? "text" : type;
 
@@ -125,6 +125,8 @@ const FormInput: React.FC<FormInputProps> = ({
           placeholder={label}
           value={value}
           onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           required={required}
           maxLength={maxLength}
           style={{
@@ -139,7 +141,7 @@ const FormInput: React.FC<FormInputProps> = ({
             fontWeight: 500,
             lineHeight: "20px",
             letterSpacing: "0.01em",
-            outline: isPassword ? "2px solid #6F3CF6" : "none",
+            outline: focused ? "2px solid #6F3CF6" : "none",
             boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08)",
             transition: "outline .2s",
             boxSizing: "border-box",
@@ -330,8 +332,14 @@ const SignUpForm: React.FC = () => {
                 boxSizing: "border-box",
                 appearance: "none",
               }}
-              onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
-              onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
+                onFocus={(e) => {
+                  e.currentTarget.style.background = "#e8e3d3";
+                  e.currentTarget.style.outline = "2px solid #6F3CF6";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.background = "#F3EFDD";
+                  e.currentTarget.style.outline = "none";
+                }}
             >
               {Object.keys(PAISES_CODIGOS).map((pais) => (
                 <option key={pais} value={pais}>
@@ -364,8 +372,14 @@ const SignUpForm: React.FC = () => {
                 overflow: "hidden",
                 transition: "background 0.2s",
               }}
-              onFocus={(e) => (e.currentTarget.style.background = "#e8e3d3")}
-              onBlur={(e) => (e.currentTarget.style.background = "#F3EFDD")}
+              onFocus={(e) => {
+                e.currentTarget.style.background = "#e8e3d3";
+                e.currentTarget.style.outline = "2px solid #6F3CF6";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.background = "#F3EFDD";
+                e.currentTarget.style.outline = "none";
+              }}
             />
           </div>
         </div>
@@ -424,9 +438,7 @@ const SignUpForm: React.FC = () => {
 const SignUpPage: React.FC = () => {
   return (
     <>
-      <div className="mobileOnlyNav">
-        <Navbar />
-      </div>
+      {/* navbar removed for signup page */}
 
       <main
         className="signupMain"

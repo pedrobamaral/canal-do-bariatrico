@@ -1,276 +1,215 @@
-'use client';
-import { deleteUser, updateData } from "@/api/api";
-import { FormEvent, useState, ChangeEvent } from "react";
-import React from "react";
-import { FaPhoneAlt, FaEnvelope, FaLock, FaPen, FaTimes, FaTrash, FaUser } from "react-icons/fa";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaTimes,
+  FaPen,
+  FaUser,
+  FaEnvelope,
+  FaPhoneAlt,
+  FaLock,
+  FaTrash,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import EditUserPass from "./UpdatePassModal";
-import { useRouter } from "next/navigation";
-
-// Função de formatação de telefone (mantém código do país na frente, padrão +55)
-const formatPhoneNumber = (value: string, countryCode = "+55") => {
-    // Remove tudo que não é dígito
-    const numbers = value.replace(/\D/g, "");
-    const codeDigits = countryCode.replace(/\D/g, "");
-
-    let local = numbers;
-    if (codeDigits && numbers.startsWith(codeDigits)) {
-        local = numbers.slice(codeDigits.length);
-    }
-
-    const limited = local.slice(-11);
-
-    if (limited.length > 10) {
-        return `${countryCode} ${limited.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3")}`.trim();
-    } else if (limited.length > 6) {
-        return `${countryCode} ${limited.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3")}`.trim();
-    } else if (limited.length > 2) {
-        return `${countryCode} ${limited.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2")}`.trim();
-    } else {
-        return `${countryCode} ${limited.replace(/^(\d*)/, "($1")}`.trim();
-    }
-};
 
 interface EditUserModalProps {
-    mostrar: boolean;
-    fechar: () => void;
-    foto: string | undefined | null;
-    usuarioId: number;
-    nome?: string;
-    email?: string;
-    telefone?: string;
-    onSuccess: () => void;
+  mostrar: boolean;
+  fechar: () => void;
+  usuarioId: number;
+  nome: string;
+  email: string;
+  telefone?: string;
+  foto?: string | null;
+  onSuccess?: () => void;
 }
 
-export default function EditUserModal({mostrar, fechar, foto, usuarioId, nome, email: emailProp, telefone: telefoneProp, onSuccess}: EditUserModalProps) {
-    const router = useRouter();
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string>("");
-    const [loading, setLoading] = useState(false);
-    const [mostrarModalPass, setMostrarPass] = useState(false)
+export default function EditUserModal({
+  mostrar,
+  fechar,
+  usuarioId,
+  nome: nomeProp,
+  email: emailProp,
+  telefone: telefoneProp,
+  foto: fotoProp,
+  onSuccess,
+}: EditUserModalProps) {
+  const [name, setName] = useState(nomeProp || "");
+  const [email, setEmail] = useState(emailProp || "");
+  const [telefone, setTelefone] = useState(telefoneProp || "");
+  const [imagePreview, setImagePreview] = useState<string>(fotoProp || "/images/defaultAvatar.jpg");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [mostrarModalPass, setMostrarPass] = useState(false);
 
-    // Atualizar preview da imagem quando a foto do usuário mudar ou quando um arquivo for selecionado
-    React.useEffect(() => {
-        if (selectedFile) {
-            const objectUrl = URL.createObjectURL(selectedFile);
-            setImagePreview(objectUrl);
-            return () => URL.revokeObjectURL(objectUrl);
-        } else if (foto) {
-            setImagePreview(foto);
-        } else {
-            setImagePreview("/images/defaultAvatar.jpg");
-        }
-    }, [foto, selectedFile]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-    // Carregar dados do usuário quando o modal abre
-    React.useEffect(() => {
-        if (mostrar) {
-            setName(nome || '');
-            setEmail(emailProp || '');
-            // Formatar telefone ao carregar (mantém +55 na frente por padrão)
-            const formattedPhone = telefoneProp ? formatPhoneNumber(telefoneProp, "+55") : '';
-            setTelefone(formattedPhone);
-            setSelectedFile(null);
-        }
-    }, [mostrar, nome, emailProp, telefoneProp]);
-
-
-    const compressAndConvertImage = async (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    // Redimensionar para no máximo 400x400
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxSize = 400;
-                    
-                    if (width > height) {
-                        if (width > maxSize) {
-                            height = (height * maxSize) / width;
-                            width = maxSize;
-                        }
-                    } else {
-                        if (height > maxSize) {
-                            width = (width * maxSize) / height;
-                            height = maxSize;
-                        }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        reject(new Error('Erro ao processar imagem'));
-                        return;
-                    }
-                    
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Converter para base64 com qualidade reduzida (0.7 = 70%)
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                    resolve(base64);
-                };
-                
-                img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-                img.src = e.target?.result as string;
-            };
-            
-            reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-            reader.readAsDataURL(file);
-        });
+  useEffect(() => {
+    if (mostrar) {
+      setName(nomeProp || "");
+      setEmail(emailProp || "");
+      setTelefone(telefoneProp || "");
+      setImagePreview(fotoProp || "/images/defaultAvatar.jpg");
+      setImageFile(null);
     }
+  }, [mostrar, nomeProp, emailProp, telefoneProp, fotoProp]);
 
-    const handleClose = () => {
-        setName('');
-        setEmail('');
-        setTelefone('');
-        setSelectedFile(null);
-        fechar();
-    };
+  const handleClose = () => {
+    if (loading) return;
+    fechar();
+  };
 
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setSelectedFile(file);
-        }
-    };
-
-    const handleTelefoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const formatted = formatPhoneNumber(e.target.value, "+55");
-        setTelefone(formatted);
-    };
-
-    const handleUpdate = async (e:FormEvent) => {
-        e.preventDefault();
-
-        if (!name && !email && !telefone && !selectedFile) {
-            toast.warn('Por favor, preencha algum campo.');
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            let fotoBase64 = null;
-
-            if (selectedFile) {
-                toast.info('Comprimindo imagem...');
-                fotoBase64 = await compressAndConvertImage(selectedFile);
-            }
-
-            const data: any = {};
-            if (name.trim()) data.nome = name;
-            if (email.trim()) data.email = email;
-            if (telefone.trim()) {
-                // Remove símbolos para enviar apenas números e garantir código 55 na frente
-                const phoneNumbers = telefone.replace(/\D/g, "");
-                const countryCode = '55';
-                data.telefone = phoneNumbers.startsWith(countryCode) ? phoneNumbers : `${countryCode}${phoneNumbers}`;
-            }
-            if (fotoBase64) data.foto = fotoBase64;
-
-            await updateData(usuarioId, data);
-
-            toast.success('Dados atualizados com sucesso!');
-            onSuccess(); 
-            handleClose();
-
-        } catch (err:any) {
-            console.error(err);
-            const message = err?.response?.data?.message || "Erro ao atualizar dados!";
-            toast.error(message);
-        } finally {
-            setLoading(false);
-        }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 20MB)");
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(String(reader.result));
+      setImageFile(file);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    const handleDelete = async () => {
-        if (!window.confirm("Tem certeza que deseja deletar a conta? Isso é permanente e vai apagar todos os dados do usuário!")) return;
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("nome", name);
+      formData.append("email", email);
+      formData.append("telefone", telefone);
+      if (imageFile) formData.append("avatar", imageFile);
 
-        try {
-            await deleteUser(usuarioId);
-            toast.warning('Usuário deletado com sucesso!');
-            localStorage.removeItem('bari_token');
-            localStorage.removeItem('bari_user');
-            window.dispatchEvent(new Event('auth-changed'));
-            router.push('/');
-        } catch (err:any) {
-            toast.error("Erro ao deletar");
-        }
-    }   
+      const res = await fetch(`/api/users/${usuarioId}`, {
+        method: "PUT",
+        body: formData,
+      });
 
-    if (!mostrar) return null;
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Erro ao atualizar usuário");
+      }
 
-    return (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-[#EDEDED] rounded-lg p-8 max-w-md w-full text-center shadow-lg relative">
+      toast.success("Perfil atualizado");
+      onSuccess?.();
+      fechar();
+    } catch (err: any) {
+      const msg = err?.message || "Erro ao atualizar";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    <button onClick={handleClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl cursor-pointer">
-                        <FaTimes />
-                    </button>
+  const handleDelete = async () => {
+    if (!confirm("Tem certeza que deseja deletar sua conta? Esta ação é irreversível.")) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/users/${usuarioId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Erro ao deletar conta");
+      toast.success("Conta deletada");
+      // optional: redirect or call onSuccess
+      onSuccess?.();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao deletar conta");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    <div className="relative w-24 h-24 mx-auto mb-6">
-                        <img
-                            src={imagePreview}
-                            alt="Foto"
-                            className="w-24 h-24 rounded-full object-cover"
-                            onError={(e) => { e.currentTarget.src = "/images/bari_padrao.png"; }}
-                        />
-                        
-                        <label 
-                            htmlFor="avatar-input"
-                            className="absolute bottom-0 right-0 bg-black p-2 rounded-full border text-white hover:brightness-90 cursor-pointer transition flex items-center justify-center z-10"
-                        >
-                            <FaPen />
-                        </label>
-                        
-                        <input 
-                            id="avatar-input"
-                            type="file" 
-                            accept="image/*"
-                            className="hidden" 
-                            onChange={handleFileChange}
-                        />
-                    </div>
+  if (!mostrar) return null;
 
-                    <form onSubmit={handleUpdate}>
-                        <div className="relative mb-4">
-                            <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Nome" className="bg-white text-[#2f2f2f] rounded-full border border-transparent p-2 pl-10 w-full focus:border-laranja focus:outline-none"/>
-                            <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
-                        </div>
-                        <div className="relative mb-4">
-                            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="bg-white text-[#2f2f2f] rounded-full p-2 pl-10 w-full border border-transparent focus:border-laranja focus:outline-none"/>
-                            <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
-                        </div>
-                        <div className="relative mb-4">
-                            <input value={telefone} onChange={handleTelefoneChange} type="tel" placeholder="Telefone" className="bg-white text-[#2f2f2f] rounded-full p-2 pl-10 w-full border border-transparent focus:border-laranja focus:outline-none"/>
-                            <FaPhoneAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-text" />
-                        </div>
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        {/* Overlay */}
+        <div onClick={handleClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
-                        <div className="mt-6 flex flex-col gap-3">
-                            <button type="submit" disabled={loading} className="p-3 rounded-full font-sans tracking-wider text-[#6A38F3] border border-[#6A38F3] hover:bg-[#6A38F3] hover:text-white transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50">
-                                {loading ? "Salvando..." : "Salvar Alterações"}
-                            </button>
-                            
-                            <button onClick={handleDelete} type="button" className="p-3 rounded-full font-sans tracking-wider text-[#6A38F3] border border-[#6A38F3] hover:bg-red-600 hover:text-white transition cursor-pointer flex items-center justify-center gap-2">
-                                <FaTrash /> Deletar Conta
-                            </button>
-                            
-                            <button onClick={() => setMostrarPass(true)} type="button" className="p-3 rounded-full font-sans tracking-wider text-[#6A38F3] border border-[#6A38F3] hover:bg-blue-500 hover:text-white transition cursor-pointer flex items-center justify-center gap-2">
-                                <FaLock /> Alterar Senha
-                            </button>
-                        </div>
-                    </form>    
-                </div>
-                <EditUserPass mostrar={mostrarModalPass} voltar={() => setMostrarPass(false)} usuarioId={usuarioId} />
+        {/* Modal */}
+        <motion.div
+          initial={{ scale: 0.9, y: 40, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.9, y: 40, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md rounded-2xl p-8 text-white"
+          style={{
+            background: "rgba(20,15,35,0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 8px 60px rgba(0,0,0,0.6)",
+          }}
+        >
+          {/* Fechar */}
+          <button onClick={handleClose} className="absolute top-4 right-4 text-white/50 hover:text-white transition">
+            <FaTimes className="w-5 h-5" />
+          </button>
+
+          {/* Avatar */}
+          <div className="relative flex justify-center -mt-20 mb-4">
+            <div className="relative">
+              <img src={imagePreview} alt="avatar" className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6]" />
+
+              <label htmlFor="avatar-input" className="absolute bottom-0 right-0 bg-[#8B5CF6] p-2 rounded-full cursor-pointer hover:scale-105 transition">
+                <FaPen className="text-white text-sm" />
+              </label>
+
+              <input id="avatar-input" ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
-    );
+          </div>
+
+          <h2 className="text-lg font-semibold text-center mb-6">Editar perfil</h2>
+
+          {/* Form */}
+          <form onSubmit={handleUpdate} className="space-y-4">
+            {[
+              { value: name, set: setName, icon: FaUser, placeholder: "Nome", type: "text" },
+              { value: email, set: setEmail, icon: FaEnvelope, placeholder: "Email", type: "email" },
+              { value: telefone, set: setTelefone, icon: FaPhoneAlt, placeholder: "Telefone", type: "tel" },
+            ].map(({ value, set, icon: Icon, placeholder, type }, i) => (
+              <div key={i} className="relative">
+                <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+                <input
+                  value={value}
+                  onChange={(e: any) => set(e.target?.value ?? e)}
+                  type={type}
+                  placeholder={placeholder}
+                  className="w-full rounded-full bg-white/5 border border-white/10 px-4 py-3 pl-11 text-white placeholder-white/40 focus:outline-none focus:border-[#8B5CF6]"
+                />
+              </div>
+            ))}
+
+            {/* Botões */}
+            <div className="pt-4 flex flex-col gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-full font-medium bg-gradient-to-r from-[#6A38F3] to-[#8B5CF6] hover:scale-105 transition disabled:opacity-50"
+              >
+                {loading ? "Salvando..." : "Salvar alterações"}
+              </button>
+
+              <button type="button" onClick={() => setMostrarPass(true)} className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 transition flex items-center justify-center gap-2">
+                <FaLock /> Alterar senha
+              </button>
+
+              <button type="button" onClick={handleDelete} className="w-full py-3 rounded-full border border-red-500/40 text-red-400 hover:bg-red-500/20 transition flex items-center justify-center gap-2">
+                <FaTrash /> Deletar conta
+              </button>
+            </div>
+          </form>
+
+          <EditUserPass mostrar={mostrarModalPass} voltar={() => setMostrarPass(false)} usuarioId={usuarioId} />
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
 }

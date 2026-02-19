@@ -81,11 +81,6 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  const navItems = [
-    { label: "ÁREA DO PROFISSIONAL", href: "#" },
-    { label: "JÁ SOU ALUNO", href: "#" },
-  ];
-
   const benefits = [
     "Suas informações ficam organizadas no seu perfil. Check ins, treino, alimentação, medicação e evolução de peso.",
     "Nada se perde.",
@@ -103,7 +98,7 @@ export default function Home() {
   ];
 
   return (
-    <main ref={heroRef} className="bg-[#0A0A0A] text-white overflow-hidden">
+    <main id="home" ref={heroRef} className="bg-[#0A0A0A] text-white overflow-hidden">
       {/* ================= HEADER ================= */}
       <header
         className={`fixed w-full top-0 z-50 transition-colors duration-300 ${
@@ -120,37 +115,15 @@ export default function Home() {
               </div>
           </a>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-sm font-semibold text-white hover:text-[#6F3CF6] group transition-colors duration-300 relative"
-              >
-                <span className="inline-block relative">
-                  {item.label}
-                  <span className="absolute left-0 -bottom-1 h-[2px] bg-[#6F3CF6] w-0 group-hover:w-full transition-all duration-300" />
-                </span>
-              </a>
-            ))}
-          </nav>
-
           {/* CTA Button */}
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden sm:inline-block">
-              <span className="inline-block px-4 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300">
-                ENTRAR
-              </span>
-            </Link>
-
-            <Link href="/cadastro" className="hidden sm:inline-block px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all duration-300">
-              CADASTRE-SE
+            <Link href="/login" className="hidden sm:inline-block px-6 py-2 border-2 border-white text-white font-bold rounded-lg hover:bg-white transition-all duration-300 group">
+              <span className="text-white group-hover:text-black">JÁ SOU ALUNO</span>
             </Link>
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-[#6F3CF6]"
+              className="md:hidden text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -158,32 +131,54 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation (full-screen drawer) */}
         {mobileMenuOpen && (
-          <nav className="md:hidden bg-[#1A1A1A] border-t border-[#333333]">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm font-semibold text-white hover:text-[#6F3CF6] group transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span className="inline-block relative">
-                    {item.label}
-                    <span className="absolute left-0 -bottom-1 h-[2px] bg-[#6F3CF6] w-0 group-hover:w-full transition-all duration-300" />
-                  </span>
-                </a>
-              ))}
-              <a href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full px-6 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all text-center">
-                ENTRAR
-              </a>
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="absolute inset-0 bg-black/80" onClick={() => setMobileMenuOpen(false)} />
 
-              <button className="w-full px-6 py-2 border-2 border-[#6F3CF6] text-[#6F3CF6] font-bold rounded-lg hover:bg-[#6F3CF6] hover:text-[#0A0A0A] transition-all">
-                CANAL DA BARIE
+            <aside className="relative z-60 h-full w-full bg-[#0A0A0A] text-white p-6 overflow-auto">
+              <button
+                aria-label="Fechar menu"
+                onClick={() => setMobileMenuOpen(false)}
+                className="absolute right-4 top-4 rounded-md p-2 border-2 border-[#6F3CF6] text-white"
+              >
+                <X size={20} />
               </button>
-            </div>
-          </nav>
+
+              <nav className="mt-12 max-w-lg mx-auto">
+                <a href="/cadastro" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">CADASTRO</a>
+                <a href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">ENTRAR</a>
+                <a href="#" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">PARCEIROS</a>
+
+                <div className="flex justify-center gap-4 mt-8">
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Instagram size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Youtube size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <FaTiktok size={18} />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Mail size={18} />
+                  </button>
+                </div>
+
+                <div className="flex justify-center mt-10">
+                  <img src="/images/newBarieIcon.png" alt="Barie" className="w-28 h-28 object-contain" />
+                </div>
+
+                <div className="mt-12">
+                  <div className="flex items-center gap-2">
+                    <img src="/images/flags/gb.png" alt="EN" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                    <img src="/images/flags/br.png" alt="BR" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                    <img src="/images/flags/es.png" alt="ES" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+                  </div>
+                </div>
+              </nav>
+            </aside>
+          </div>
         )}
       </header>
 
@@ -250,21 +245,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= PARTNERS SECTION ================= */}
-      <section className="bg-[#0A0A0A] py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4">
-
-          {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
-        </div>
-      </section>
-
       {/* ================= METHODOLOGY SECTION ================= */}
       <motion.section
         variants={sectionAnim}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="metodologia"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -288,12 +275,14 @@ export default function Home() {
             </div>
 
             {/* Right Image */}
-            <div className="relative">
-              <div className="aspect-square rounded-lg overflow-hidden border-2 border-[#6F3CF6]">
-                <img src="/images/cellBarie.jpeg" alt="Metodologia Barie" className="w-full h-full object-cover" />
+            <div className="relative flex items-center justify-center">
+              <div className="rounded-lg overflow-hidden border-2 border-[#6F3CF6] p-0 flex items-center justify-center">
+                <img src="/images/cellBarie.jpeg" alt="Metodologia Barie" className="w-full h-full object-cover object-center block rounded-lg" />
               </div>
             </div>
           </div>
+          {/* Divider */}
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -303,6 +292,7 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="resultados"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -353,6 +343,8 @@ export default function Home() {
               ))}
             </div>
           </div>
+          {/* Divider */}
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -424,7 +416,7 @@ export default function Home() {
         whileInView="visible"
         viewport={{ once: true }}
         className="bg-[#0A0A0A] py-20 md:py-32"
-        id="planos"
+        id="acompanhamento"
       >
         <div className="max-w-7xl mx-auto px-4">
 
@@ -457,7 +449,7 @@ export default function Home() {
           </div>
 
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -467,7 +459,8 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="bg-[#0A0A0A] py-20 md:py-32"
+        id="calculadora"
+        className="bg-[#0A0A0A] py-12 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
@@ -555,7 +548,7 @@ export default function Home() {
           </div>
 
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </motion.section>
 
@@ -565,6 +558,7 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="projeto"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -574,7 +568,7 @@ export default function Home() {
               className="absolute inset-0 bg-cover bg-center"
               style={{
                 backgroundImage:
-                  "linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.98) 100%), url('/images/barieFitClub.jpeg')",
+                  "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.6) 80%), url('/images/barieFitClub.jpeg')",
                 backgroundBlendMode: "multiply",
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
@@ -585,7 +579,7 @@ export default function Home() {
             {/* Content */}
             <div className="relative z-10 py-20 md:py-32 px-8 md:px-16 text-center">
               <span className="inline-block px-4 py-2 bg-[#1A1A1A] rounded-full text-[#6F3CF6] font-bold text-sm uppercase mb-6">
-                CHECK IN DIÁRIO COM MÉTOD
+                CHECK IN DIÁRIO COM MÉTODO
               </span>
 
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">MENOS MOTIVAÇÃO. MAIS SISTEMA.</h2>
@@ -594,20 +588,22 @@ export default function Home() {
                 Treino adaptado à sua rotina real. Organização alimentar inteligente. Ajuste clínico quando indicado. Sem milagre. Com método.
               </p>
 
-              <Link href="/cadastro" className="inline-block">
+              <a
+                href="https://hotmart.com/pt-br"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
                 <motion.span
                   whileHover={{ scale: 1.05 }}
-                  className="inline-block px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
+                  className="inline-flex items-center gap-3 px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
                 >
-                  MEU PROJETO DE SAÚDE
-                  <MdArrowOutward className="inline-block ml-2" />
+                  <span>MEU PROJETO DE SAÚDE</span>
+                  <MdArrowOutward className="shrink-0" />
                 </motion.span>
-              </Link>
+              </a>
             </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
 
@@ -631,18 +627,33 @@ export default function Home() {
               <h3 className="font-bold text-white uppercase text-sm">Links Rápidos</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#planos" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Planos
+                  <a href="#home" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Início
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Sobre Nós
+                  <a href="#metodologia" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Método
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Contato
+                  <a href="#resultados" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Resultados
+                  </a>
+                </li>
+                <li>
+                  <a href="#acompanhamento" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Acompanhamento
+                  </a>
+                </li>
+                <li>
+                  <a href="#calculadora" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Calculadora
+                  </a>
+                </li>
+                <li>
+                  <a href="#projeto" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Projeto
                   </a>
                 </li>
               </ul>

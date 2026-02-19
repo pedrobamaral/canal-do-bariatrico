@@ -1,4 +1,3 @@
-// app/login/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -6,10 +5,7 @@ import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/api/api";
 
-// ✅ Navbar (aparece SÓ no mobile)
-import Navbar from "@/components/Navbar";
 
-/* Ícones inline */
 type IconProps = { className?: string };
 
 const EyeIcon: React.FC<IconProps> = ({ className }) => (
@@ -50,6 +46,7 @@ const FormInput: React.FC<FormInputProps> = ({
   required,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState(false);
   const isPassword = type === "password";
   const inputType = isPassword && showPassword ? "text" : type;
 
@@ -65,6 +62,8 @@ const FormInput: React.FC<FormInputProps> = ({
           placeholder={label}
           value={value}
           onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           required={required}
           style={{
             width: "100%",
@@ -78,7 +77,7 @@ const FormInput: React.FC<FormInputProps> = ({
             fontWeight: 500,
             lineHeight: "24px",
             letterSpacing: "0.01em",
-            outline: isPassword ? "2px solid #6F3CF6" : "none",
+            outline: focused ? "2px solid #6F3CF6" : "none",
             boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08)",
             transition: "outline .2s",
           }}
@@ -151,6 +150,14 @@ const LoginForm: React.FC = () => {
         }
 
         window.dispatchEvent(new Event("auth-changed"));
+
+        // Se for admin, redireciona para o painel de pacientes
+        const isAdmin = !!data.user?.admin;
+        if (isAdmin) {
+          router.push('/pacientes');
+          router.refresh();
+          return;
+        }
 
         // Redireciona para a página do usuário, se disponível
         const userId = data.user?.id ?? data.user?.sub ?? null;
@@ -303,10 +310,7 @@ const LoginForm: React.FC = () => {
 const LoginPage: React.FC = () => {
   return (
     <>
-      {/* ✅ Navbar só no MOBILE (desktop não muda) */}
-      <div className="mobileOnlyNav">
-        <Navbar />
-      </div>
+      {/* navbar removed for login page */}
 
       <main
         className="loginMain"

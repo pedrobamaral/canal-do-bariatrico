@@ -12,10 +12,7 @@ import { getAllUsers, getCurrentUser, Usuario, getUserAdherenceStats, UserAdhere
 
 // Modais
 import EditUserModal from '@/components/modals/EditUserModal';
-import { HealthSurveyModal } from '@/components/others/HealthSurveyModal';
-import { DietModal } from '@/components/others/DietModal';
 import { MedicationModal } from '@/components/modals/MedicationModal';
-import { TrainingModal } from '@/components/others/TrainingModal';
 
 // Interface estendida do paciente com dados calculados
 interface PatientData extends Usuario {
@@ -439,29 +436,12 @@ const DashboardPacientes = () => {
             onSuccess={handleEditUserSuccess}
           />
 
-          <HealthSurveyModal
-            isOpen={showHealthSurvey}
-            onClose={() => setShowHealthSurvey(false)}
-            usuarioId={selectedPatient?.id}
-          />
-
-          <DietModal
-            isOpen={showDiet}
-            onClose={() => setShowDiet(false)}
-            usuarioId={selectedPatient?.id}
-          />
-
           <MedicationModal
             isOpen={showMedication}
             onClose={() => setShowMedication(false)}
             usuarioId={selectedPatient?.id}
           />
 
-          <TrainingModal
-            isOpen={showTraining}
-            onClose={() => setShowTraining(false)}
-            usuarioId={selectedPatient?.id}
-          />
         </>
       )}
     </div>

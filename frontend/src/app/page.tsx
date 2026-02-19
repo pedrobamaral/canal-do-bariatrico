@@ -26,6 +26,12 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // Trava scroll quando drawer mobile abre
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -123,7 +129,7 @@ export default function Home() {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-white"
+              className="md:hidden text-white relative z-[10002]"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -131,56 +137,49 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile Navigation (full-screen drawer) */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black/80" onClick={() => setMobileMenuOpen(false)} />
-
-            <aside className="relative z-60 h-full w-full bg-[#0A0A0A] text-white p-6 overflow-auto">
-              <button
-                aria-label="Fechar menu"
-                onClick={() => setMobileMenuOpen(false)}
-                className="absolute right-4 top-4 rounded-md p-2 border-2 border-[#6F3CF6] text-white"
-              >
-                <X size={20} />
-              </button>
-
-              <nav className="mt-12 max-w-lg mx-auto">
-                <a href="/cadastro" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">CADASTRO</a>
-                <a href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">ENTRAR</a>
-                <a href="#" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">PARCEIROS</a>
-
-                <div className="flex justify-center gap-4 mt-8">
-                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <Instagram size={18} />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <Youtube size={18} />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <FaTiktok size={18} />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <Mail size={18} />
-                  </button>
-                </div>
-
-                <div className="flex justify-center mt-10">
-                  <img src="/images/newBarieIcon.png" alt="Barie" className="w-28 h-28 object-contain" />
-                </div>
-
-                <div className="mt-12">
-                  <div className="flex items-center gap-2">
-                    <img src="/images/flags/gb.png" alt="EN" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
-                    <img src="/images/flags/br.png" alt="BR" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
-                    <img src="/images/flags/es.png" alt="ES" className="w-6 h-4" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
-                  </div>
-                </div>
-              </nav>
-            </aside>
-          </div>
-        )}
       </header>
+
+      {/* Mobile Navigation — FORA do header para não herdar stacking context */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[10000] md:hidden">
+          <div className="absolute inset-0 bg-black/80" />
+
+          <aside className="relative z-[10001] h-full w-full bg-[#0A0A0A] text-white p-6 overflow-auto">
+            <button
+              aria-label="Fechar menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute right-4 top-4 rounded-md p-2 border-2 border-[#6F3CF6] text-white"
+            >
+              <X size={20} />
+            </button>
+
+            <nav className="mt-12 max-w-lg mx-auto">
+              <a href="/cadastro" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">CADASTRO</a>
+              <a href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">ENTRAR</a>
+              <a href="#" onClick={() => setMobileMenuOpen(false)} className="block py-4 border-b border-gray-800 text-lg">PARCEIROS</a>
+
+              <div className="flex justify-center gap-4 mt-8">
+                <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <Instagram size={18} />
+                </button>
+                <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <Youtube size={18} />
+                </button>
+                <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <FaTiktok size={18} />
+                </button>
+                <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <Mail size={18} />
+                </button>
+              </div>
+
+              <div className="flex justify-center mt-10">
+                <img src="/images/newBarieIcon.png" alt="Barie" className="w-28 h-28 object-contain" />
+              </div>
+            </nav>
+          </aside>
+        </div>
+      )}
 
       {/* ================= HERO SECTION ================= */}
       <section

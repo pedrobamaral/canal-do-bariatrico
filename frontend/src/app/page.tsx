@@ -249,15 +249,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= PARTNERS SECTION ================= */}
-      <section className="bg-[#0A0A0A] py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4">
-
-          {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
-        </div>
-      </section>
-
       {/* ================= METHODOLOGY SECTION ================= */}
       <motion.section
         variants={sectionAnim}
@@ -294,6 +285,8 @@ export default function Home() {
               </div>
             </div>
           </div>
+          {/* Divider */}
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
 
@@ -354,6 +347,8 @@ export default function Home() {
               ))}
             </div>
           </div>
+          {/* Divider */}
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
 
@@ -608,9 +603,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
         </div>
       </motion.section>
 

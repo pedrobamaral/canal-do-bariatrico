@@ -102,7 +102,7 @@ export default function Home() {
   ];
 
   return (
-    <main ref={heroRef} className="bg-[#0A0A0A] text-white overflow-hidden">
+    <main id="home" ref={heroRef} className="bg-[#0A0A0A] text-white overflow-hidden">
       {/* ================= HEADER ================= */}
       <header
         className={`fixed w-full top-0 z-50 transition-colors duration-300 ${
@@ -138,7 +138,7 @@ export default function Home() {
           {/* CTA Button */}
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden sm:inline-block">
-              <span className="inline-block px-4 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300">
+              <span className="inline-block px-4 py-2 text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300">
                 ENTRAR
               </span>
             </Link>
@@ -254,7 +254,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Divider */}
-          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-16" />
+          <div className="h-1 bg-gradient-to-r from-transparent via-[#6F3CF6] to-transparent mt-8" />
         </div>
       </section>
 
@@ -264,6 +264,7 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="metodologia"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -287,9 +288,9 @@ export default function Home() {
             </div>
 
             {/* Right Image */}
-            <div className="relative">
-              <div className="aspect-square rounded-lg overflow-hidden border border-[#6F3CF6]">
-                <img src="/images/cellBarie.jpeg" alt="Metodologia Barie" className="w-full h-full object-cover" />
+            <div className="relative flex items-center justify-center">
+              <div className="rounded-lg overflow-hidden border-2 border-[#6F3CF6] p-0 flex items-center justify-center">
+                <img src="/images/cellBarie.jpeg" alt="Metodologia Barie" className="w-full h-full object-cover object-center block rounded-lg" />
               </div>
             </div>
           </div>
@@ -302,6 +303,7 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="resultados"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -423,7 +425,7 @@ export default function Home() {
         whileInView="visible"
         viewport={{ once: true }}
         className="bg-[#0A0A0A] py-20 md:py-32"
-        id="planos"
+        id="acompanhamento"
       >
         <div className="max-w-7xl mx-auto px-4">
 
@@ -466,7 +468,8 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="bg-[#0A0A0A] py-20 md:py-32"
+        id="calculadora"
+        className="bg-[#0A0A0A] py-12 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
@@ -564,6 +567,7 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        id="projeto"
         className="bg-[#0A0A0A] py-20 md:py-32"
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -573,7 +577,7 @@ export default function Home() {
               className="absolute inset-0 bg-cover bg-center"
               style={{
                 backgroundImage:
-                  "linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.98) 100%), url('/images/barieFitClub.jpeg')",
+                  "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.6) 80%), url('/images/barieFitClub.jpeg')",
                 backgroundBlendMode: "multiply",
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
@@ -596,10 +600,10 @@ export default function Home() {
               <Link href="/cadastro" className="inline-block">
                 <motion.span
                   whileHover={{ scale: 1.05 }}
-                  className="inline-block px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
+                  className="inline-flex items-center gap-3 px-8 py-3 font-bold text-lg rounded-lg transition-all duration-300 uppercase tracking-wider bg-[#6F3CF6] text-[#0A0A0A] hover:shadow-lg hover:shadow-[#6F3CF6]/50"
                 >
-                  MEU PROJETO DE SAÚDE
-                  <MdArrowOutward className="inline-block ml-2" />
+                  <span>MEU PROJETO DE SAÚDE</span>
+                  <MdArrowOutward className="shrink-0" />
                 </motion.span>
               </Link>
             </div>
@@ -630,18 +634,33 @@ export default function Home() {
               <h3 className="font-bold text-white uppercase text-sm">Links Rápidos</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#planos" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Planos
+                  <a href="#home" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Início
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Sobre Nós
+                  <a href="#metodologia" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Método
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
-                    Contato
+                  <a href="#resultados" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Resultados
+                  </a>
+                </li>
+                <li>
+                  <a href="#acompanhamento" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Acompanhamento
+                  </a>
+                </li>
+                <li>
+                  <a href="#calculadora" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Calculadora
+                  </a>
+                </li>
+                <li>
+                  <a href="#projeto" className="text-gray-400 hover:text-[#6F3CF6] transition-colors text-sm">
+                    Projeto
                   </a>
                 </li>
               </ul>

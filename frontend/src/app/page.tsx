@@ -82,7 +82,6 @@ export default function Home() {
   };
 
   const navItems = [
-    { label: "ÁREA DO PROFISSIONAL", href: "#" },
     { label: "JÁ SOU ALUNO", href: "#" },
   ];
 
@@ -160,7 +159,7 @@ export default function Home() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden bg-[#1A1A1A] border-t border-[#333333]">
+          <nav className="md:hidden bg-[#ffff] border-t border-[#333333]">
             <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
               {navItems.map((item) => (
                 <a
@@ -289,7 +288,7 @@ export default function Home() {
 
             {/* Right Image */}
             <div className="relative">
-              <div className="aspect-square rounded-lg overflow-hidden border-2 border-[#6F3CF6]">
+              <div className="aspect-square rounded-lg overflow-hidden border border-[#6F3CF6]">
                 <img src="/images/cellBarie.jpeg" alt="Metodologia Barie" className="w-full h-full object-cover" />
               </div>
             </div>
@@ -585,7 +584,7 @@ export default function Home() {
             {/* Content */}
             <div className="relative z-10 py-20 md:py-32 px-8 md:px-16 text-center">
               <span className="inline-block px-4 py-2 bg-[#1A1A1A] rounded-full text-[#6F3CF6] font-bold text-sm uppercase mb-6">
-                CHECK IN DIÁRIO COM MÉTOD
+                CHECK IN DIÁRIO COM MÉTODO
               </span>
 
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">MENOS MOTIVAÇÃO. MAIS SISTEMA.</h2>

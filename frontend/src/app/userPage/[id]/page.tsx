@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { getUserById, getUserAdherenceStats, UserAdherenceStats, getUserFotos, saveUserFotos } from "@/api/api";
 import EditUserModal from "@/components/modals/EditUserModal";
-import { PostLoginModal, PostLoginData } from "@/components/modals/PostLoginModal";
+import PostLoginModal from "@/components/modals/PostLoginModal";
 import { toast, ToastContainer } from "react-toastify";
 
 import {
